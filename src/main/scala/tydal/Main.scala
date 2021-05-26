@@ -1,6 +1,5 @@
 package tydal
 
-import tydal.schema.DbType.Enumerated
 import tydal.schema._
 
 @main def run() = {
@@ -14,6 +13,9 @@ import tydal.schema._
       $("b", "title") as "btitle",
       $("b", "author") as "bauthor"
     ))
+
+  println(Avg(Column["x", nullable[numeric]]).dbType.dbName)
+  println(Nullable(Column["x", nullable[numeric]]))
 
   println(query.fields)
 
@@ -59,10 +61,10 @@ given Enumerated[Colour] with
 object book extends Table[
   "book",
   (
-    Column["title", DbType.varchar],
-    Column["number_of_pages", DbType.integer],
-    Column["author", DbType.varchar],
-    Column["sleeve_colour", DbType.`enum`["colour", Colour]]
+    Column["title", varchar],
+    Column["number_of_pages", integer],
+    Column["author", varchar],
+    Column["sleeve_colour", `enum`["colour", Colour]]
   )
 ]
 

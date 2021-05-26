@@ -1,5 +1,6 @@
 package tydal.schema
 
+import scala.util.NotGiven
 import scala.annotation.implicitAmbiguous
 
 trait DbTypeProps
@@ -12,17 +13,17 @@ trait IsTemporal[T] extends DbTypeProps
 
 
 object IsInteger:
-  given IsInteger[DbType.smallint] with { }
-  given IsInteger[DbType.integer] with { }
-  given IsInteger[DbType.bigint] with { }
-  given[T](using IsInteger[T]): IsInteger[DbType.nullable[T]] with { }
+  given IsInteger[smallint] with { }
+  given IsInteger[integer] with { }
+  given IsInteger[bigint] with { }
+  given[T](using IsInteger[T]): IsInteger[nullable[T]] with { }
 
 
 object IsRational:
-  given IsRational[DbType.float4] with { }
-  given IsRational[DbType.float8] with { }
-  given IsRational[DbType.numeric] with { }
-  given[T](using IsRational[T]): IsRational[DbType.nullable[T]] with { }
+  given IsRational[float4] with { }
+  given IsRational[float8] with { }
+  given IsRational[numeric] with { }
+  given[T](using IsRational[T]): IsRational[nullable[T]] with { }
 
 
 object IsNumeric:
@@ -31,13 +32,39 @@ object IsNumeric:
 
 
 object IsText:
-  given IsText[DbType.char] with { }
-  given IsText[DbType.varchar] with { }
-  given IsText[DbType.text] with { }
-  given[T](using IsText[T]): IsText[DbType.nullable[T]] with { }
+  given IsText[char] with { }
+  given IsText[varchar] with { }
+  given IsText[text] with { }
+  given[T](using IsText[T]): IsText[nullable[T]] with { }
 
 
 object IsTemporal:
-  given IsTemporal[DbType.timestamp] with { }
-  given IsTemporal[DbType.date] with { }
-  given[T](using IsTemporal[T]): IsTemporal[DbType.nullable[T]] with { }
+  given IsTemporal[timestamp] with { }
+  given IsTemporal[date] with { }
+  given[T](using IsTemporal[T]): IsTemporal[nullable[T]] with { }
+
+
+trait Rational[T, U]
+
+object Rational:
+  given Rational[smallint, float4] with { }
+  given Rational[integer, float4] with { }
+  given Rational[bigint, float8] with { }
+  given nullableSmallint: Rational[nullable[smallint], nullable[float4]] with { }
+  given nullableInt: Rational[nullable[integer], nullable[float4]] with { }
+  given nullableBigint: Rational[nullable[bigint], nullable[float8]] with { }
+  given[T](using IsRational[T]): Rational[T, T] with { }
+
+
+trait IsNullable[T]
+
+object IsNullable:
+  given[T]: IsNullable[nullable[T]] with { }
+
+
+trait Nullable[T, U]
+
+object Nullable:
+  def apply[F <: Field[_], T, U](field: F)(using fieldT: FieldT[F, T], nullable: Nullable[T, U], uType: DbType[U]): SoftCast[F, U] = SoftCast(field)
+  given[T](using NotGiven[IsNullable[T]]): Nullable[T, nullable[T]] with { }
+  given[T](using IsNullable[T]): Nullable[T, T] with { }
