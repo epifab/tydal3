@@ -1,12 +1,12 @@
 package tydal
 
+import tydal.schema.DbType.Enumerated
 import tydal.schema._
 
 @main def run() = {
 //  println(book.name.value)
 //  println(book.columns.names)
 //  println(book.find("number_of_pages").name.value)
-
 
   val query = Select
     .from(book as "b")
@@ -49,12 +49,20 @@ import tydal.schema._
 
 /** Usage example **/
 
+enum Colour:
+  case red, white
+
+given Enumerated[Colour] with
+  def toString(e: Colour): String = e.toString
+  def fromString(s: String): Colour = Colour.valueOf(s)
+
 object book extends Table[
   "book",
   (
-    Column["title", String],
-    Column["number_of_pages", Int],
-    Column["author", String]
+    Column["title", DbType.varchar],
+    Column["number_of_pages", DbType.integer],
+    Column["author", DbType.varchar],
+    Column["sleeve_colour", DbType.`enum`["colour", Colour]]
   )
 ]
 

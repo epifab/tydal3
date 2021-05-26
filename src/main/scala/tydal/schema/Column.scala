@@ -1,7 +1,6 @@
 package tydal.schema
 
-class Column[Name, T](using val name: DbIdentifier[Name], dbType: DbType[T]) extends Field[T]:
-  override def as[Alias <: Singleton](alias: Alias)(using DbIdentifier[Alias]): Tagged[Column[Name, T], Alias] = new Tagged(this)
+class Column[Name, T](using val name: DbIdentifier[Name], val dbType: DbType[T]) extends Field[T]:
   override def toString: String = name.value
 
 

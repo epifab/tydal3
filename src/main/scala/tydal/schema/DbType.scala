@@ -10,6 +10,11 @@ trait DbType[T]:
 
 object DbType:
 
+  trait char
+  given DbType[char] with
+    type Type = String
+    def dbName: String = "char"
+
   trait varchar
   given DbType[varchar] with
     type Type = String
@@ -20,10 +25,35 @@ object DbType:
     type Type = String
     def dbName: String = "text"
 
-  trait int
-  given DbType[int] with
+  trait smallint
+  given DbType[smallint] with
+    type Type = Short
+    def dbName: String = "smallint"
+
+  trait integer
+  given DbType[integer] with
     type Type = Int
-    def dbName: String = "int"
+    def dbName: String = "integer"
+
+  trait bigint
+  given DbType[bigint] with
+    type Type = Long
+    def dbName: String = "bigint"
+
+  trait numeric
+  given DbType[numeric] with
+    type Type = BigDecimal
+    def dbName: String = "numeric"
+
+  trait float4
+  given DbType[float4] with
+    type Type = Float
+    def dbName: String = "float4"
+
+  trait float8
+  given DbType[float8] with
+    type Type = Double
+    def dbName: String = "float8"
 
   trait bool
   given DbType[bool] with
@@ -35,11 +65,6 @@ object DbType:
     type Type = UUID
     def dbName: String = "uuid"
 
-  trait float
-  given DbType[float] with
-    type Type = Double
-    def dbName: String = "float"
-
   trait date
   given DbType[date] with
     type Type = LocalDate
@@ -49,11 +74,6 @@ object DbType:
   given DbType[timestamp] with
     type Type = Instant
     override def dbName: String = "timestamp"
-
-  trait bigInt
-  given DbType[bigInt] with
-    type Type = Long
-    def dbName: String = "bigint"
 
   trait array[T]
   given[T](using innerType: DbType[T]): DbType[array[T]] with
@@ -65,12 +85,12 @@ object DbType:
     type Type = Option[innerType.Type]
     def dbName: String = innerType.dbName
 
-  trait enumeration[Name, T]
+  trait `enum`[Name, T]
 
   trait Enumerated[T]:
     def toString(t: T): String
     def fromString(s: String): T
 
-  given[Name <: String, Values](using singleton: ValueOf[Name], enumerated: Enumerated[Values]): DbType[enumeration[Name, Values]] with
+  given[Name <: String, Values](using singleton: ValueOf[Name], enumerated: Enumerated[Values]): DbType[`enum`[Name, Values]] with
     type Type = Values
     def dbName: String = singleton.value
