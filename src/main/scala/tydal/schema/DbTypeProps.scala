@@ -10,6 +10,7 @@ trait IsRational[T] extends DbTypeProps
 trait IsNumerical[T] extends DbTypeProps
 trait IsText[T] extends DbTypeProps
 trait IsTemporal[T] extends DbTypeProps
+trait IsArray[T] extends DbTypeProps
 
 
 object IsInteger:
@@ -46,6 +47,11 @@ object IsTemporal:
   given IsTemporal[date] with { }
   given[T](using IsTemporal[T]): IsTemporal[nullable[T]] with { }
   given[F, T](using FieldT[F, T], IsTemporal[T]): IsTemporal[F] with { }
+
+
+object IsArray:
+  given[T]: IsArray[array[T]] with { }
+  given[F, T](using FieldT[F, T], IsArray[T]): IsArray[F] with { }
 
 
 trait Rational[T, U]
@@ -91,3 +97,23 @@ trait LowPriorityComparisons:
 object AreComparable extends LowPriorityComparisons:
   given numeric[F, G](using IsNumerical[F], IsNumerical[G]): AreComparable[F, G] with { }
   given text[F, G](using IsText[F], IsText[G]): AreComparable[F, G] with { }
+
+
+trait AreComparableArray[T, U]
+
+object AreComparableArray:
+  given notNullable[T, U](using AreComparable[T, U]): AreComparableArray[array[T], array[U]] with { }
+  given leftNullable[T, U](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], array[U]] with { }
+  given rightNullable[T, U](using AreComparable[T, U]): AreComparableArray[array[T], nullable[array[U]]] with { }
+  given bothNullable[T, U](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], nullable[array[U]]] with { }
+  given field[T, U, F, G](using FieldT[F, T], FieldT[G, U], AreComparableArray[T, U]): AreComparableArray[F, G] with { }
+
+
+trait CanContain[T, U]
+
+object CanContain:
+  given notNullable[T, U](using AreComparable[T, U]): CanContain[array[T], U] with { }
+  given leftNullable[T, U](using AreComparable[T, U]): CanContain[nullable[array[T]], U] with { }
+  given rightNullable[T, U](using AreComparable[T, U]): CanContain[array[T], nullable[U]] with { }
+  given bothNullable[T, U](using AreComparable[T, U]): CanContain[nullable[array[T]], nullable[U]] with { }
+  given field[F, G, T, U](using FieldT[F, T], FieldT[G, U], CanContain[T, U]): CanContain[F, G] with { }

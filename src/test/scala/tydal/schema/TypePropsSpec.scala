@@ -74,3 +74,28 @@ object IsNullSpec extends TypePropsSpec:
 object NullableSpec extends TypePropsSpec:
   val softCast: SoftCast[Column["test", integer], nullable[integer]] = Nullable(Column["test", integer])
   val identity: Column["test", nullable[integer]] = Nullable(Column["test", nullable[integer]])
+
+
+object AreComparableArraySpec extends TypePropsSpec:
+  implicitly[AreComparableArray[array[varchar], array[varchar]]]
+  implicitly[AreComparableArray[array[char], array[varchar]]]
+  implicitly[NotGiven[AreComparableArray[array[integer], array[varchar]]]]
+  implicitly[NotGiven[AreComparableArray[varchar, varchar]]]
+  implicitly[AreComparableArray[array[bool], array[bool]]]
+  implicitly[AreComparableArray[nullable[array[bool]], array[bool]]]
+  implicitly[AreComparableArray[array[bool], nullable[array[bool]]]]
+  implicitly[AreComparableArray[nullable[array[bool]], nullable[array[bool]]]]
+
+  implicitly[AreComparableArray[Field[array[varchar]], Field[array[varchar]]]]
+  implicitly[AreComparableArray[Field[array[char]], Field[array[varchar]]]]
+  implicitly[NotGiven[AreComparableArray[Field[array[integer]], Field[array[varchar]]]]]
+  implicitly[AreComparableArray[Field[array[bool]], Field[array[bool]]]]
+  implicitly[AreComparableArray[Field[nullable[array[bool]]], Field[array[bool]]]]
+  implicitly[AreComparableArray[Field[array[bool]], Field[nullable[array[bool]]]]]
+  implicitly[AreComparableArray[Field[nullable[array[bool]]], Field[nullable[array[bool]]]]]
+
+
+object CanContainSpec extends TypePropsSpec:
+  implicitly[CanContain[array[varchar], varchar]]
+  implicitly[CanContain[array[varchar], text]]
+  implicitly[CanContain[nullable[array[varchar]], text]]
