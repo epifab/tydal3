@@ -25,7 +25,7 @@ class Avg[T, F <: Field[_], U](field: F)(
 class Sum[T, F <: Field[_]](field: F)(
   using
   ft: FieldT[F, T],
-  numeric: IsNumeric[T],
+  numerical: IsNumerical[T],
   baseType: DbType[T]
 ) extends DbAggregationFunction[F, T]:
   def dbType: DbType[T] = baseType
