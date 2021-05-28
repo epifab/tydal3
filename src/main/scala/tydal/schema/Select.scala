@@ -8,10 +8,10 @@ trait Selectable[Fields]:
   ): Needle
 
 
-trait SelectableT[-F, T]
+trait SelectableT[-S, T]
 
 object SelectableT:
-  given[F, T](using FieldT[F, T]): SelectableT[Selectable[F *: EmptyTuple], T] with { }
+  given[S <: Selectable[_], T, F <: Field[T]]: SelectableT[Selectable[F *: EmptyTuple], T] with { }
 
 
 trait SelectContext[Fields, From] extends Selectable[Fields]:

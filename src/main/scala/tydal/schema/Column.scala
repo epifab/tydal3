@@ -34,27 +34,17 @@ trait FieldRefs[RelationAlias, RawFields, ProcessedFields]
 object FieldRefs:
   given empty[RelationAlias]: FieldRefs[RelationAlias, EmptyTuple, EmptyTuple] with { }
 
-  given columns[RelationAlias, ColumnName, ColumnType, RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple](
+  given columns[RelationAlias: DbIdentifier, ColumnName: DbIdentifier, ColumnType: DbType, RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple] (
     using
-    src: DbIdentifier[RelationAlias],
-    name: DbIdentifier[ColumnName],
-    dbType: DbType[ColumnType],
     tailBuilder: FieldRefs[RelationAlias, RawFieldsTail, ProcessedFieldsTail]
   ): FieldRefs[RelationAlias, Column[ColumnName, ColumnType] *: RawFieldsTail, FieldRef[RelationAlias, ColumnName, ColumnType] *: ProcessedFieldsTail] with { }
 
-  given refs[RelationAlias, FieldSrc, FieldAlias, FieldType, RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple] (
+  given refs[RelationAlias: DbIdentifier, FieldSrc, FieldAlias: DbIdentifier, FieldType: DbType, RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple] (
     using
-    src: DbIdentifier[RelationAlias],
-    name: DbIdentifier[FieldAlias],
-    dbType: DbType[FieldType],
-    tailBuilder: FieldRefs[RelationAlias, RawFieldsTail, ProcessedFieldsTail]
+    FieldRefs[RelationAlias, RawFieldsTail, ProcessedFieldsTail]
   ): FieldRefs[RelationAlias, FieldRef[FieldSrc, FieldAlias, FieldType] *: RawFieldsTail, FieldRef[RelationAlias, FieldAlias, FieldType] *: ProcessedFieldsTail] with { }
 
-  given tagged[RelationAlias, FieldAlias, F <: Field[_], FieldType, RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple](
+  given tagged[RelationAlias: DbIdentifier, FieldAlias: DbIdentifier, FieldType: DbType, F <: Field[FieldType], RawFieldsTail <: Tuple, ProcessedFieldsTail <: Tuple] (
     using
-    src: DbIdentifier[RelationAlias],
-    name: DbIdentifier[FieldAlias],
-    fieldT: FieldT[F, FieldType],
-    dbType: DbType[FieldType],
-    tailBuilder: FieldRefs[RelationAlias, RawFieldsTail, ProcessedFieldsTail]
+    FieldRefs[RelationAlias, RawFieldsTail, ProcessedFieldsTail]
   ): FieldRefs[RelationAlias, Tagged[F, FieldAlias] *: RawFieldsTail, FieldRef[RelationAlias, FieldAlias, FieldType] *: ProcessedFieldsTail] with { }

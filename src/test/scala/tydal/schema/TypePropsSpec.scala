@@ -14,8 +14,8 @@ object AreComparableSpec extends TypePropsSpec:
   summon[AreComparable[bool, nullable[bool]]]
   summon[AreComparable[nullable[bool], nullable[bool]]]
 
-  summon[AreComparable[Field[varchar], Field[varchar]]]
-  summon[AreComparable[Field[char], Field[varchar]]]
+  summon[AreComparable[Placeholder[varchar], Column["hello", varchar]]]
+  summon[AreComparable[Placeholder[char], Column["hello", varchar]]]
   summon[NotGiven[AreComparable[Field[integer], Field[varchar]]]]
   summon[AreComparable[Field[bool], Field[bool]]]
   summon[AreComparable[Field[nullable[bool]], Field[bool]]]
@@ -61,7 +61,9 @@ object IsTemporalSpec extends TypePropsSpec:
   summon[IsTemporal[date]]
   summon[IsTemporal[nullable[date]]]
   summon[IsTemporal[Column["some_date", nullable[date]]]]
+  summon[IsTemporal[Field[nullable[date]]]]
   summon[NotGiven[IsTemporal[Column["some_float", float4]]]]
+  summon[NotGiven[IsTemporal[Field[float4]]]]
 
 
 object IsNullSpec extends TypePropsSpec:
@@ -99,4 +101,5 @@ object CanContainSpec extends TypePropsSpec:
   summon[CanContain[array[varchar], varchar]]
   summon[CanContain[array[varchar], text]]
   summon[CanContain[nullable[array[varchar]], text]]
+  summon[CanContain[Column["hello", nullable[array[varchar]]], Placeholder[text]]]
   summon[CanContain[SubQuery["hello", FieldRef["h", "w", integer] *: EmptyTuple, Nothing], Placeholder[integer]]]
