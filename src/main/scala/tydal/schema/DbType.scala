@@ -22,7 +22,7 @@ trait uuid
 trait date
 trait timestamp
 trait array[T]
-trait nullable[+T]
+trait nullable[T]
 trait `enum`[Name, T]
 
 trait Enumerated[T]:
