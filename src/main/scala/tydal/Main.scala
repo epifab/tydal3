@@ -13,10 +13,13 @@ import tydal.schema._
       $("b", "title") as "btitle",
       $("b", "author") as "bauthor"
     ))
+    .where(_("btitle") like "hello")
 
   println(Avg(Column["x", nullable[numeric]]).dbType.dbName)
   println(Nullable(Column["x", nullable[numeric]]))
 
+  println(query.from)
+  println(query.where)
   println(query.fields)
 
 //  trait StringValue[A]:

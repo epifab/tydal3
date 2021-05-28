@@ -25,16 +25,32 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[Fields, From](
+final class SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit](
+  val from: From,
   val fields: Fields,
-  val from: From
+  val groupBy: GroupBy,
+  val where: Where,
+  val having: Having,
+  val sortBy: SortBy,
+  val offset: Offset,
+  val limit: Limit
 ) extends Taggable with SelectContext[Fields, From]:
 
-  def take[NewFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[NewFields, From] =
-    new SelectQuery(f(this), from)
+  def take[NewFields <: Tuple](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
+    SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
 
-//  def innerJoin[RelationFields, Relation <: Selectable[RelationFields], RelationAlias](relation: Tagged[Relation, RelationAlias], on: (Selectable[RelationFields], Selectable[Fields]) => JoinClause)
+  def groupBy[NewGroupBy <: Tuple](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
+    SelectQuery(from, fields, f(this), where, having, sortBy, offset, limit)
+
+  def where[NewWhere <: LogicalExpr](f: SelectContext[Fields, From] => NewWhere): SelectQuery[From, Fields, GroupBy, NewWhere, Having, SortBy, Offset, Limit] =
+    SelectQuery(from, fields, groupBy, f(this), having, sortBy, offset, limit)
+
+  def having[NewHaving <: LogicalExpr](f: SelectContext[Fields, From] => NewHaving): SelectQuery[From, Fields, GroupBy, Where, NewHaving, SortBy, Offset, Limit] =
+    SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
+
+  def sortBy[NewSortBy <: Tuple](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, NewSortBy, SortBy, Offset, Limit] =
+    SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
 
 object Select:
-  def from[Name, Columns, Alias <: Singleton](table: Tagged[Table[Name, Columns], Alias]): SelectQuery[EmptyTuple, Tagged[Table[Name, Columns], Alias] *: EmptyTuple] =
-    new SelectQuery[EmptyTuple, Tagged[Table[Name, Columns], Alias] *: EmptyTuple](EmptyTuple, table *: EmptyTuple)
+  def from[Name, Columns, Alias <: Singleton](table: Tagged[Table[Name, Columns], Alias]): SelectQuery[Tagged[Table[Name, Columns], Alias] *: EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple] =
+    SelectQuery(table *: EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple)

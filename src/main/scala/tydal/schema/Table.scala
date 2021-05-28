@@ -10,3 +10,5 @@ class Table[Name, Columns](
     using
     finder: Finder[Columns, Column, ColumnName]
   ): Column = finder.find(columns.get)
+
+  override def toString: String = name.value
