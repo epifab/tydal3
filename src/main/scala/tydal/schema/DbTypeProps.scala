@@ -109,11 +109,12 @@ object AreComparableArray:
   given field[T, U, F, G](using FieldT[F, T], FieldT[G, U], AreComparableArray[T, U]): AreComparableArray[F, G] with { }
 
 
-trait CanContain[T, U]
+trait CanContain[-T, -U]
 
 object CanContain:
   given notNullable[T, U](using AreComparable[T, U]): CanContain[array[T], U] with { }
   given leftNullable[T, U](using AreComparable[T, U]): CanContain[nullable[array[T]], U] with { }
   given rightNullable[T, U](using AreComparable[T, U]): CanContain[array[T], nullable[U]] with { }
   given bothNullable[T, U](using AreComparable[T, U]): CanContain[nullable[array[T]], nullable[U]] with { }
-  given field[F, G, T, U](using FieldT[F, T], FieldT[G, U], CanContain[T, U]): CanContain[F, G] with { }
+  given field[F, T, G, U](using FieldT[F, T], FieldT[G, U], CanContain[U, T]): CanContain[G, F] with { }
+  given subQuery[F, T, S, U](using FieldT[F, T], SelectableT[S, U], AreComparable[T, U]): CanContain[S, F] with { }

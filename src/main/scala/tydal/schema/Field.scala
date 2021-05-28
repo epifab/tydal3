@@ -82,9 +82,11 @@ trait Field[T] extends Taggable:
   def overlaps[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): Overlaps[this.type, NamedPlaceholder[A, T]] =
     Overlaps(this, NamedPlaceholder(right)(using dbType))
 
-  def in[G <: Field[_]](right: G)(using CanContain[G, this.type]): IsIncluded[this.type, G] = IsIncluded(this, right)
+  def in[S <: SubQuery[_, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
 
-  def in[A <: String with Singleton](right: A)(using DbType[array[T]], CanContain[NamedPlaceholder[A, array[T]], this.type]): IsIncluded[this.type, NamedPlaceholder[A, array[T]]] =
+  def isContainedIn[G <: Field[_]](right: G)(using CanContain[G, this.type]): IsIncluded[this.type, G] = IsIncluded(this, right)
+
+  def isContainedIn[A <: String with Singleton](right: A)(using DbType[array[T]], CanContain[NamedPlaceholder[A, array[T]], this.type]): IsIncluded[this.type, NamedPlaceholder[A, array[T]]] =
     IsIncluded(this, NamedPlaceholder(right))
 
 
@@ -92,5 +94,5 @@ trait FieldT[-F, T]:
   def get(f: F): Field[T]
 
 object FieldT:
-  given pure[T]: FieldT[Field[T], T] with
+  given[T]: FieldT[Field[T], T] with
     def get(field: Field[T]): Field[T] = field

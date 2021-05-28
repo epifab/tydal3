@@ -6,69 +6,69 @@ trait TypePropsSpec
 
 
 object AreComparableSpec extends TypePropsSpec:
-  implicitly[AreComparable[varchar, varchar]]
-  implicitly[AreComparable[char, varchar]]
-  implicitly[NotGiven[AreComparable[integer, varchar]]]
-  implicitly[AreComparable[bool, bool]]
-  implicitly[AreComparable[nullable[bool], bool]]
-  implicitly[AreComparable[bool, nullable[bool]]]
-  implicitly[AreComparable[nullable[bool], nullable[bool]]]
+  summon[AreComparable[varchar, varchar]]
+  summon[AreComparable[char, varchar]]
+  summon[NotGiven[AreComparable[integer, varchar]]]
+  summon[AreComparable[bool, bool]]
+  summon[AreComparable[nullable[bool], bool]]
+  summon[AreComparable[bool, nullable[bool]]]
+  summon[AreComparable[nullable[bool], nullable[bool]]]
 
-  implicitly[AreComparable[Field[varchar], Field[varchar]]]
-  implicitly[AreComparable[Field[char], Field[varchar]]]
-  implicitly[NotGiven[AreComparable[Field[integer], Field[varchar]]]]
-  implicitly[AreComparable[Field[bool], Field[bool]]]
-  implicitly[AreComparable[Field[nullable[bool]], Field[bool]]]
-  implicitly[AreComparable[Field[bool], Field[nullable[bool]]]]
-  implicitly[AreComparable[Field[nullable[bool]], Field[nullable[bool]]]]
+  summon[AreComparable[Field[varchar], Field[varchar]]]
+  summon[AreComparable[Field[char], Field[varchar]]]
+  summon[NotGiven[AreComparable[Field[integer], Field[varchar]]]]
+  summon[AreComparable[Field[bool], Field[bool]]]
+  summon[AreComparable[Field[nullable[bool]], Field[bool]]]
+  summon[AreComparable[Field[bool], Field[nullable[bool]]]]
+  summon[AreComparable[Field[nullable[bool]], Field[nullable[bool]]]]
 
 
 object IsIntegerSpec extends TypePropsSpec:
-  implicitly[IsInteger[smallint]]
-  implicitly[IsInteger[integer]]
-  implicitly[IsInteger[bigint]]
-  implicitly[IsInteger[nullable[bigint]]]
-  implicitly[IsInteger[Column["some_int", nullable[bigint]]]]
-  implicitly[NotGiven[IsInteger[Column["some_float", float4]]]]
+  summon[IsInteger[smallint]]
+  summon[IsInteger[integer]]
+  summon[IsInteger[bigint]]
+  summon[IsInteger[nullable[bigint]]]
+  summon[IsInteger[Column["some_int", nullable[bigint]]]]
+  summon[NotGiven[IsInteger[Column["some_float", float4]]]]
 
 
 object IsRationalSpec extends TypePropsSpec:
-  implicitly[IsRational[float4]]
-  implicitly[IsRational[float8]]
-  implicitly[IsRational[numeric]]
-  implicitly[IsRational[nullable[numeric]]]
-  implicitly[IsRational[Column["some_int", nullable[numeric]]]]
-  implicitly[NotGiven[IsRational[Column["some_int", bigint]]]]
+  summon[IsRational[float4]]
+  summon[IsRational[float8]]
+  summon[IsRational[numeric]]
+  summon[IsRational[nullable[numeric]]]
+  summon[IsRational[Column["some_int", nullable[numeric]]]]
+  summon[NotGiven[IsRational[Column["some_int", bigint]]]]
 
 
 object IsTextSpec extends TypePropsSpec:
-  implicitly[IsText[varchar]]
-  implicitly[IsText[char]]
-  implicitly[IsText[text]]
-  implicitly[IsText[nullable[text]]]
-  implicitly[IsText[Column["some_text", nullable[text]]]]
-  implicitly[NotGiven[IsText[Column["some_float", float4]]]]
+  summon[IsText[varchar]]
+  summon[IsText[char]]
+  summon[IsText[text]]
+  summon[IsText[nullable[text]]]
+  summon[IsText[Column["some_text", nullable[text]]]]
+  summon[NotGiven[IsText[Column["some_float", float4]]]]
 
 
 object IsNumericalSpec extends TypePropsSpec:
-  implicitly[IsNumerical[Column["some_int", nullable[bigint]]]]
-  implicitly[IsNumerical[Column["some_float", nullable[float4]]]]
-  implicitly[NotGiven[IsNumerical[Column["some_float", nullable[varchar]]]]]
+  summon[IsNumerical[Column["some_int", nullable[bigint]]]]
+  summon[IsNumerical[Column["some_float", nullable[float4]]]]
+  summon[NotGiven[IsNumerical[Column["some_float", nullable[varchar]]]]]
 
 
 object IsTemporalSpec extends TypePropsSpec:
-  implicitly[IsTemporal[timestamp]]
-  implicitly[IsTemporal[date]]
-  implicitly[IsTemporal[nullable[date]]]
-  implicitly[IsTemporal[Column["some_date", nullable[date]]]]
-  implicitly[NotGiven[IsTemporal[Column["some_float", float4]]]]
+  summon[IsTemporal[timestamp]]
+  summon[IsTemporal[date]]
+  summon[IsTemporal[nullable[date]]]
+  summon[IsTemporal[Column["some_date", nullable[date]]]]
+  summon[NotGiven[IsTemporal[Column["some_float", float4]]]]
 
 
 object IsNullSpec extends TypePropsSpec:
-  implicitly[IsNullable[nullable[bool]]]
-  implicitly[IsNullable[Field[nullable[bool]]]]
-  implicitly[NotGiven[IsNullable[bool]]]
-  implicitly[NotGiven[IsNullable[Field[bool]]]]
+  summon[IsNullable[nullable[bool]]]
+  summon[IsNullable[Field[nullable[bool]]]]
+  summon[NotGiven[IsNullable[bool]]]
+  summon[NotGiven[IsNullable[Field[bool]]]]
 
 
 object NullableSpec extends TypePropsSpec:
@@ -77,25 +77,26 @@ object NullableSpec extends TypePropsSpec:
 
 
 object AreComparableArraySpec extends TypePropsSpec:
-  implicitly[AreComparableArray[array[varchar], array[varchar]]]
-  implicitly[AreComparableArray[array[char], array[varchar]]]
-  implicitly[NotGiven[AreComparableArray[array[integer], array[varchar]]]]
-  implicitly[NotGiven[AreComparableArray[varchar, varchar]]]
-  implicitly[AreComparableArray[array[bool], array[bool]]]
-  implicitly[AreComparableArray[nullable[array[bool]], array[bool]]]
-  implicitly[AreComparableArray[array[bool], nullable[array[bool]]]]
-  implicitly[AreComparableArray[nullable[array[bool]], nullable[array[bool]]]]
+  summon[AreComparableArray[array[varchar], array[varchar]]]
+  summon[AreComparableArray[array[char], array[varchar]]]
+  summon[NotGiven[AreComparableArray[array[integer], array[varchar]]]]
+  summon[NotGiven[AreComparableArray[varchar, varchar]]]
+  summon[AreComparableArray[array[bool], array[bool]]]
+  summon[AreComparableArray[nullable[array[bool]], array[bool]]]
+  summon[AreComparableArray[array[bool], nullable[array[bool]]]]
+  summon[AreComparableArray[nullable[array[bool]], nullable[array[bool]]]]
 
-  implicitly[AreComparableArray[Field[array[varchar]], Field[array[varchar]]]]
-  implicitly[AreComparableArray[Field[array[char]], Field[array[varchar]]]]
-  implicitly[NotGiven[AreComparableArray[Field[array[integer]], Field[array[varchar]]]]]
-  implicitly[AreComparableArray[Field[array[bool]], Field[array[bool]]]]
-  implicitly[AreComparableArray[Field[nullable[array[bool]]], Field[array[bool]]]]
-  implicitly[AreComparableArray[Field[array[bool]], Field[nullable[array[bool]]]]]
-  implicitly[AreComparableArray[Field[nullable[array[bool]]], Field[nullable[array[bool]]]]]
+  summon[AreComparableArray[Field[array[varchar]], Field[array[varchar]]]]
+  summon[AreComparableArray[Field[array[char]], Field[array[varchar]]]]
+  summon[NotGiven[AreComparableArray[Field[array[integer]], Field[array[varchar]]]]]
+  summon[AreComparableArray[Field[array[bool]], Field[array[bool]]]]
+  summon[AreComparableArray[Field[nullable[array[bool]]], Field[array[bool]]]]
+  summon[AreComparableArray[Field[array[bool]], Field[nullable[array[bool]]]]]
+  summon[AreComparableArray[Field[nullable[array[bool]]], Field[nullable[array[bool]]]]]
 
 
 object CanContainSpec extends TypePropsSpec:
-  implicitly[CanContain[array[varchar], varchar]]
-  implicitly[CanContain[array[varchar], text]]
-  implicitly[CanContain[nullable[array[varchar]], text]]
+  summon[CanContain[array[varchar], varchar]]
+  summon[CanContain[array[varchar], text]]
+  summon[CanContain[nullable[array[varchar]], text]]
+  summon[CanContain[SubQuery["hello", FieldRef["h", "w", integer] *: EmptyTuple, Nothing], Placeholder[integer]]]

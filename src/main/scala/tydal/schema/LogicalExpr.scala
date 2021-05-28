@@ -62,3 +62,6 @@ case class Overlaps[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using A
 
 case class IsIncluded[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using CanContain[F2, F1])
   extends LogicalExpr2[F1, F2]
+
+case class IsIn[F1 <: Field[_], S <: SubQuery[_, _, _]](left: F1, right: S)(using CanContain[S, F1])
+  extends LogicalExpr2[F1, S]

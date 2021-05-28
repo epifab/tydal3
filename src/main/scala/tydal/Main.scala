@@ -11,9 +11,15 @@ import tydal.schema._
     .from(book as "b")
     .take($ => (
       $("b", "title") as "btitle",
-      $("b", "author") as "bauthor"
+      $("b", "author_id") as "bauthor"
     ))
-    .where(_("btitle") like "hello")
+    .where(_("bauthor") in
+      Select
+        .from(author as "a")
+        .take($ => Tuple1($("a", "id")))
+        .where(_("a", "name") like "author?")
+        .as("a2")
+    )
 
   println(Avg(Column["x", nullable[numeric]]).dbType.dbName)
   println(Nullable(Column["x", nullable[numeric]]))
@@ -61,13 +67,20 @@ given Enumerated[Colour] with
   def toString(e: Colour): String = e.toString
   def fromString(s: String): Colour = Colour.valueOf(s)
 
-object book extends Table[
+object book extends TableSchema[
   "book",
   (
     Column["title", varchar],
     Column["number_of_pages", integer],
-    Column["author", varchar],
+    Column["author_id", uuid],
     Column["sleeve_colour", `enum`["colour", Colour]]
   )
 ]
 
+object author extends TableSchema[
+  "author",
+  (
+    Column["id", uuid],
+    Column["name", varchar]
+  )
+]
