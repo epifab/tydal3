@@ -6,6 +6,7 @@ class FieldRef[Src, Name, T](using val src: DbIdentifier[Src], val name: DbIdent
 class Column[Name, T](using val name: DbIdentifier[Name], val dbType: DbType[T]) extends Field[T]:
   override def toString: String = name.value
 
+type :=:[A, B] = Column[A, B]
 
 trait ListOfColumns[Columns]:
   def value: Columns

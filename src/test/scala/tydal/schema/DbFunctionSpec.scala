@@ -9,5 +9,8 @@ object AvgSpec extends DbFunctionSpec:
   Avg(Column["x", nullable[bigint]]): DbAggregationFunction[Column["x", nullable[bigint]], nullable[float8]]
 
 
+object MinSpec extends App with DbFunctionSpec:
+  println(Min(Column["x", varchar]))
+
 object UnnestSpec extends DbFunctionSpec:
   Unnest(Column["x", array[bool]]): DbFunction1[Column["x", array[bool]], bool]

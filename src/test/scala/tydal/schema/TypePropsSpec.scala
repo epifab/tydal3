@@ -13,15 +13,68 @@ object AreComparableSpec extends TypePropsSpec:
   summon[AreComparable[nullable[bool], bool]]
   summon[AreComparable[bool, nullable[bool]]]
   summon[AreComparable[nullable[bool], nullable[bool]]]
+  summon[AreComparable[nullable[char], varchar]]
+  summon[AreComparable[char, nullable[varchar]]]
+  summon[AreComparable[nullable[char], nullable[varchar]]]
 
   summon[AreComparable[Placeholder[varchar], Column["hello", varchar]]]
   summon[AreComparable[Placeholder[char], Column["hello", varchar]]]
   summon[NotGiven[AreComparable[Field[integer], Field[varchar]]]]
   summon[AreComparable[Field[bool], Field[bool]]]
-  summon[AreComparable[Field[nullable[bool]], Field[bool]]]
-  summon[AreComparable[Field[bool], Field[nullable[bool]]]]
-  summon[AreComparable[Field[nullable[bool]], Field[nullable[bool]]]]
+  summon[AreComparable[Column["yo", nullable[bool]], Placeholder[bool]]]
+  summon[AreComparable[Column["yo", bool], Placeholder[nullable[bool]]]]
+  summon[AreComparable[Column["yo", nullable[bool]], Placeholder[nullable[bool]]]]
+  summon[AreComparable[Column["yo", nullable[char]], Placeholder[varchar]]]
+  summon[AreComparable[Column["yo", char], Placeholder[nullable[varchar]]]               ]
+  summon[AreComparable[Column["yo", nullable[char]], Placeholder[nullable[varchar]]]]
 
+
+object AreComparableArraySpec extends TypePropsSpec:
+  summon[AreComparableArray[array[varchar], array[varchar]]]
+  summon[AreComparableArray[array[char], array[varchar]]]
+  summon[NotGiven[AreComparableArray[array[integer], array[varchar]]]]
+  summon[AreComparableArray[array[bool], array[bool]]]
+  summon[AreComparableArray[nullable[array[bool]], array[bool]]]
+  summon[AreComparableArray[array[bool], nullable[array[bool]]]]
+  summon[AreComparableArray[nullable[array[bool]], nullable[array[bool]]]]
+  summon[AreComparableArray[nullable[array[char]], array[varchar]]]
+  summon[AreComparableArray[array[char], nullable[array[varchar]]]]
+  summon[AreComparableArray[nullable[array[char]], nullable[array[varchar]]]]
+
+  summon[AreComparableArray[Placeholder[array[varchar]], Column["hello", array[varchar]]]]
+  summon[AreComparableArray[Placeholder[array[char]], Column["hello", array[varchar]]]]
+  summon[NotGiven[AreComparableArray[Field[array[integer]], Field[array[varchar]]]]]
+  summon[AreComparableArray[Field[array[bool]], Field[array[bool]]]]
+  summon[AreComparableArray[Column["yo", nullable[array[bool]]], Placeholder[array[bool]]]]
+  summon[AreComparableArray[Column["yo", array[bool]], Placeholder[nullable[array[bool]]]]]
+  summon[AreComparableArray[Column["yo", nullable[array[bool]]], Placeholder[nullable[array[bool]]]]]
+  summon[AreComparableArray[Column["yo", nullable[array[char]]], Placeholder[array[varchar]]]]
+  summon[AreComparableArray[Column["yo", array[char]], Placeholder[nullable[array[varchar]]]]]
+  summon[AreComparableArray[Column["yo", nullable[array[char]]], Placeholder[nullable[array[varchar]]]]]
+
+
+object CanContainSpec extends TypePropsSpec:
+  summon[CanContain[array[varchar], varchar]]
+  summon[CanContain[array[char], varchar]]
+  summon[NotGiven[CanContain[array[integer], varchar]]]
+  summon[CanContain[array[bool], bool]]
+  summon[CanContain[nullable[array[bool]], bool]]
+  summon[CanContain[array[bool], nullable[bool]]]
+  summon[CanContain[nullable[array[bool]], nullable[bool]]]
+  summon[CanContain[nullable[array[char]], varchar]]
+  summon[CanContain[array[char], nullable[varchar]]]
+  summon[CanContain[nullable[array[char]], nullable[varchar]]]
+
+  summon[CanContain[Placeholder[array[varchar]], Column["hello", varchar]]]
+  summon[CanContain[Placeholder[array[char]], Column["hello", varchar]]]
+  summon[NotGiven[CanContain[Field[array[integer]], Field[varchar]]]]
+  summon[CanContain[Field[array[bool]], Field[bool]]]
+  summon[CanContain[Column["yo", nullable[array[bool]]], Placeholder[bool]]]
+  summon[CanContain[Column["yo", array[bool]], Placeholder[nullable[bool]]]]
+  summon[CanContain[Column["yo", nullable[array[bool]]], Placeholder[nullable[bool]]]]
+  summon[CanContain[Column["yo", nullable[array[char]]], Placeholder[varchar]]]
+  summon[CanContain[Column["yo", array[char]], Placeholder[nullable[varchar]]]]
+  summon[CanContain[Column["yo", nullable[array[char]]], Placeholder[nullable[varchar]]]]
 
 object IsIntegerSpec extends TypePropsSpec:
   summon[IsInteger[smallint]]
@@ -66,7 +119,7 @@ object IsTemporalSpec extends TypePropsSpec:
   summon[NotGiven[IsTemporal[Field[float4]]]]
 
 
-object IsNullSpec extends TypePropsSpec:
+object IsNullableSpec extends TypePropsSpec:
   summon[IsNullable[nullable[bool]]]
   summon[IsNullable[Field[nullable[bool]]]]
   summon[NotGiven[IsNullable[bool]]]
@@ -76,30 +129,3 @@ object IsNullSpec extends TypePropsSpec:
 object NullableSpec extends TypePropsSpec:
   val softCast: SoftCast[Column["test", integer], nullable[integer]] = Nullable(Column["test", integer])
   val identity: Column["test", nullable[integer]] = Nullable(Column["test", nullable[integer]])
-
-
-object AreComparableArraySpec extends TypePropsSpec:
-  summon[AreComparableArray[array[varchar], array[varchar]]]
-  summon[AreComparableArray[array[char], array[varchar]]]
-  summon[NotGiven[AreComparableArray[array[integer], array[varchar]]]]
-  summon[NotGiven[AreComparableArray[varchar, varchar]]]
-  summon[AreComparableArray[array[bool], array[bool]]]
-  summon[AreComparableArray[nullable[array[bool]], array[bool]]]
-  summon[AreComparableArray[array[bool], nullable[array[bool]]]]
-  summon[AreComparableArray[nullable[array[bool]], nullable[array[bool]]]]
-
-  summon[AreComparableArray[Field[array[varchar]], Field[array[varchar]]]]
-  summon[AreComparableArray[Field[array[char]], Field[array[varchar]]]]
-  summon[NotGiven[AreComparableArray[Field[array[integer]], Field[array[varchar]]]]]
-  summon[AreComparableArray[Field[array[bool]], Field[array[bool]]]]
-  summon[AreComparableArray[Field[nullable[array[bool]]], Field[array[bool]]]]
-  summon[AreComparableArray[Field[array[bool]], Field[nullable[array[bool]]]]]
-  summon[AreComparableArray[Field[nullable[array[bool]]], Field[nullable[array[bool]]]]]
-
-
-object CanContainSpec extends TypePropsSpec:
-  summon[CanContain[array[varchar], varchar]]
-  summon[CanContain[array[varchar], text]]
-  summon[CanContain[nullable[array[varchar]], text]]
-  summon[CanContain[Column["hello", nullable[array[varchar]]], Placeholder[text]]]
-  summon[CanContain[SubQuery["hello", FieldRef["h", "w", integer] *: EmptyTuple, Nothing], Placeholder[integer]]]

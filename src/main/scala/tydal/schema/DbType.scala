@@ -87,7 +87,7 @@ object DbType:
     type Type = Seq[innerType.Type]
     def dbName: String = s"${innerType.dbName}[]"
 
-  given[T](using innerType: DbType[T]): DbType[nullable[T]] with
+  given[T: IsNotNullable](using innerType: DbType[T]): DbType[nullable[T]] with
     type Type = Option[innerType.Type]
     def dbName: String = innerType.dbName
 

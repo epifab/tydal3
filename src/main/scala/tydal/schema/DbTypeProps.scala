@@ -69,15 +69,22 @@ object Rational:
 trait IsNullable[-T]
 
 object IsNullable:
-  given[T]: IsNullable[nullable[T]] with { }
-  given[T: IsNullable]: IsNullable[Field[T]] with { }
+  given[T: DbType]: IsNullable[nullable[T]] with { }
+  given[T: DbType: IsNullable]: IsNullable[Field[T]] with { }
 
 
-trait Nullable[-T, U]:
-  def apply(t: T): U
+trait IsNotNullable[-T]
+
+object IsNotNullable:
+  given dbType[T: DbType](using NotGiven[IsNullable[T]]): IsNotNullable[T] with { }
+  given field[T: Field](using NotGiven[IsNullable[T]]): IsNotNullable[T] with { }
+
+
+trait Nullable[-F <: Field[_], +G <: Field[_]]:
+  def apply(f: F): G
 
 object Nullable:
-  def apply[F, U](field: F)(using nullable: Nullable[F, U]): U = nullable(field)
+  def apply[F <: Field[_], G <: Field[_]](field: F)(using nullable: Nullable[F, G]): G = nullable(field)
 
   given notNullable[T: DbType, F <: Field[T]](using NotGiven[IsNullable[T]]): Nullable[F, SoftCast[F, nullable[T]]] with
     def apply(f: F): SoftCast[F, nullable[T]] = SoftCast(f)
@@ -86,26 +93,26 @@ object Nullable:
     def apply(f: F): F = f
 
 
-trait AreComparable[T, U]
+trait AreComparable[-T, -U]
 
-trait LowPriorityComparisons:
-  given identity[T]: AreComparable[T, T] with { }
+trait SameCategoryComparisons:
+  given numerical[T: DbType: IsNumerical, U: DbType: IsNumerical]: AreComparable[T, U] with { }
+  given text[T: DbType: IsText, U: DbType: IsText]: AreComparable[T, U] with { }
 
-object AreComparable extends LowPriorityComparisons:
-  given leftNullable[T, U](using AreComparable[T, U]): AreComparable[nullable[T], U] with { }
-  given rightNullable[T, U](using AreComparable[T, U]): AreComparable[T, nullable[T]] with { }
-  given field[T, U](using AreComparable[T, U]): AreComparable[Field[T], Field[U]] with { }
-  given numeric[F: IsNumerical, G: IsNumerical]: AreComparable[F, G] with { }
-  given text[F: IsText, G: IsText]: AreComparable[F, G] with { }
+object AreComparable extends SameCategoryComparisons:
+  given identity[T: DbType]: AreComparable[T, T] with { }
+  given leftNullable[T: DbType: IsNotNullable, U: DbType: IsNotNullable](using AreComparable[T, U]): AreComparable[nullable[T], U] with { }
+  given rightNullable[T: DbType: IsNotNullable, U: DbType: IsNotNullable](using AreComparable[T, U]): AreComparable[T, nullable[U]] with { }
+  given field[T: DbType, U: DbType](using AreComparable[T, U]): AreComparable[Field[T], Field[U]] with { }
 
 
-trait AreComparableArray[T, U]
+trait AreComparableArray[-T, -U]
 
 object AreComparableArray:
-  given identity[T, U] (using AreComparable[T, U]): AreComparableArray[array[T], array[U]] with { }
-  given leftNullable[T, U](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], array[U]] with { }
-  given rightNullable[T, U](using AreComparable[T, U]): AreComparableArray[array[T], nullable[array[U]]] with { }
-  given bothNullable[T, U](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], nullable[array[U]]] with { }
+  given identity[T: DbType, U: DbType](using AreComparable[T, U]): AreComparableArray[array[T], array[U]] with { }
+  given leftNullable[T: DbType: IsNotNullable, U: DbType: IsNotNullable](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], array[U]] with { }
+  given rightNullable[T: DbType: IsNotNullable, U: DbType: IsNotNullable](using AreComparable[T, U]): AreComparableArray[array[T], nullable[array[U]]] with { }
+  given bothNullable[T: DbType: IsNotNullable, U: DbType: IsNotNullable](using AreComparable[T, U]): AreComparableArray[nullable[array[T]], nullable[array[U]]] with { }
   given field[T, U](using AreComparableArray[T, U]): AreComparableArray[Field[T], Field[U]] with { }
 
 
