@@ -31,7 +31,7 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit](
+final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortBy, Offset, Limit](
   val from: From,
   val fields: Fields,
   val groupBy: GroupBy,
@@ -64,15 +64,27 @@ final class SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Li
     ListOfFields[SubQueryFields]
   ): SubQuery[Alias, SubQueryFields, this.type] = SubQuery(this)
 
-
-final class SubQuery[Alias, Fields, S](subQuery: S)(using val alias: DbIdentifier[Alias], val fields: ListOfFields[Fields]) extends Selectable[Fields]:
-
-  def apply[Tag <: Singleton, Needle](tag: Tag)(
-    using
-    finder: Finder[Fields, Needle, Tag]
-  ): Needle = finder.find(fields.value)
+  def innerJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields]](right: Right): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, RightFields, Right] =
+    JoinBuilder(this, right, JoinType.inner)
 
 
 object Select:
-  def from[Name, Alias, Columns](table: Table[Name, Alias, Columns]): SelectQuery[Table[Name, Alias, Columns] *: EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple] =
-    SelectQuery(table *: EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple)
+  def from[R <: Relation[_, _]](relation: R): SelectQuery[R, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple] =
+    SelectQuery(relation, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple)
+
+
+class JoinBuilder[
+  From <: Relations,
+  Fields,
+  GroupBy,
+  Where,
+  Having,
+  SortBy,
+  Offset,
+  Limit,
+  RightAlias,
+  RightFields,
+  Right <: Relation[RightAlias, RightFields]
+](left: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit], right: Right, joinType: JoinType):
+  def on[On <: LogicalExpr](f: (Selectable[RightFields], SelectContext[Fields, From]) => On):  SelectQuery[Join[From, Right, On], Fields, GroupBy, Where, Having, SortBy, Offset, Limit] =
+    SelectQuery(Join(left.from, right, f(right, left), joinType), left.fields, left.groupBy, left.where, left.having, left.sortBy, left.offset, left.limit)
