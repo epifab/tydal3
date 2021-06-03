@@ -70,11 +70,6 @@ trait Field[T] extends Taggable:
   def overlaps[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): Overlaps[this.type, NamedPlaceholder[A, T]] =
     Overlaps(this, NamedPlaceholder(right)(using dbType))
 
-  def isContainedBy[G <: Field[_]](right: G)(using CanContain[G, this.type]): IsContainedBy[this.type, G] = IsContainedBy(this, right)
-
-  def isContainedBy[A <: String with Singleton](right: A)(using DbType[array[T]], CanContain[NamedPlaceholder[A, array[T]], this.type]): IsContainedBy[this.type, NamedPlaceholder[A, array[T]]] =
-    IsContainedBy(this, NamedPlaceholder(right))
-
   def contains[G <: Field[_]](right: G)(using CanContain[this.type, G]): Contains[this.type, G] = Contains(this, right)
 
   def contains[A <: String with Singleton, U](right: A)(using Unnested[T, U], DbType[U], CanContain[this.type, NamedPlaceholder[A, U]]): Contains[this.type, NamedPlaceholder[A, U]] =

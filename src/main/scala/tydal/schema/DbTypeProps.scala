@@ -80,7 +80,7 @@ object IsNotNullable:
   given field[T: Field](using NotGiven[IsNullable[T]]): IsNotNullable[T] with { }
 
 
-trait Nullable[-F <: Field[_], +G <: Field[_]]:
+trait Nullable[-F, G]:
   def apply(f: F): G
 
 object Nullable:
@@ -91,6 +91,34 @@ object Nullable:
 
   given alreadyNullable[T: IsNullable, F <: Field[T]]: Nullable[F, F] with
     def apply(f: F): F = f
+
+  given emptyTuple: Nullable[EmptyTuple, EmptyTuple] with
+    def apply(et: EmptyTuple): EmptyTuple = et
+
+  given nonEmptyTuple[F <: Field[_], G <: Field[_], TailInput <: Tuple, TailOutput <: Tuple] (
+    using
+    nh: Nullable[F, G],
+    nt: Nullable[TailInput, TailOutput]
+  ): Nullable[F *: TailInput, G *: TailOutput] with
+    def apply(f: F *: TailInput): G *: TailOutput = nh(f.head) *: nt(f.tail)
+
+
+trait LooseRelation[Alias, InputFields, InputRelation <: Relation[Alias, InputFields], OutputFields, OutputRelation <: Relation[Alias, OutputFields]]:
+  def apply(f: InputRelation): OutputRelation
+
+object LooseRelation:
+
+  given table[Name: DbIdentifier, Alias: DbIdentifier, FieldsInput, FieldsOutput](
+    using
+    nullable: Nullable[FieldsInput, FieldsOutput]
+  ): LooseRelation[Alias, FieldsInput, Table[Name, Alias, FieldsInput], FieldsOutput, Table[Name, Alias, FieldsOutput]] with
+    def apply(table: Table[Name, Alias, FieldsInput]): Table[Name, Alias, FieldsOutput] = Table(nullable(table.fields))
+
+  given subquery[Alias: DbIdentifier, FieldsInput, S, FieldsOutput](
+    using
+    nullable: Nullable[FieldsInput, FieldsOutput]
+  ): LooseRelation[Alias, FieldsInput, SubQuery[Alias, FieldsInput, S], FieldsOutput, SubQuery[Alias, FieldsOutput, S]] with
+    def apply(subquery: SubQuery[Alias, FieldsInput, S]): SubQuery[Alias, FieldsOutput, S] = SubQuery(nullable(subquery.fields), subquery.subQuery)
 
 
 trait AreComparable[-T, -U]

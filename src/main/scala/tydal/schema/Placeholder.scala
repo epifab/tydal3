@@ -1,8 +1,8 @@
 package tydal.schema
 
-trait Placeholder[T] extends Field[T]
+sealed trait Placeholder[T] extends Field[T]
 
-class NamedPlaceholder[Name <: String with Singleton, T](val name: Name)(using val dbType: DbType[T]) extends Placeholder[T]:
+final class NamedPlaceholder[Name <: String with Singleton, T](val name: Name)(using val dbType: DbType[T]) extends Placeholder[T]:
   override def toString: String = s"Placeholder($name)"
 
 extension[Name <: String with Singleton](name: Name)

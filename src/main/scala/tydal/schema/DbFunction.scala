@@ -20,37 +20,37 @@ trait DbFunction3[F1, F2, F3, Type] extends DbFunction[Type]:
 
 trait DbAggregationFunction[F, Type] extends DbFunction1[F, Type]
 
-class Distinct[T, F <: Field[T]](val field: F) extends DbFunction1[F, T]:
+final class Distinct[T, F <: Field[T]](val field: F) extends DbFunction1[F, T]:
   def dbType: DbType[T] = field.dbType
   def dbName: String = "distinct"
 
-class Avg[T, F <: Field[T], U](val field: F)(
+final class Avg[T, F <: Field[T], U](val field: F)(
   using
   rational: Rational[T, U],
   val dbType: DbType[U]
 ) extends DbAggregationFunction[F, U]:
   def dbName: String = "avg"
 
-class Sum[T: IsNumerical, F <: Field[T]](val field: F)(
+final class Sum[T: IsNumerical, F <: Field[T]](val field: F)(
   using
   val dbType: DbType[T]
 ) extends DbAggregationFunction[F, T]:
   def dbName: String = "sum"
 
-class Count[F <: Field[_]](val field: F)(
+final class Count[F <: Field[_]](val field: F)(
   using
   val dbType: DbType[bigint]
 ) extends DbAggregationFunction[F, bigint]:
   def dbName: String = "count"
 
-class Min[T, F <: Field[T], U, G <: Field[U]](val field: F)(
+final class Min[T, F <: Field[T], U, G <: Field[U]](val field: F)(
   using
   nullable: Nullable[F, G],
   val dbType: DbType[U]
 ) extends DbAggregationFunction[F, U]:
   def dbName: String = "min"
 
-class Max[T, F <: Field[T], U, G <: Field[U]](val field: F)(
+final class Max[T, F <: Field[T], U, G <: Field[U]](val field: F)(
   using
   nullable: Nullable[F, G],
   val dbType: DbType[U]
@@ -63,5 +63,5 @@ trait Unnested[T, U]
 object Unnested:
   given[T]: Unnested[array[T], T] with { }
 
-class Unnest[T, U, F <: Field[T]](val field: F)(using unnested: Unnested[T, U], val dbType: DbType[U]) extends DbFunction1[F, U]:
+final class Unnest[T, U, F <: Field[T]](val field: F)(using unnested: Unnested[T, U], val dbType: DbType[U]) extends DbFunction1[F, U]:
   def dbName: String = "unnest"

@@ -57,15 +57,16 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
   def sortBy[NewSortBy <: Tuple](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, NewSortBy, SortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
 
-  def as[Alias <: String with Singleton, SubQueryFields](alias: Alias)(
+  def as[Alias <: Singleton: DbIdentifier, SubQueryFields](alias: Alias)(using FieldRefs[Alias, Fields, SubQueryFields])(
     using
-    DbIdentifier[Alias],
-    FieldRefs[Alias, Fields, SubQueryFields],
-    ListOfFields[SubQueryFields]
-  ): SubQuery[Alias, SubQueryFields, this.type] = SubQuery(this)
+    listOfFields: ListOfFields[SubQueryFields]
+  ): SubQuery[Alias, SubQueryFields, this.type] = SubQuery(listOfFields.value, this)
 
   def innerJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields]](right: Right): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, RightFields, Right] =
     JoinBuilder(this, right, JoinType.inner)
+
+  def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
+    JoinBuilder(this, nullable(right), JoinType.inner)
 
 
 object Select:

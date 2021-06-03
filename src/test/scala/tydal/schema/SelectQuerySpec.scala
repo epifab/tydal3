@@ -24,6 +24,7 @@ object SelectQuerySpec:
       .from(book as "b")
       .innerJoin(author as "a").on(_("id") === _("b", "author_id"))
       .innerJoin(author as "a2").on((a, $) => a("id") === $("b", "author_id") and a("id") === "yo?")
+      .leftJoin(author as "a3").on(_("id") === _("b", "author_id"))
       .take($ => ($("b", "title") as "btitle", $("a", "name")))
       .where(_("btitle") === "title?")
       .where(_("b", "title") === "title?")
