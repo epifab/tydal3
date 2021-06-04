@@ -29,9 +29,8 @@ trait TableSchema[Name, Columns](using val name: DbIdentifier[Name], val columns
 
   def as[Alias, Fields](alias: Alias)(
     using
-    aliasId: DbIdentifier[alias.type],
-    fieldRefs: FieldRefs[alias.type, Columns, Fields],
-    listOfFields: ListOfFields[Fields]
-  ): Table[Name, alias.type, Fields] = Table(listOfFields.value)
+    DbIdentifier[alias.type],
+    FieldRefs[alias.type, Columns, Fields]
+  )(using listOfFields: ListOfFields[Fields]): Table[Name, alias.type, Fields] = Table(listOfFields.value)
 
   override def toString: String = name.value

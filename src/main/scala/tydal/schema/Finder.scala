@@ -17,9 +17,6 @@ object Finder:
   given tagged[Needle, Tag]: Finder[Tagged[Needle, Tag], Needle, Tag] with
     def find(haystack: Tagged[Needle, Tag]): Needle = haystack.item
 
-  given cast[F <: Field[_], U, Needle, Tag](using finder: Finder[F, Needle, Tag]): Finder[Cast[F, U], Cast[F, U], Tag] with
-    def find(haystack: Cast[F, U]): Cast[F, U] = haystack
-
   given softCast[F <: Field[_], U, Needle, Tag](using finder: Finder[F, Needle, Tag]): Finder[SoftCast[F, U], SoftCast[F, U], Tag] with
     def find(haystack: SoftCast[F, U]): SoftCast[F, U] = haystack
 

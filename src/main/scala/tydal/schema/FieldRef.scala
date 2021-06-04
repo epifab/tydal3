@@ -6,9 +6,9 @@ final class FieldRef[Src, Name, T](using val src: DbIdentifier[Src], val name: D
 trait FieldRefs[RelationAlias, RawFields, ProcessedFields]
 
 object FieldRefs:
-  given emptyTuple[RelationAlias]: FieldRefs[RelationAlias, EmptyTuple, EmptyTuple] with { }
+  given emptyTuple[RelationAlias: DbIdentifier]: FieldRefs[RelationAlias, EmptyTuple, EmptyTuple] with { }
 
-  given nonEmptyTuple[RelationAlias, HeadInput, HeadOutput, TailInput <: Tuple, TailOutput <: Tuple](
+  given nonEmptyTuple[RelationAlias: DbIdentifier, HeadInput, HeadOutput, TailInput <: Tuple, TailOutput <: Tuple] (
     using
     FieldRefs[RelationAlias, HeadInput, HeadOutput],
     FieldRefs[RelationAlias, TailInput, TailOutput]
@@ -25,8 +25,8 @@ trait ListOfFields[Fields]:
   def value: Fields
 
 object ListOfFields:
-  given empty: ListOfFields[EmptyTuple] with
+  given emptyTuple: ListOfFields[EmptyTuple] with
     def value: EmptyTuple = EmptyTuple
 
-  given head[Src, Name, T, Tail <: Tuple](using src: DbIdentifier[Src], name: DbIdentifier[Name], dbt: DbType[T], tail: ListOfFields[Tail]): ListOfFields[FieldRef[Src, Name, T] *: Tail] with
+  given nonEmptyTuple[Src: DbIdentifier, Name: DbIdentifier, T: DbType, Tail <: Tuple] (using tail: ListOfFields[Tail]): ListOfFields[FieldRef[Src, Name, T] *: Tail] with
     def value: FieldRef[Src, Name, T] *: Tail = FieldRef[Src, Name, T] *: tail.value

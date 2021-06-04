@@ -1,31 +1,72 @@
 package tydal.schema
 
-object book extends TableSchema[
-  "book",
+object students extends TableSchema[
+  "students",
   (
-    "title" :=: varchar,
-    "number_of_pages" :=: integer,
-    "body" :=: text,
-    "author_id" :=: uuid
+    "id" :=: uuid,
+    "name" :=: varchar,
+    "date_of_birth" :=: date
   )
 ]
 
-object author extends TableSchema[
-  "author",
+object courses extends TableSchema[
+  "courses",
   (
     "id" :=: uuid,
     "name" :=: varchar
   )
 ]
 
+object exams extends TableSchema[
+  "exams",
+  (
+    "student_id" :=: uuid,
+    "course_id" :=: uuid,
+    "registered_on" :=: timestamp,
+    "score" :=: integer
+  )
+]
+
 object SelectQuerySpec:
   val query =
     Select
-      .from(book as "b")
-      .innerJoin(author as "a").on(_("id") === _("b", "author_id"))
-      .innerJoin(author as "a2").on((a, $) => a("id") === $("b", "author_id") and a("id") === "yo?")
-      .leftJoin(author as "a3").on(_("id") === _("b", "author_id"))
-      .take($ => ($("b", "title") as "btitle", $("a", "name")))
-      .where(_("btitle") === "title?")
-      .where(_("b", "title") === "title?")
-      .where($ => Min($("b", "title")) === "title?")
+      .from(students as "s")
+      .innerJoin(
+        // max score per student
+        Select
+          .from(exams as "e1")
+          .take(ctx => (
+            ctx("e1", "student_id") as "sid",
+            Max(ctx("e1", "score")) as "score"
+          ))
+          .where(_("e1", "registered_on") > "exam_min_date?")
+          .groupBy(_("e1", "student_id"))
+          .as("me1")
+      )
+      .on(_("sid") === _("s", "id"))
+      .innerJoin(
+        // select only the latest exam
+        Select
+          .from(exams as "e2")
+          .take(ctx => (
+            ctx("e2", "student_id")          as "sid",
+            ctx("e2", "score")               as "score",
+            Max(ctx("e2", "registered_on"))  as "etime"
+          ))
+          .groupBy(ctx => (ctx("e2", "student_id"), ctx("e2", "score")))
+          .as("me2")
+      )
+      .on((me2, ctx) => me2("sid") === ctx("me1", "sid") and (me2("score") === ctx("me1", "score")))
+      .innerJoin(exams as "e")
+      .on((e, ctx) => e("registered_on") === ctx("me2", "etime") and (e("student_id") === ctx("me2", "sid")))
+      .innerJoin(courses as "c")
+      .on(_("id") === _("e", "course_id"))
+      .take(ctx => (
+        ctx("s", "id")             as "sid",
+        ctx("s", "name")           as "sname",
+        ctx("e", "score")          as "score",
+        ctx("e", "registered_on")  as "etime",
+        ctx("c", "name")           as "cname"
+      ))
+      .where(ctx => ctx("s", "date_of_birth") > "student_min_dob?" and (ctx("s", "date_of_birth") < "student_max_dob?"))
+      // .sortBy(ctx => Descending(ctx("score")) -> Ascending(ctx("sname")))

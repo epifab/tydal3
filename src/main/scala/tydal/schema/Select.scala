@@ -42,10 +42,10 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
   val limit: Limit
 ) extends SelectContext[Fields, From]:
 
-  def take[NewFields <: Tuple](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
+  def take[NewFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
 
-  def groupBy[NewGroupBy <: Tuple](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
+  def groupBy[NewGroupBy](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, fields, f(this), where, having, sortBy, offset, limit)
 
   def where[NewWhere <: LogicalExpr](f: SelectContext[Fields, From] => NewWhere): SelectQuery[From, Fields, GroupBy, NewWhere, Having, SortBy, Offset, Limit] =
@@ -54,19 +54,20 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
   def having[NewHaving <: LogicalExpr](f: SelectContext[Fields, From] => NewHaving): SelectQuery[From, Fields, GroupBy, Where, NewHaving, SortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
 
-  def sortBy[NewSortBy <: Tuple](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, NewSortBy, SortBy, Offset, Limit] =
+  def sortBy[NewSortBy](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, NewSortBy, SortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
-
-  def as[Alias <: Singleton: DbIdentifier, SubQueryFields](alias: Alias)(using FieldRefs[Alias, Fields, SubQueryFields])(
-    using
-    listOfFields: ListOfFields[SubQueryFields]
-  ): SubQuery[Alias, SubQueryFields, this.type] = SubQuery(listOfFields.value, this)
 
   def innerJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields]](right: Right): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, RightFields, Right] =
     JoinBuilder(this, right, JoinType.inner)
 
   def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
     JoinBuilder(this, nullable(right), JoinType.inner)
+
+  def as[Alias, SubQueryFields](alias: Alias)(
+    using
+    DbIdentifier[alias.type],
+    FieldRefs[alias.type, Fields, SubQueryFields]
+  )(using listOfFields: ListOfFields[SubQueryFields]): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(listOfFields.value, this)
 
 
 object Select:
