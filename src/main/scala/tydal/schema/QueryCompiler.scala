@@ -75,8 +75,10 @@ trait OffsetPlaceholderFragment extends FragmentType
 trait ConflictPolicyFragment extends FragmentType
 
 
-trait QueryFragmentCompiler[F <: FragmentType, Target, Input <: Tuple]:
+trait QueryFragmentCompiler[F <: FragmentType, -Target, Input <: Tuple]:
   def build(x: Target): CompiledQueryFragment[Input]
+
+object QueryFragmentCompiler:
 
   // ------------------------------
   // expr

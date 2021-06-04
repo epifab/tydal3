@@ -28,6 +28,12 @@ object exams extends TableSchema[
 ]
 
 object SelectQuerySpec:
+
+  def compile[From <: Relations, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, Input <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
+    using
+    qfc: QueryFragmentCompiler[FieldExprListFragment, Fields, Input]
+  ): CompiledQueryFragment[Input] = qfc.build(select.fields)
+
   val query =
     Select
       .from(students as "s")
@@ -70,3 +76,5 @@ object SelectQuerySpec:
       ))
       .where(ctx => ctx("s", "date_of_birth") > "student_min_dob?" and (ctx("s", "date_of_birth") < "student_max_dob?"))
       // .sortBy(ctx => Descending(ctx("score")) -> Ascending(ctx("sname")))
+
+  compile(query)
