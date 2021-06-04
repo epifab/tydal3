@@ -3,8 +3,6 @@ package tydal.schema
 case class CompiledQuery[Input <: Tuple, Output <: Tuple](sql: String, input: Input, output: Output)
 
 case class CompiledQueryFragment[Input <: Tuple](sql: Option[String], input: Input):
-  def `++`(s: String): CompiledQueryFragment[Input] =
-    append(s)
 
   def `++`[I2 <: Tuple](other: CompiledQueryFragment[I2]): CompiledQueryFragment[Tuple.Concat[Input, I2]] =
     concatenateOptional(other, "")
@@ -105,29 +103,12 @@ trait QueryFragmentCompiler[F <: FragmentType, Target, Input <: Tuple]:
   ): QueryFragmentCompiler[FieldExprListFragment, SoftCast[F, T], Output] with
     def build(field: SoftCast[F, T]): CompiledQueryFragment[Output] = inner.build(field.field)
 
-  given fieldExprDbFunction1[F <: Field[_], T, Output <: Tuple](
+  given fieldExprDbFunction[FS <: Tuple, T, Output <: Tuple](
     using
-    inner: QueryFragmentCompiler[FieldExprListFragment, F, Output]
-  ): QueryFragmentCompiler[FieldExprListFragment, DbFunction1[F, T], Output] with
-    def build(func: DbFunction1[F, T]): CompiledQueryFragment[Output] =
-      inner.build(func.param).wrap(s"${func.dbName}(", ")")
-
-  given fieldExprDbFunction2[F <: Field[_], G <: Field[_], T, Output1 <: Tuple, Output2 <: Tuple](
-    using
-    inner1: QueryFragmentCompiler[FieldExprListFragment, F, Output1],
-    inner2: QueryFragmentCompiler[FieldExprListFragment, G, Output2]
-  ): QueryFragmentCompiler[FieldExprListFragment, DbFunction2[F, G, T], Tuple.Concat[Output1, Output2]] with
-    def build(func: DbFunction2[F, G, T]): CompiledQueryFragment[Tuple.Concat[Output1, Output2]] =
-      (inner1.build(func.param1) `+,+` inner2.build(func.param2)).wrap(s"${func.dbName}(", ")")
-
-  given fieldExprDbFunction3[F <: Field[_], G <: Field[_], H <: Field[_], T, Output1 <: Tuple, Output2 <: Tuple, Output3 <: Tuple](
-    using
-    inner1: QueryFragmentCompiler[FieldExprListFragment, F, Output1],
-    inner2: QueryFragmentCompiler[FieldExprListFragment, G, Output2],
-    inner3: QueryFragmentCompiler[FieldExprListFragment, H, Output3]
-  ): QueryFragmentCompiler[FieldExprListFragment, DbFunction3[F, G, H, T], Tuple.Concat[Tuple.Concat[Output1, Output2], Output3]] with
-    def build(func: DbFunction3[F, G, H, T]): CompiledQueryFragment[Tuple.Concat[Tuple.Concat[Output1, Output2], Output3]] =
-      (inner1.build(func.param1) `+,+` inner2.build(func.param2) `+,+` inner3.build(func.param3)).wrap(s"${func.dbName}(", ")")
+    inner: QueryFragmentCompiler[FieldExprListFragment, FS, Output]
+  ): QueryFragmentCompiler[FieldExprListFragment, DbFunction[FS, T], Output] with
+    def build(func: DbFunction[FS, T]): CompiledQueryFragment[Output] =
+      inner.build(func.params).wrap(s"${func.dbName}(", ")")
 
   given fieldExprNamedPlaceholder[P <: NamedPlaceholder[_, _]]: QueryFragmentCompiler[FieldExprListFragment, P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
@@ -137,3 +118,14 @@ trait QueryFragmentCompiler[F <: FragmentType, Target, Input <: Tuple]:
 
   given fieldExprLiteralOption[P <: LiteralOption[_]]: QueryFragmentCompiler[FieldExprListFragment, P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(Option.when(placeholder.value.isDefined)(s"?::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
+
+  given fieldExprEmptyTuple: QueryFragmentCompiler[FieldExprListFragment, EmptyTuple, EmptyTuple] with
+    def build(et: EmptyTuple): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, et)
+
+  given fieldExprNonEmptyTuple[Head, HeadOutput <: Tuple, Tail <: Tuple, TailOutput <: Tuple](
+    using
+    head: QueryFragmentCompiler[FieldExprListFragment, Head, HeadOutput],
+    tail: QueryFragmentCompiler[FieldExprListFragment, Tail, TailOutput]
+  ): QueryFragmentCompiler[FieldExprListFragment, Head *: Tail, Tuple.Concat[HeadOutput, TailOutput]] with
+    def build(tuple: Head *: Tail): CompiledQueryFragment[Tuple.Concat[HeadOutput, TailOutput]] =
+      head.build(tuple.head) `+,+` tail.build(tuple.tail)

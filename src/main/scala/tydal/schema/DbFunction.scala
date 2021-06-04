@@ -1,22 +1,24 @@
 package tydal.schema
 
-trait DbFunction[Type] extends Field[Type]:
+trait DbFunction[Params <: Tuple, Type] extends Field[Type]:
+  def params: Params
   def dbName: String
+  override def toString: String = s"$dbName$params"
 
-trait DbFunction1[F, Type] extends DbFunction[Type]:
+trait DbFunction1[F, Type] extends DbFunction[F *: EmptyTuple, Type]:
   def param: F
-  override def toString: String = s"$dbName($param)"
+  def params: F *: EmptyTuple = param *: EmptyTuple
 
-trait DbFunction2[F1, F2, Type] extends DbFunction[Type]:
-  def param1: F1
-  def param2: F2
-  override def toString: String = s"$dbName($param1, $param2)"
+trait DbFunction2[F, G, Type] extends DbFunction[(F, G), Type]:
+  def param1: F
+  def param2: G
+  def params: (F, G) = (param1, param2)
 
-trait DbFunction3[F1, F2, F3, Type] extends DbFunction[Type]:
-  def param1: F1
-  def param2: F2
-  def param3: F3
-  override def toString: String = s"$dbName($param1, $param2, $param3)"
+trait DbFunction3[F, G, H, Type] extends DbFunction[(F, G, H), Type]:
+  def param1: F
+  def param2: G
+  def param3: H
+  def params: (F, G, H) = (param1, param2, param3)
 
 trait DbAggregationFunction[F, Type] extends DbFunction1[F, Type]
 
