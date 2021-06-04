@@ -4,9 +4,8 @@ import java.time.{LocalDate, Instant}
 import java.util.UUID
 
 trait DbType[T]:
-  type Type
+  type Out
   def dbName: String
-
 
 trait char
 trait varchar
@@ -32,65 +31,65 @@ trait Enumerated[T]:
 object DbType:
 
   given DbType[char] with
-    type Type = String
+    type Out = String
     def dbName: String = "char"
 
   given DbType[varchar] with
-    type Type = String
+    type Out = String
     def dbName: String = "varchar"
 
   given DbType[text] with
-    type Type = String
+    type Out = String
     def dbName: String = "text"
 
   given DbType[smallint] with
-    type Type = Short
+    type Out = Short
     def dbName: String = "smallint"
 
   given DbType[integer] with
-    type Type = Int
+    type Out = Int
     def dbName: String = "integer"
 
   given DbType[bigint] with
-    type Type = Long
+    type Out = Long
     def dbName: String = "bigint"
 
   given DbType[float4] with
-    type Type = Float
+    type Out = Float
     def dbName: String = "float4"
 
   given DbType[float8] with
-    type Type = Double
+    type Out = Double
     def dbName: String = "float8"
 
   given DbType[numeric] with
-    type Type = BigDecimal
+    type Out = BigDecimal
     def dbName: String = "numeric"
 
   given DbType[bool] with
-    type Type = Boolean
+    type Out = Boolean
     def dbName: String = "bool"
 
   given DbType[uuid] with
-    type Type = UUID
+    type Out = UUID
     def dbName: String = "uuid"
 
   given DbType[date] with
-    type Type = LocalDate
+    type Out = LocalDate
     def dbName: String = "date"
 
   given DbType[timestamp] with
-    type Type = Instant
+    type Out = Instant
     override def dbName: String = "timestamp"
 
   given[T](using innerType: DbType[T]): DbType[array[T]] with
-    type Type = Seq[innerType.Type]
+    type Out = Seq[innerType.Out]
     def dbName: String = s"${innerType.dbName}[]"
 
   given[T: IsNotNullable](using innerType: DbType[T]): DbType[nullable[T]] with
-    type Type = Option[innerType.Type]
+    type Out = Option[innerType.Out]
     def dbName: String = innerType.dbName
 
   given[Name <: String, Values](using singleton: ValueOf[Name], enumerated: Enumerated[Values]): DbType[`enum`[Name, Values]] with
-    type Type = Values
+    type Out = Values
     def dbName: String = singleton.value
