@@ -75,4 +75,4 @@ trait Field[T] extends Taggable:
   def contains[A <: String with Singleton, U](right: A)(using Unnested[T, U], DbType[U], CanContain[this.type, NamedPlaceholder[A, U]]): Contains[this.type, NamedPlaceholder[A, U]] =
     Contains(this, NamedPlaceholder(right))
 
-  def in[S <: SubQuery[_, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
+  def in[S <: SelectQuery[_ <: Relations, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)

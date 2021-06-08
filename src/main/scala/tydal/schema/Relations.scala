@@ -12,7 +12,7 @@ sealed trait Relation[Alias, Fields] extends Relations with Selectable[Fields]:
   ): Needle = finder.find(fields)
 
 
-final class Table[Name, Alias, Fields](val fields: Fields)(using name: DbIdentifier[Name], val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:
+final class Table[Name, Alias, Fields](val fields: Fields)(using val name: DbIdentifier[Name], val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:
   override def toString: String = s"${name.value} as ${alias.value}"
 
 final class SubQuery[Alias, Fields, S](val fields: Fields, val subQuery: S)(using val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:

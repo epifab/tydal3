@@ -152,4 +152,4 @@ object CanContain:
   given rightNullable[T, U](using AreComparable[T, U]): CanContain[array[T], nullable[U]] with { }
   given bothNullable[T, U](using AreComparable[T, U]): CanContain[nullable[array[T]], nullable[U]] with { }
   given field[T, U](using CanContain[U, T]): CanContain[Field[U], Field[T]] with { }
-  given subQuery[T, S, U](using SelectableT[S, U], AreComparable[T, U]): CanContain[S, Field[T]] with { }
+  given selectable[T, S, U] (using SelectableT[S, U], AreComparable[T, U]): CanContain[S, Field[T]] with { }

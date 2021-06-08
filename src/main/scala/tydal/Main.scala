@@ -18,7 +18,6 @@ import tydal.schema._
         .from(author as "a")
         .take($ => Tuple1($("a", "id")))
         .where(_("a", "name") like "author?")
-        .as("a2")
     )
 
   println(Avg(Column["x", nullable[numeric]]).dbType.dbName)
