@@ -31,7 +31,7 @@ object SelectQuerySpec:
 
   def compile[From <: Relations, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, Input <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
     using
-    qfc: QueryFragmentCompiler[FieldExprListFragment, Fields, Input]
+    qfc: CommaSeparatedListFragment[FieldExprFragment, Fields, Input]
   ): CompiledQueryFragment[Input] = qfc.build(select.fields)
 
   val query =

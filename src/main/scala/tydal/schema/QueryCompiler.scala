@@ -61,73 +61,80 @@ object CompiledQueryFragment:
 trait QueryCompiler[Query, Input <: Tuple, Output <: Tuple]:
   def build(query: Query): CompiledQuery[Input, Output]
 
-trait FragmentType
-
-trait FieldExprAndAliasListFragment extends FragmentType
-trait FieldExprListFragment extends FragmentType
-trait FieldAliasEqualExprListFragment extends FragmentType
-trait FromFragment extends FragmentType
-trait WhereFragment extends FragmentType
-trait AliasListFragment extends FragmentType
-trait SortByFragment extends FragmentType
-trait LimitPlaceholderFragment extends FragmentType
-trait OffsetPlaceholderFragment extends FragmentType
-trait ConflictPolicyFragment extends FragmentType
-
-
-trait QueryFragmentCompiler[F <: FragmentType, -Target, Input <: Tuple]:
+trait QueryFragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledQueryFragment[Input]
 
-object QueryFragmentCompiler:
+trait CommaSeparatedListFragment[BaseCompiler[a, b <: Tuple] <: QueryFragmentCompiler[a, b], Target, Input <: Tuple] extends QueryFragmentCompiler[Target, Input]
 
-  // ------------------------------
-  // expr
-  // ------------------------------
+trait FieldExprFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+trait FieldExprAsAliasFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 
-  given fieldExprTagged[F <: Field[_], A, Output <: Tuple](
+//trait FieldAliasEqualExprListFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait FromFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait WhereFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait AliasListFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait SortByFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait LimitPlaceholderFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait OffsetPlaceholderFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+//trait ConflictPolicyFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+
+object CommaSeparatedListFragment:
+  given emptyTuple[BaseCompiler[a, b <: Tuple] <: QueryFragmentCompiler[a, b]]: CommaSeparatedListFragment[BaseCompiler, EmptyTuple, EmptyTuple] with
+    override def build(x: EmptyTuple): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, x)
+
+  given nonEmptyTuple[BaseCompiler[a, b <: Tuple] <: QueryFragmentCompiler[a, b], HeadInput, HeadOutput <: Tuple, TailInput <: Tuple, TailOutput <: Tuple](
     using
-    inner: QueryFragmentCompiler[FieldExprListFragment, F, Output]
-  ): QueryFragmentCompiler[FieldExprListFragment, Tagged[F, A], Output] with
+    headCompiler: BaseCompiler[HeadInput, HeadOutput],
+    tailCompier: CommaSeparatedListFragment[BaseCompiler, TailInput, TailOutput]
+  ): CommaSeparatedListFragment[BaseCompiler, HeadInput *: TailInput, Tuple.Concat[HeadOutput, TailOutput]] with
+    def build(tuple: HeadInput *: TailInput): CompiledQueryFragment[Tuple.Concat[HeadOutput, TailOutput]] =
+      headCompiler.build(tuple.head) `+,+` tailCompier.build(tuple.tail)
+
+
+object FieldExprFragment:
+
+  given tagged[F <: Field[_], A, Output <: Tuple] (
+    using
+    inner: FieldExprFragment[F, Output]
+  ): FieldExprFragment[Tagged[F, A], Output] with
     def build(field: Tagged[F, A]): CompiledQueryFragment[Output] = inner.build(field.item)
 
-  given fieldExprFieldRef[Src, Alias, T]: QueryFragmentCompiler[FieldExprListFragment, FieldRef[Src, Alias, T], EmptyTuple] with
+  given fieldRef[Src, Alias, T]: FieldExprFragment[FieldRef[Src, Alias, T], EmptyTuple] with
     def build(field: FieldRef[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(s"${field.src.value}.${field.name.value}")
 
-  given fieldExprCast[F <: Field[_], Output <: Tuple](
+  given cast[F <: Field[_], Output <: Tuple] (
     using
-    inner: QueryFragmentCompiler[FieldExprListFragment, F, Output]
-  ): QueryFragmentCompiler[FieldExprListFragment, Cast[F, _], Output] with
+    inner: FieldExprFragment[F, Output]
+  ): FieldExprFragment[Cast[F, _], Output] with
     def build(field: Cast[F, _]): CompiledQueryFragment[Output] = inner.build(field.field).append("::" + field.dbType.dbName)
 
-  given fieldExprSoftCast[F <: Field[_], T, Output <: Tuple](
+  given softCast[F <: Field[_], T, Output <: Tuple] (
     using
-    inner: QueryFragmentCompiler[FieldExprListFragment, F, Output]
-  ): QueryFragmentCompiler[FieldExprListFragment, SoftCast[F, T], Output] with
+    inner: FieldExprFragment[F, Output]
+  ): FieldExprFragment[SoftCast[F, T], Output] with
     def build(field: SoftCast[F, T]): CompiledQueryFragment[Output] = inner.build(field.field)
 
-  given fieldExprDbFunction[FS <: Tuple, T, Output <: Tuple](
+  given dbFunction[FS <: Tuple, T, Output <: Tuple] (
     using
-    inner: QueryFragmentCompiler[FieldExprListFragment, FS, Output]
-  ): QueryFragmentCompiler[FieldExprListFragment, DbFunction[FS, T], Output] with
+    inner: FieldExprFragment[FS, Output]
+  ): FieldExprFragment[DbFunction[FS, T], Output] with
     def build(func: DbFunction[FS, T]): CompiledQueryFragment[Output] =
       inner.build(func.params).wrap(s"${func.dbName}(", ")")
 
-  given fieldExprNamedPlaceholder[P <: NamedPlaceholder[_, _]]: QueryFragmentCompiler[FieldExprListFragment, P, P *: EmptyTuple] with
+  given namedPlaceholder[P <: NamedPlaceholder[_, _]]: FieldExprFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
 
-  given fieldExprLiteral[P <: Literal[_]]: QueryFragmentCompiler[FieldExprListFragment, P, P *: EmptyTuple] with
+  given literal[P <: Literal[_]]: FieldExprFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
 
-  given fieldExprLiteralOption[P <: LiteralOption[_]]: QueryFragmentCompiler[FieldExprListFragment, P, P *: EmptyTuple] with
+  given literalOption[P <: LiteralOption[_]]: FieldExprFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(Option.when(placeholder.value.isDefined)(s"?::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
-  given fieldExprEmptyTuple: QueryFragmentCompiler[FieldExprListFragment, EmptyTuple, EmptyTuple] with
-    def build(et: EmptyTuple): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, et)
 
-  given fieldExprNonEmptyTuple[Head, HeadOutput <: Tuple, Tail <: Tuple, TailOutput <: Tuple](
-    using
-    head: QueryFragmentCompiler[FieldExprListFragment, Head, HeadOutput],
-    tail: QueryFragmentCompiler[FieldExprListFragment, Tail, TailOutput]
-  ): QueryFragmentCompiler[FieldExprListFragment, Head *: Tail, Tuple.Concat[HeadOutput, TailOutput]] with
-    def build(tuple: Head *: Tail): CompiledQueryFragment[Tuple.Concat[HeadOutput, TailOutput]] =
-      head.build(tuple.head) `+,+` tail.build(tuple.tail)
+object FieldExprAsAliasFragment:
+
+  given[A, F <: Field[_], O <: Tuple](using field: FieldExprFragment[F, O]): FieldExprAsAliasFragment[Tagged[F, A], O] with
+    def build(x: Tagged[F, A]): CompiledQueryFragment[O] = field.build(x.item).append(s".${x.tag.value}")
+
+  given[A, F <: Field[_], O <: Tuple](using field: FieldExprFragment[F, O]): FieldExprAsAliasFragment[F, O] with
+    def build(x: F): CompiledQueryFragment[O] = field.build(x)
