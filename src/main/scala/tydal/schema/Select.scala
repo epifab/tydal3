@@ -65,9 +65,9 @@ final class SelectQuery[From <: Relations, Fields <: Tuple, GroupBy <: Tuple, Wh
 
   def as[Alias, SubQueryFields](alias: Alias)(
     using
-    DbIdentifier[alias.type],
-    FieldRefs[alias.type, Fields, SubQueryFields]
-  )(using listOfFields: ListOfFields[SubQueryFields]): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(listOfFields.value, this)
+    dbi: DbIdentifier[alias.type],
+    fields: RelationFields[alias.type, Fields, SubQueryFields]
+  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
 
 object Select:

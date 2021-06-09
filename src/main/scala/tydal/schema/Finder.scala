@@ -11,8 +11,8 @@ object Finder:
   given tail[Needle, Tag, Head, Tail <: Tuple](using finder: Finder[Tail, Needle, Tag]): Finder[Head *: Tail, Needle, Tag] with
     def find(haystack: Head *: Tail): Needle = finder.find(haystack.tail)
 
-  given ref[Src, Name, Type]: Finder[FieldRef[Src, Name, Type], FieldRef[Src, Name, Type], Name] with
-    def find(haystack: FieldRef[Src, Name, Type]): FieldRef[Src, Name, Type] = haystack
+  given ref[Src, Name, Type]: Finder[RelationField[Src, Name, Type], RelationField[Src, Name, Type], Name] with
+    def find(haystack: RelationField[Src, Name, Type]): RelationField[Src, Name, Type] = haystack
 
   given tagged[Needle, Tag]: Finder[Tagged[Needle, Tag], Needle, Tag] with
     def find(haystack: Tagged[Needle, Tag]): Needle = haystack.item

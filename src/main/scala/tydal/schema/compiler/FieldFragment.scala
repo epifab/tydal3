@@ -13,8 +13,8 @@ object FieldFragment:
   ): FieldFragment[Tagged[F, A], Output] with
     def build(field: Tagged[F, A]): CompiledQueryFragment[Output] = inner.build(field.item)
 
-  given fieldRef[Src, Alias, T]: FieldFragment[FieldRef[Src, Alias, T], EmptyTuple] with
-    def build(field: FieldRef[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(s"${field.src.value}.${field.name.value}")
+  given fieldRef[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
+    def build(field: RelationField[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(s"${field.relationAlias.value}.${field.name.value}")
 
   given cast[F <: Field[_], Output <: Tuple](
     using
