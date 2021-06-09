@@ -31,7 +31,7 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortBy, Offset, Limit](
+final class SelectQuery[From <: Relations, Fields <: Tuple, GroupBy <: Tuple, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int]](
   val from: From,
   val fields: Fields,
   val groupBy: GroupBy,
@@ -42,10 +42,10 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
   val limit: Limit
 ) extends SelectContext[Fields, From]:
 
-  def take[NewFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
+  def take[NewFields <: Tuple](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
 
-  def groupBy[NewGroupBy](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
+  def groupBy[NewGroupBy <: Tuple](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, fields, f(this), where, having, sortBy, offset, limit)
 
   def where[NewWhere <: LogicalExpr](f: SelectContext[Fields, From] => NewWhere): SelectQuery[From, Fields, GroupBy, NewWhere, Having, SortBy, Offset, Limit] =
@@ -54,8 +54,8 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
   def having[NewHaving <: LogicalExpr](f: SelectContext[Fields, From] => NewHaving): SelectQuery[From, Fields, GroupBy, Where, NewHaving, SortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
 
-  def sortBy[NewSortBy](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, NewSortBy, SortBy, Offset, Limit] =
-    SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
+  def sortBy[NewSortBy <: Tuple](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, Having, NewSortBy, Offset, Limit] =
+    SelectQuery(from, fields, groupBy, where, having, f(this), offset, limit)
 
   def innerJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields]](right: Right): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, RightFields, Right] =
     JoinBuilder(this, right, JoinType.inner)
@@ -71,19 +71,19 @@ final class SelectQuery[From <: Relations, Fields, GroupBy, Where, Having, SortB
 
 
 object Select:
-  def from[R <: Relation[_, _]](relation: R): SelectQuery[R, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple] =
-    SelectQuery(relation, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple, EmptyTuple)
+  def from[R <: Relation[_, _]](relation: R): SelectQuery[R, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
+    SelectQuery(relation, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
 
 
 class JoinBuilder[
   From <: Relations,
-  Fields,
-  GroupBy,
-  Where,
-  Having,
-  SortBy,
-  Offset,
-  Limit,
+  Fields <: Tuple,
+  GroupBy <: Tuple,
+  Where <: LogicalExpr,
+  Having <: LogicalExpr,
+  SortBy <: Tuple,
+  Offset <: Option[Int],
+  Limit <: Option[Int],
   RightAlias,
   RightFields,
   Right <: Relation[RightAlias, RightFields]

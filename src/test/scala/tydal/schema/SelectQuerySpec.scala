@@ -32,7 +32,7 @@ object exams extends TableSchema[
 
 object SelectQuerySpec:
 
-  def compile[From <: Relations, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, I1 <: Tuple, I2 <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
+  def compile[From <: Relations, Fields <: Tuple, GroupBy <: Tuple, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int], I1 <: Tuple, I2 <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
     using
     fields: CommaSeparatedListFragment[FieldFragment, Fields, I1],
     from: RelationFragment[From, I2]
@@ -52,7 +52,7 @@ object SelectQuerySpec:
             Max(ctx("e1", "score")) as "score"
           ))
           .where(_("e1", "registered_on") > "exam_min_date?")
-          .groupBy(_("e1", "student_id"))
+          .groupBy($ => Tuple($("e1", "student_id")))
           .as("me1")
       )
       .on(_("sid") === _("s", "id"))
