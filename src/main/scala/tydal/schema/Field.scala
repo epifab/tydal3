@@ -76,3 +76,6 @@ trait Field[T] extends Taggable:
     Contains(this, NamedPlaceholder(right))
 
   def in[S <: SelectQuery[_ <: Relations, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
+
+  def asc: Asc[this.type] = Asc(this)
+  def desc: Desc[this.type] = Desc(this)

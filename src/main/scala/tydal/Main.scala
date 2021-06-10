@@ -16,7 +16,7 @@ import tydal.schema._
     .where(_("bauthor") in
       Select
         .from(author as "a")
-        .take($ => Tuple1($("a", "id")))
+        .take(_("a", "id"))
         .where(_("a", "name") like "author?")
     )
 
