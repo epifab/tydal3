@@ -3,27 +3,27 @@ package tydal.schema.compiler
 import tydal.schema._
 import Tuple.Concat
 
-trait QueryCompiler[Query, Input <: Tuple, Output <: Tuple]:
+trait QueryCompiler[-Query, Input, Output]:
   def build(query: Query): CompiledQuery[Input, Output]
 
-case class CompiledQuery[Input <: Tuple, Output <: Tuple](sql: String, input: Input, output: Output)
+case class CompiledQuery[Input, Output](sql: String, input: Input, output: Output)
 
 object QueryCompiler:
   given select[
+    Fields, FieldsOutput <: Tuple,
     From <: Relations, FromOutput <: Tuple,
-    Fields <: Tuple, FieldsOutput <: Tuple,
-    GroupBy <: Tuple, GroupByOutput <: Tuple,
     Where <: LogicalExpr, WhereOutput <: Tuple,
+    GroupBy, GroupByOutput <: Tuple,
     Having <: LogicalExpr, HavingOutput <: Tuple,
     SortBy <: Tuple, SortByOutput <: Tuple,
     Offset <: Option[Int], OffsetOutput <: Tuple,
     Limit <: Option[Int], LimitOutput <: Tuple
   ](
      using
-     from: RelationFragment[From, FromOutput],
      fields: CommaSeparatedListFragment[FieldAsAliasFragment, Fields, FieldsOutput],
-     groupBy: CommaSeparatedListFragment[FieldFragment, GroupBy, GroupByOutput],
+     from: RelationsFragment[From, FromOutput],
      where: LogicalExprFragment[Where, WhereOutput],
+     groupBy: CommaSeparatedListFragment[FieldFragment, GroupBy, GroupByOutput],
      having: LogicalExprFragment[Having, HavingOutput],
      sortBy: CommaSeparatedListFragment[SortByFragment, SortBy, SortByOutput],
      offset: OptionalNumericFragment[Offset, OffsetOutput],

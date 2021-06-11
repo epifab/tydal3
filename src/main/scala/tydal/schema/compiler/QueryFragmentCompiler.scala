@@ -53,7 +53,7 @@ case class CompiledQueryFragment[Input <: Tuple](sql: Option[String], input: Inp
   def orElse(s: Option[String]): CompiledQueryFragment[Input] =
     new CompiledQueryFragment(sql.orElse(s), input)
 
-  def get[Output <: Tuple](output: Output): CompiledQuery[Input, Output] =
+  def get[Output](output: Output): CompiledQuery[Input, Output] =
     CompiledQuery(sql.get, input, output)
 
 object CompiledQueryFragment:

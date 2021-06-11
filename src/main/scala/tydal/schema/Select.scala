@@ -1,5 +1,7 @@
 package tydal.schema
 
+import tydal.schema.compiler.{QueryCompiler, CompiledQuery}
+
 
 trait Selectable[Fields]:
   def apply[Tag <: Singleton, Needle](tag: Tag)(
@@ -64,11 +66,17 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
   def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
     JoinBuilder(this, nullable(right), JoinType.inner)
 
+  def inRange[NewOffset <: Int with Singleton, NewLimit <: Int with Singleton](newOffset: NewOffset, newLimit: NewLimit): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[newOffset.type], Some[newLimit.type]] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(newOffset), Some(newLimit))
+
   def as[Alias, SubQueryFields](alias: Alias)(
     using
     dbi: DbIdentifier[alias.type],
     fields: RelationFields[alias.type, Fields, SubQueryFields]
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
+
+  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): CompiledQuery[Input, Output] =
+    compiler.build(this)
 
 
 object Select:

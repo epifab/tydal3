@@ -7,7 +7,7 @@ trait LogicalExprFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 
 object LogicalExprFragment:
   given whereAlwaysTrue: LogicalExprFragment[AlwaysTrue, EmptyTuple] with
-    def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment("1 = 1")
+    def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, EmptyTuple)
 
 //  given whereFilterOption[F <: Filter, P <: Tuple, Q <: Tuple](
 //    using
@@ -19,19 +19,19 @@ object LogicalExprFragment:
 //    case None => CompiledQueryFragment(None, literalOptions.empty)
 //  })
 
-  given logicalExpr1[F, P <: Tuple](using builder: LogicalExprFragment[F, P]): LogicalExprFragment[LogicalExpr1[F], P] with
-    def build(filter: LogicalExpr1[F]): CompiledQueryFragment[P] =
+  given expr1[F, E <: LogicalExpr1[F], P <: Tuple](using builder: LogicalExprFragment[F, P]): LogicalExprFragment[E, P] with
+    def build(filter: E): CompiledQueryFragment[P] =
       val fragment = builder.build(filter.expr)
       filter match
         case _: IsDefined[_] => fragment ++ " IS NOT NULL"
         case _: IsNotDefined[_] => fragment ++ " IS NULL"
 
-  given logicalExpr2[F1, F2, P <: Tuple, Q <: Tuple](
+  given expr2[F1, F2, E <: LogicalExpr2[F1, F2], P <: Tuple, Q <: Tuple] (
     using
     left: LogicalExprFragment[F1, P],
     right: LogicalExprFragment[F2, Q]
-  ): LogicalExprFragment[LogicalExpr2[F1, F2], P Concat Q] with
-    def build(filter: LogicalExpr2[F1, F2]): CompiledQueryFragment[P Concat Q] =
+  ): LogicalExprFragment[E, P Concat Q] with
+    def build(filter: E): CompiledQueryFragment[P Concat Q] =
       val e1 = left.build(filter.left)
       val e2 = right.build(filter.right)
 
@@ -52,8 +52,8 @@ object LogicalExprFragment:
         case _: Contains[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " = ANY")
         case _: IsIn[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " IN ")
 
-  given field[P <: Tuple, F <: Field[_]](using builder: FieldFragment[F, P]): LogicalExprFragment[F, P] with
+  given field[F <: Field[_], P <: Tuple](using builder: FieldFragment[F, P]): LogicalExprFragment[F, P] with
     def build(field: F): CompiledQueryFragment[P] = builder.build(field)
 
-  given whereSubQuery[P <: Tuple, S](using builder: QueryCompiler[S, P, _]): LogicalExprFragment[S, P] with
+  given whereSubQuery[S, P <: Tuple](using builder: QueryCompiler[S, P, _]): LogicalExprFragment[S, P] with
     def build(query: S): CompiledQueryFragment[P] = CompiledQueryFragment(builder.build(query))

@@ -4,14 +4,15 @@ import tydal.schema._
 
 trait FieldFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 trait FieldAsAliasFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
+trait FieldAliasFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 
 object FieldFragment:
 
-  given tagged[F <: Field[_], A, Output <: Tuple](
+  given aliased[T, F <: Field[T], A, Output <: Tuple] (
     using
     inner: FieldFragment[F, Output]
-  ): FieldFragment[Tagged[F, A], Output] with
-    def build(field: Tagged[F, A]): CompiledQueryFragment[Output] = inner.build(field.item)
+  ): FieldFragment[Aliased[T, F, A], Output] with
+    def build(field: Aliased[T, F, A]): CompiledQueryFragment[Output] = inner.build(field.field)
 
   given fieldRef[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
     def build(field: RelationField[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(s"${field.relationAlias.value}.${field.name.value}")
@@ -44,10 +45,17 @@ object FieldFragment:
   given literalOption[P <: LiteralOption[_]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(Option.when(placeholder.value.isDefined)(s"?::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
-object FieldAsAliasFragment:
 
-  given tagged[A, F <: Field[_], O <: Tuple](using field: FieldFragment[F, O]): FieldAsAliasFragment[Tagged[F, A], O] with
-    def build(x: Tagged[F, A]): CompiledQueryFragment[O] = field.build(x.item).append(s".${x.tag.value}")
-
-  given untagged[A, F <: Field[_], O <: Tuple](using field: FieldFragment[F, O]): FieldAsAliasFragment[F, O] with
+trait FieldSrc:
+  given unAliased[A, F <: Field[_], O <: Tuple] (using field: FieldFragment[F, O]): FieldAsAliasFragment[F, O] with
     def build(x: F): CompiledQueryFragment[O] = field.build(x)
+
+
+object FieldAsAliasFragment extends FieldSrc:
+  given aliased[T, F <: Field[T], A, O <: Tuple](using field: FieldFragment[F, O]): FieldAsAliasFragment[Aliased[T, F, A], O] with
+    def build(x: Aliased[T, F, A]): CompiledQueryFragment[O] = field.build(x.field).append(s".${x.alias.value}")
+
+
+object FieldAliasFragment extends FieldSrc:
+  given aliased[T, F <: Field[T], A]: FieldAsAliasFragment[Aliased[T, F, A], EmptyTuple] with
+    def build(x: Aliased[T, F, A]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(x.alias.value)

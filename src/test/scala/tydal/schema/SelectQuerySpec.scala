@@ -32,10 +32,10 @@ object exams extends TableSchema[
 
 object SelectQuerySpec:
 
-  def compile[From <: Relations, Fields <: Tuple, GroupBy <: Tuple, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int], I1 <: Tuple, I2 <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
+  def compile[From <: Relations, Fields: ListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int], I1 <: Tuple, I2 <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
     using
     fields: CommaSeparatedListFragment[FieldFragment, Fields, I1],
-    from: RelationFragment[From, I2]
+    from: RelationsFragment[From, I2]
   ): CompiledQueryFragment[I1 Concat I2] =
     fields.build(select.fields).prepend("SELECT ") ++
       from.build(select.from).prepend("FROM ")
@@ -52,7 +52,7 @@ object SelectQuerySpec:
             Max(ctx("e1", "score")) as "score"
           ))
           .where(_("e1", "registered_on") > "exam_min_date?")
-          .groupBy($ => Tuple($("e1", "student_id")))
+          .groupBy(_("e1", "student_id"))
           .as("me1")
       )
       .on(_("sid") === _("s", "id"))
@@ -81,6 +81,5 @@ object SelectQuerySpec:
         ctx("c", "name")           as "cname"
       ))
       .where(ctx => ctx("s", "date_of_birth") > "student_min_dob?" and (ctx("s", "date_of_birth") < "student_max_dob?"))
-      // .sortBy(ctx => Descending(ctx("score")) -> Ascending(ctx("sname")))
-
-  // compile(query)
+      .sortBy(ctx => (ctx("score").desc, ctx("sname")))
+      .inRange(0, 100)

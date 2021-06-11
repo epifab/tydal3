@@ -14,8 +14,8 @@ object Finder:
   given ref[Src, Name, Type]: Finder[RelationField[Src, Name, Type], RelationField[Src, Name, Type], Name] with
     def find(haystack: RelationField[Src, Name, Type]): RelationField[Src, Name, Type] = haystack
 
-  given tagged[Needle, Tag]: Finder[Tagged[Needle, Tag], Needle, Tag] with
-    def find(haystack: Tagged[Needle, Tag]): Needle = haystack.item
+  given aliased[FieldType, Needle <: Field[FieldType], Alias]: Finder[Aliased[FieldType, Needle, Alias], Needle, Alias] with
+    def find(haystack: Aliased[FieldType, Needle, Alias]): Needle = haystack.field
 
   given softCast[F <: Field[_], U, Needle, Tag](using finder: Finder[F, Needle, Tag]): Finder[SoftCast[F, U], SoftCast[F, U], Tag] with
     def find(haystack: SoftCast[F, U]): SoftCast[F, U] = haystack

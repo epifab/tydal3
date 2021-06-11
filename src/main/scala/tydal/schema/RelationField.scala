@@ -23,7 +23,7 @@ object RelationFields:
   given relationField[RelationAlias: DbIdentifier, PreviousRelationAlias, FieldAlias: DbIdentifier, FieldType: DbType]: RelationFields[RelationAlias, RelationField[PreviousRelationAlias, FieldAlias, FieldType], RelationField[RelationAlias, FieldAlias, FieldType]] with
     def value: RelationField[RelationAlias, FieldAlias, FieldType] = RelationField[RelationAlias, FieldAlias, FieldType]
 
-  given tagged[RelationAlias: DbIdentifier, FieldAlias: DbIdentifier, FieldType: DbType, F <: Field[FieldType]]: RelationFields[RelationAlias, Tagged[F, FieldAlias], RelationField[RelationAlias, FieldAlias, FieldType]] with
+  given aliased[RelationAlias: DbIdentifier, FieldAlias: DbIdentifier, FieldType: DbType, F <: Field[FieldType]]: RelationFields[RelationAlias, Aliased[FieldType, F, FieldAlias], RelationField[RelationAlias, FieldAlias, FieldType]] with
     def value: RelationField[RelationAlias, FieldAlias, FieldType] = RelationField[RelationAlias, FieldAlias, FieldType]
 
   given cast[RelationAlias: DbIdentifier, F <: Field[_], G <: Field[_], U: DbType](using base: RelationFields[RelationAlias, F, G]): RelationFields[RelationAlias, Cast[F, U], Cast[G, U]] with

@@ -6,5 +6,5 @@ object OptionalNumericFragment:
   given empty: OptionalNumericFragment[None.type, EmptyTuple] with
     override def build(x: None.type) = CompiledQueryFragment(None, EmptyTuple)
 
-  given[A <: Int with Singleton](using value: ValueOf[A]): OptionalNumericFragment[Some[A], EmptyTuple] with
-    override def build(x: Some[A]) = CompiledQueryFragment(value.value.toString)
+  given nonEmpty[A <: Int]: OptionalNumericFragment[Some[A], EmptyTuple] with
+    override def build(x: Some[A]) = CompiledQueryFragment(x.value.toString)
