@@ -12,7 +12,7 @@ case class CompiledQueryFragment[Input <: Tuple](sql: Option[String], input: Inp
   def `++`(other: String): CompiledQueryFragment[Input] = append(" " + other)
 
   def `++`[I2 <: Tuple](other: CompiledQueryFragment[I2]): CompiledQueryFragment[Input Concat I2] =
-    concatenateOptional(other, "")
+    concatenateOptional(other, " ")
 
   def `+ +`[I2 <: Tuple](other: CompiledQueryFragment[I2]): CompiledQueryFragment[Input Concat I2] =
     concatenateOptional(other, " ")

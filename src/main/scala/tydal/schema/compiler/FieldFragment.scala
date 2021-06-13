@@ -46,16 +46,19 @@ object FieldFragment:
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(Option.when(placeholder.value.isDefined)(s"?::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
 
-trait FieldSrc:
+trait FieldAsAliasSrc:
   given unAliased[A, F <: Field[_], O <: Tuple] (using field: FieldFragment[F, O]): FieldAsAliasFragment[F, O] with
     def build(x: F): CompiledQueryFragment[O] = field.build(x)
 
-
-object FieldAsAliasFragment extends FieldSrc:
+object FieldAsAliasFragment extends FieldAsAliasSrc:
   given aliased[T, F <: Field[T], A, O <: Tuple](using field: FieldFragment[F, O]): FieldAsAliasFragment[Aliased[T, F, A], O] with
     def build(x: Aliased[T, F, A]): CompiledQueryFragment[O] = field.build(x.field).append(s".${x.alias.value}")
 
 
-object FieldAliasFragment extends FieldSrc:
+trait FieldAliasSrc:
+  given unAliased[A, F <: Field[_], O <: Tuple] (using field: FieldFragment[F, O]): FieldAliasFragment[F, O] with
+    def build(x: F): CompiledQueryFragment[O] = field.build(x)
+
+object FieldAliasFragment extends FieldAliasSrc:
   given aliased[T, F <: Field[T], A]: FieldAsAliasFragment[Aliased[T, F, A], EmptyTuple] with
     def build(x: Aliased[T, F, A]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(x.alias.value)

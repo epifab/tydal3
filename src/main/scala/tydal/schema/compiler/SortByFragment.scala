@@ -12,4 +12,4 @@ object SortByFragment:
     def build(asc: Desc[F]): CompiledQueryFragment[I] = fragment.build(asc.field).append(" desc")
 
   given default[F <: Field[_], I <: Tuple](using fragment: FieldAliasFragment[F, I]): SortByFragment[F, I] with
-    def build(field: F): CompiledQueryFragment[I] = fragment.build(field).append(" asc")
+    def build(field: F): CompiledQueryFragment[I] = fragment.build(field)

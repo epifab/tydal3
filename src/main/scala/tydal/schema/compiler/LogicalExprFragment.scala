@@ -6,7 +6,7 @@ import Tuple.Concat
 trait LogicalExprFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 
 object LogicalExprFragment:
-  given whereAlwaysTrue: LogicalExprFragment[AlwaysTrue, EmptyTuple] with
+  given alwaysTrue: LogicalExprFragment[AlwaysTrue, EmptyTuple] with
     def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, EmptyTuple)
 
 //  given whereFilterOption[F <: Filter, P <: Tuple, Q <: Tuple](
@@ -19,25 +19,37 @@ object LogicalExprFragment:
 //    case None => CompiledQueryFragment(None, literalOptions.empty)
 //  })
 
-  given expr1[F, E <: LogicalExpr1[F], P <: Tuple](using builder: LogicalExprFragment[F, P]): LogicalExprFragment[E, P] with
-    def build(filter: E): CompiledQueryFragment[P] =
-      val fragment = builder.build(filter.expr)
-      filter match
-        case _: IsDefined[_] => fragment ++ " IS NOT NULL"
-        case _: IsNotDefined[_] => fragment ++ " IS NULL"
+  given isDefined[F <: Field[_], T <: Tuple](using fragment: FieldFragment[F, T]): LogicalExprFragment[F, T] with
+    def build(f: F): CompiledQueryFragment[T] = fragment.build(f).append(" is not null")
 
-  given expr2[F1, F2, E <: LogicalExpr2[F1, F2], P <: Tuple, Q <: Tuple] (
+  given isNotDefined[F <: Field[_], T <: Tuple](using fragment: FieldFragment[F, T]): LogicalExprFragment[F, T] with
+    def build(f: F): CompiledQueryFragment[T] = fragment.build(f).append(" is null")
+
+  given and[E1 <: LogicalExpr, E2 <: LogicalExpr, E <: LogicalExpr2[E1, E2], T1 <: Tuple, T2 <: Tuple](
     using
-    left: LogicalExprFragment[F1, P],
-    right: LogicalExprFragment[F2, Q]
+    left: LogicalExprFragment[E1, T1],
+    right: LogicalExprFragment[E2, T2]
+  ): LogicalExprFragment[And[E1, E2], T1 Concat T2] with
+    def build(e: And[E1, E2]): CompiledQueryFragment[T1 Concat T2] =
+      left.build(e.left).concatenateOptional(right.build(e.right), " AND ")
+
+  given or[E1 <: LogicalExpr, E2 <: LogicalExpr, E <: LogicalExpr2[E1, E2], T1 <: Tuple, T2 <: Tuple](
+    using
+    left: LogicalExprFragment[E1, T1],
+    right: LogicalExprFragment[E2, T2]
+  ): LogicalExprFragment[Or[E1, E2], T1 Concat T2] with
+    def build(e: Or[E1, E2]): CompiledQueryFragment[T1 Concat T2] =
+      left.build(e.left).concatenateOptional(right.build(e.right), " OR ")
+
+  given comparison[F1 <: Field[_], F2 <: Field[_], E <: Comparison[F1, F2], P <: Tuple, Q <: Tuple](
+    using
+    left: FieldFragment[F1, P],
+    right: FieldFragment[F2, Q]
   ): LogicalExprFragment[E, P Concat Q] with
     def build(filter: E): CompiledQueryFragment[P Concat Q] =
       val e1 = left.build(filter.left)
       val e2 = right.build(filter.right)
-
       filter match
-        case _: And[_, _] => e1.concatenateOptional(e2, " AND ")
-        case _: Or[_, _] => e1.concatenateOptional(e2, " OR ").wrap("(", ")")
         case _: Equals[_, _] => e1.concatenateRequired(e2, " = ")
         case _: NotEquals[_, _] => e1.concatenateRequired(e2, " != ")
         case _: GreaterThan[_, _] => e1.concatenateRequired(e2, " > ")
@@ -50,10 +62,11 @@ object LogicalExprFragment:
         case _: IsSuperset[_, _] => e1.concatenateRequired(e2, " @> ")
         case _: Overlaps[_, _] => e1.concatenateRequired(e2, " && ")
         case _: Contains[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " = ANY")
-        case _: IsIn[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " IN ")
 
-  given field[F <: Field[_], P <: Tuple](using builder: FieldFragment[F, P]): LogicalExprFragment[F, P] with
-    def build(field: F): CompiledQueryFragment[P] = builder.build(field)
-
-  given whereSubQuery[S, P <: Tuple](using builder: QueryCompiler[S, P, _]): LogicalExprFragment[S, P] with
-    def build(query: S): CompiledQueryFragment[P] = CompiledQueryFragment(builder.build(query))
+  given isIn[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
+    using
+    left: FieldFragment[F, T1],
+    right: QueryCompiler[S, T2, _]
+  ): LogicalExprFragment[IsIn[F, S], T1 Concat T2] with
+    def build(e: IsIn[F, S]): CompiledQueryFragment[T1 Concat T2] =
+      left.build(e.left).concatenateRequired(CompiledQueryFragment(right.build(e.right)).wrap("(", ")"), " IN ")

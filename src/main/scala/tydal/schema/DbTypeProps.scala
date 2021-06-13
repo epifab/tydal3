@@ -118,7 +118,7 @@ object LooseRelation:
     using
     nullable: Nullable[FieldsInput, FieldsOutput]
   ): LooseRelation[Alias, FieldsInput, SubQuery[Alias, FieldsInput, S], FieldsOutput, SubQuery[Alias, FieldsOutput, S]] with
-    def apply(subquery: SubQuery[Alias, FieldsInput, S]): SubQuery[Alias, FieldsOutput, S] = SubQuery(nullable(subquery.fields), subquery.subQuery)
+    def apply(subquery: SubQuery[Alias, FieldsInput, S]): SubQuery[Alias, FieldsOutput, S] = SubQuery(nullable(subquery.fields), subquery.select)
 
 
 trait AreComparable[-T, -U]

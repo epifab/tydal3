@@ -79,7 +79,7 @@ trait Field[T]:
   def contains[A <: String with Singleton, U](right: A)(using Unnested[T, U], DbType[U], CanContain[this.type, NamedPlaceholder[A, U]]): Contains[this.type, NamedPlaceholder[A, U]] =
     Contains(this, NamedPlaceholder(right))
 
-  def in[S <: SelectQuery[_ <: Relations, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
+  def in[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
 
   def asc: Asc[this.type] = Asc(this)
   def desc: Desc[this.type] = Desc(this)

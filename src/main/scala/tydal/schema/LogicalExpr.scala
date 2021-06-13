@@ -8,62 +8,61 @@ sealed trait AlwaysTrue extends LogicalExpr
 
 case object AlwaysTrue extends AlwaysTrue
 
-sealed trait LogicalExpr1[F] extends LogicalExpr:
+sealed trait LogicalExpr1[+F] extends LogicalExpr:
   def expr: F
 
-sealed trait LogicalExpr2[F1, F2](sqlRepr: String) extends LogicalExpr:
+sealed trait LogicalExpr2[+F1, +F2] extends LogicalExpr:
   def left: F1
   def right: F2
-  override def toString: String = s"$left $sqlRepr $right"
 
-case class IsDefined[F <: Field[_]](expr: F)(using IsNullable[F])
+case class IsDefined[+F <: Field[_]](expr: F)(using IsNullable[F]) extends LogicalExpr1[F]
+
+case class IsNotDefined[+F <: Field[_]](expr: F)(using IsNullable[F])
   extends LogicalExpr1[F]
 
-case class IsNotDefined[F <: Field[_]](expr: F)(using IsNullable[F])
-  extends LogicalExpr1[F]
+case class And[+F1 <: LogicalExpr, +F2 <: LogicalExpr](left: F1, right: F2)
+  extends LogicalExpr2[F1, F2]
 
-case class And[F1 <: LogicalExpr, F2 <: LogicalExpr](left: F1, right: F2)
-  extends LogicalExpr2[F1, F2]("and")
+case class Or[+F1 <: LogicalExpr, +F2 <: LogicalExpr](left: F1, right: F2)
+  extends LogicalExpr2[F1, F2]
 
-case class Or[F1 <: LogicalExpr, F2 <: LogicalExpr](left: F1, right: F2)
-  extends LogicalExpr2[F1, F2]("or")
+sealed trait Comparison[+F1 <: Field[_], +F2 <: Field[_]] extends LogicalExpr2[F1, F2]
 
-case class Equals[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2]("=")
+case class Equals[+F1 <: Field[_], +F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
+  extends Comparison[F1, F2]
 
 case class NotEquals[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2]("<>")
+  extends Comparison[F1, F2]
 
 case class GreaterThan[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2](">")
+  extends Comparison[F1, F2]
 
 case class LessThan[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2]("<")
+  extends Comparison[F1, F2]
 
 case class GreaterThanOrEqual[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2](">=")
+  extends Comparison[F1, F2]
 
 case class LessThanOrEqual[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparable[F1, F2])
-  extends LogicalExpr2[F1, F2]("<=")
+  extends Comparison[F1, F2]
 
 case class Like[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using IsText[F1], IsText[F2])
-  extends LogicalExpr2[F1, F2]("like")
+  extends Comparison[F1, F2]
 
 case class ILike[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using IsText[F1], IsText[F2])
-  extends LogicalExpr2[F1, F2]("ilike")
+  extends Comparison[F1, F2]
 
 case class IsSubset[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparableArray[F1, F2])
-  extends LogicalExpr2[F1, F2]("<@")
+  extends Comparison[F1, F2]
 
 case class IsSuperset[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparableArray[F1, F2])
-  extends LogicalExpr2[F1, F2]("@>")
+  extends Comparison[F1, F2]
 
 case class Overlaps[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparableArray[F1, F2])
-  extends LogicalExpr2[F1, F2]("&&")
+  extends Comparison[F1, F2]
 
 case class Contains[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using CanContain[F1, F2])
-  extends LogicalExpr2[F1, F2]("= any"):
-  override def toString: String = s"$left = any($right)"
+  extends Comparison[F1, F2]
 
-case class IsIn[F1 <: Field[_], S <: SelectQuery[_ <: Relations, _, _, _, _, _, _, _]](left: F1, right: S)(using CanContain[S, F1])
-  extends LogicalExpr2[F1, S]("in")
+case class IsIn[F1 <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _]](left: F1, right: S)(using CanContain[S, F1])
+  extends LogicalExpr2[F1, S]

@@ -1,6 +1,5 @@
 package tydal.schema
 
-import Tuple.Concat
 import tydal.schema.compiler._
 
 object students extends TableSchema[
@@ -32,13 +31,31 @@ object exams extends TableSchema[
 
 object SelectQuerySpec:
 
-  def compile[From <: Relations, Fields: ListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int], I1 <: Tuple, I2 <: Tuple](select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit])(
-    using
-    fields: CommaSeparatedListFragment[FieldFragment, Fields, I1],
-    from: RelationsFragment[From, I2]
-  ): CompiledQueryFragment[I1 Concat I2] =
-    fields.build(select.fields).prepend("SELECT ") ++
-      from.build(select.from).prepend("FROM ")
+  Select.from(students as "s").compile
+  Select.from(students as "s").take(_("s", "id")).compile
+  Select.from(students as "s").take($ => ($("s", "id"), $("s", "name"))).compile
+  Select.from(students as "s").take($ => ($("s", "id"), Max($("s", "name")))).compile
+  Select.from(students as "s").take($ => ($("s", "id"), Distinct($("s", "name")) as "sname")).compile
+  Select.from(students as "s").take(_("s", "id")).where(_("s", "name") === "name?").compile
+  Select.from(students as "s").take(_("s", "id")).where($ => ($("s", "name") === "name?") or ($("s", "id") === "ids?")).compile
+  Select.from(students as "s").take(_("s", "id")).sortBy(_("s", "name")).compile
+  Select.from(students as "s").take(_("s", "id")).sortBy($ => ($("s", "name"), Desc($("s", "id")))).compile
+  Select.from(students as "s").innerJoin(exams as "e").on(_("student_id") === _("s", "id")).compile
+  Select.from(students as "s").innerJoin(exams as "e").on(_("student_id") === _("s", "id")).compile
+
+  Select.from(students as "s")
+    .leftJoin(exams as "e").on(_("student_id") === _("s", "id"))
+    .innerJoin(courses as "c").on(_("id") === _("e", "course_id"))
+    .compile
+
+  Select.from(students as "s")
+    .innerJoin(
+      Select
+        .from(exams as "ee")
+        .take(_("ee", "student_id") as "sid")
+        .as("e")
+    ).on(_("sid") === _("s", "id"))
+    .compile
 
   val query =
     Select
@@ -83,3 +100,4 @@ object SelectQuerySpec:
       .where(ctx => ctx("s", "date_of_birth") > "student_min_dob?" and (ctx("s", "date_of_birth") < "student_max_dob?"))
       .sortBy(ctx => (ctx("score").desc, ctx("sname")))
       .inRange(0, 100)
+      .compile

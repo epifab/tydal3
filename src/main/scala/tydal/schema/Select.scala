@@ -1,6 +1,6 @@
 package tydal.schema
 
-import tydal.schema.compiler.{QueryCompiler, CompiledQuery}
+import tydal.schema.compiler.{SelectQueryFragment, CompiledQueryFragment}
 
 
 trait Selectable[Fields]:
@@ -34,7 +34,7 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy <: Tuple, Offset <: Option[Int], Limit <: Option[Int]](
+final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset <: Option[Int], Limit <: Option[Int]](
   val from: From,
   val fields: Fields,
   val groupBy: GroupBy,
@@ -57,7 +57,7 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
   def having[NewHaving <: LogicalExpr](f: SelectContext[Fields, From] => NewHaving): SelectQuery[From, Fields, GroupBy, Where, NewHaving, SortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, f(this), sortBy, offset, limit)
 
-  def sortBy[NewSortBy <: Tuple](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, Having, NewSortBy, Offset, Limit] =
+  def sortBy[NewSortBy: SortByClasue](f: SelectContext[Fields, From] => NewSortBy): SelectQuery[From, Fields, GroupBy, Where, Having, NewSortBy, Offset, Limit] =
     SelectQuery(from, fields, groupBy, where, having, f(this), offset, limit)
 
   def innerJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields]](right: Right): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, RightFields, Right] =
@@ -75,12 +75,12 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
     fields: RelationFields[alias.type, Fields, SubQueryFields]
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
-  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): CompiledQuery[Input, Output] =
+  def compile[Input <: Tuple](using compiler: SelectQueryFragment[this.type, Input]): CompiledQueryFragment[Input] =
     compiler.build(this)
 
 
 object Select:
-  def from[R <: Relation[_, _]](relation: R): SelectQuery[R, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
+  def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
     SelectQuery(relation, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
 
 
@@ -90,7 +90,7 @@ class JoinBuilder[
   GroupBy: ListOfFields,
   Where <: LogicalExpr,
   Having <: LogicalExpr,
-  SortBy <: Tuple,
+  SortBy: SortByClasue,
   Offset <: Option[Int],
   Limit <: Option[Int],
   RightAlias,
@@ -99,3 +99,35 @@ class JoinBuilder[
 ](left: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit], right: Right, joinType: JoinType):
   def on[On <: LogicalExpr](f: (Selectable[RightFields], SelectContext[Fields, From]) => On):  SelectQuery[Join[From, Right, On], Fields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(Join(left.from, right, f(right, left), joinType), left.fields, left.groupBy, left.where, left.having, left.sortBy, left.offset, left.limit)
+
+
+
+
+
+object Bug:
+
+  case class X[A <: Greeting](a: A):
+    def build(using XBuilder[A]): Unit = ()
+
+  sealed trait Greeting
+  case class Kind[X <: Greeting](x: Greeting) extends Greeting
+  case object Regards extends Greeting
+
+  trait XBuilder[XX]
+
+  object XBuilder:
+    given y[YY](using YBuilder[YY]): XBuilder[YY] with { }
+
+  trait YBuilder[YY]
+
+  object YBuilder:
+    given kind[X <: Greeting](using YBuilder[X]): YBuilder[Kind[X]] with { }
+    given regards: YBuilder[Regards.type] with { }
+
+
+
+
+//  summon[XBuilder[Regards.type]](using XBuilder.y(using YBuilder.hello[Regards.type]))
+
+
+//  X(World).build
