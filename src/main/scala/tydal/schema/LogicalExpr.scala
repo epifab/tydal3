@@ -61,8 +61,11 @@ case class IsSuperset[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using
 case class Overlaps[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using AreComparableArray[F1, F2])
   extends Comparison[F1, F2]
 
-case class Contains[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using CanContain[F1, F2])
+case class AnyOf[F1 <: Field[_], F2 <: Field[_]](left: F1, right: F2)(using CanContain[F2, F1])
   extends Comparison[F1, F2]
 
-case class IsIn[F1 <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _]](left: F1, right: S)(using CanContain[S, F1])
+case class In[F1 <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _]](left: F1, right: S)(using CanContain[S, F1])
+  extends LogicalExpr2[F1, S]
+
+case class NotIn[F1 <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _]](left: F1, right: S)(using CanContain[S, F1])
   extends LogicalExpr2[F1, S]

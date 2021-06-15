@@ -51,12 +51,20 @@ object LogicalExprFragment:
         case _: IsSubset[_, _] => e1.concatenateRequired(e2, " <@ ")
         case _: IsSuperset[_, _] => e1.concatenateRequired(e2, " @> ")
         case _: Overlaps[_, _] => e1.concatenateRequired(e2, " && ")
-        case _: Contains[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " = ANY")
+        case _: AnyOf[_, _] => e1.concatenateRequired(e2.wrap("(", ")"), " = ANY")
 
-  given isIn[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
+  given in[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
     using
     left: FieldFragment[F, T1],
     right: QueryCompiler[S, T2, _]
-  ): LogicalExprFragment[IsIn[F, S], T1 Concat T2] with
-    def build(e: IsIn[F, S]): CompiledQueryFragment[T1 Concat T2] =
+  ): LogicalExprFragment[In[F, S], T1 Concat T2] with
+    def build(e: In[F, S]): CompiledQueryFragment[T1 Concat T2] =
       left.build(e.left).concatenateRequired(CompiledQueryFragment(right.build(e.right)).wrap("(", ")"), " IN ")
+
+  given notIn[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
+    using
+    left: FieldFragment[F, T1],
+    right: QueryCompiler[S, T2, _]
+  ): LogicalExprFragment[NotIn[F, S], T1 Concat T2] with
+    def build(e: NotIn[F, S]): CompiledQueryFragment[T1 Concat T2] =
+      left.build(e.left).concatenateRequired(CompiledQueryFragment(right.build(e.right)).wrap("(", ")"), " NOT IN ")

@@ -74,12 +74,14 @@ trait Field[T]:
   def overlaps[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): Overlaps[this.type, NamedPlaceholder[A, T]] =
     Overlaps(this, NamedPlaceholder(right)(using dbType))
 
-  def contains[G <: Field[_]](right: G)(using CanContain[this.type, G]): Contains[this.type, G] = Contains(this, right)
+  def anyOf[G <: Field[_]](right: G)(using CanContain[G, this.type]): AnyOf[this.type, G] = AnyOf(this, right)
 
-  def contains[A <: String with Singleton, U](right: A)(using Unnested[T, U], DbType[U], CanContain[this.type, NamedPlaceholder[A, U]]): Contains[this.type, NamedPlaceholder[A, U]] =
-    Contains(this, NamedPlaceholder(right))
+  def anyOf[A <: String with Singleton, U](right: A)(using DbType[array[T]], CanContain[array[T], T]): AnyOf[this.type, NamedPlaceholder[A, array[T]]] =
+    AnyOf(this, NamedPlaceholder(right))
 
-  def in[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): IsIn[this.type, S] = IsIn(this, right)
+  def in[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): In[this.type, S] = In(this, right)
+
+  def notIn[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): NotIn[this.type, S] = NotIn(this, right)
 
   def asc: Asc[this.type] = Asc(this)
   def desc: Desc[this.type] = Desc(this)
