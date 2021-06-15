@@ -1,6 +1,8 @@
 package tydal.schema
 
 import tydal.schema.compiler._
+import org.scalatest.freespec._
+import org.scalatest.matchers._
 
 object students extends TableSchema[
   "students",
@@ -29,17 +31,45 @@ object exams extends TableSchema[
   )
 ]
 
-object SelectQuerySpec:
+class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
 
-  Select.from(students as "s").compile
-  Select.from(students as "s").take(_("s", "id")).compile
-  Select.from(students as "s").take($ => ($("s", "id"), $("s", "name"))).compile
-  Select.from(students as "s").take($ => ($("s", "id"), "hello".placeholder[varchar])).compile
-  Select.from(students as "s").take($ => ($("s", "id"), 14.literal[integer])).compile
-  Select.from(students as "s").take($ => ($("s", "id"), Max($("s", "name")))).compile
+  "Nothing selected" in {
+    Select.from(students as "s").compile.sql shouldBe
+      Some("SELECT 1 FROM students s")
+  }
+
+  "One column" in {
+    Select.from(students as "s").take(_("s", "id")).compile.sql shouldBe
+      Some("SELECT s.id FROM students s")
+  }
+
+  "Two columns" in {
+    Select.from(students as "s").take($ => ($("s", "id"), $("s", "name"))).compile.sql shouldBe
+      Some("SELECT s.id, s.name FROM students s")
+  }
+
+  "Placeholder" in {
+    Select.from(students as "s").take(_ => "hello".placeholder[varchar]).compile.sql shouldBe
+      Some("SELECT ?::varchar FROM students s")
+  }
+
+  "Literal" in {
+    Select.from(students as "s").take(_ => 14.literal[integer]).compile.sql shouldBe
+      Some("SELECT ?::integer FROM students s")
+  }
+
+  "Aggregate" in {
+    Select.from(students as "s").take($ => Max($("s", "name"))).compile.sql shouldBe
+      Some("SELECT MAX(s.name) FROM students s")
+  }
+
+  "Aliased" in {
+    Select.from(students as "s").take(_("s", "name").as("hello")).compile.sql shouldBe
+      Some("SELECT s.name AS hello FROM students s")
+  }
+
   Select.from(students as "s").where(_("s", "name") === "name?").compile
   Select.from(students as "s").where(_("s", "name") === "yo".literal[varchar]).compile
-  Select.from(students as "s").where(_("s", "name") === Some("dude").literalOption[varchar]).compile
   Select.from(students as "s").where($ => ($("s", "name") === "name?") or ($("s", "id") === "ids?")).compile
   Select.from(students as "s").sortBy(_("s", "name")).compile
   Select.from(students as "s").sortBy($ => ($("s", "name"), Desc($("s", "id")))).compile

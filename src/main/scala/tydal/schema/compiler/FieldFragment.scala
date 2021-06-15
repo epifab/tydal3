@@ -42,9 +42,6 @@ object FieldFragment:
   given literal[P <: Literal[_]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
 
-  given literalOption[P <: LiteralOption[_]]: FieldFragment[P, P *: EmptyTuple] with
-    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(Option.when(placeholder.value.isDefined)(s"?::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
-
 
 trait FieldAsAliasSrc:
   given unAliased[A, F <: Field[_], O <: Tuple] (using field: FieldFragment[F, O]): FieldAsAliasFragment[F, O] with
@@ -52,7 +49,7 @@ trait FieldAsAliasSrc:
 
 object FieldAsAliasFragment extends FieldAsAliasSrc:
   given aliased[T, F <: Field[T], A, O <: Tuple](using field: FieldFragment[F, O]): FieldAsAliasFragment[Aliased[T, F, A], O] with
-    def build(x: Aliased[T, F, A]): CompiledQueryFragment[O] = field.build(x.field).append(s".${x.alias.value}")
+    def build(x: Aliased[T, F, A]): CompiledQueryFragment[O] = field.build(x.field).append(s" AS ${x.alias.value}")
 
 
 trait FieldAliasSrc:
