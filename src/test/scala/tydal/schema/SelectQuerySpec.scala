@@ -68,6 +68,21 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
       Some("SELECT s.name AS hello FROM students s")
   }
 
+  "Casted" in {
+    Select.from(students as "s").take(_("s", "id").castTo[varchar]).compile.sql shouldBe
+      Some("SELECT s.id::varchar FROM students s")
+  }
+
+  "Soft cast (nullable)" in {
+    Select.from(students as "s").take(_("s", "id").nullable).compile.sql shouldBe
+      Some("SELECT s.id FROM students s")
+  }
+
+  "Multiple alias" in {
+    Select.from(students as "s").take(_("s", "name").as("hello").as("rocky")).compile.sql shouldBe
+      Some("SELECT s.name AS rocky FROM students s")
+  }
+
   Select.from(students as "s").where(_("s", "name") === "name?").compile
   Select.from(students as "s").where(_("s", "name") === "yo".literal[varchar]).compile
   Select.from(students as "s").where($ => ($("s", "name") === "name?") or ($("s", "id") === "ids?")).compile

@@ -80,6 +80,10 @@ object IsNotNullable:
   given field[T: Field](using NotGiven[IsNullable[T]]): IsNotNullable[T] with { }
 
 
+extension[F <: Field[_]](field: F)
+  def nullable[G <: Field[_]](using nullable: Nullable[F, G]): G = nullable(field)
+
+
 trait Nullable[-F, G]:
   def apply(f: F): G
 
