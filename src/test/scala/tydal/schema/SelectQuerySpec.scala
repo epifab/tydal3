@@ -34,12 +34,15 @@ object SelectQuerySpec:
   Select.from(students as "s").compile
   Select.from(students as "s").take(_("s", "id")).compile
   Select.from(students as "s").take($ => ($("s", "id"), $("s", "name"))).compile
+  Select.from(students as "s").take($ => ($("s", "id"), "hello".placeholder[varchar])).compile
+  Select.from(students as "s").take($ => ($("s", "id"), 14.literal[integer])).compile
   Select.from(students as "s").take($ => ($("s", "id"), Max($("s", "name")))).compile
-  Select.from(students as "s").take($ => ($("s", "id"), Distinct($("s", "name")) as "sname")).compile
-  Select.from(students as "s").take(_("s", "id")).where(_("s", "name") === "name?").compile
-  Select.from(students as "s").take(_("s", "id")).where($ => ($("s", "name") === "name?") or ($("s", "id") === "ids?")).compile
-  Select.from(students as "s").take(_("s", "id")).sortBy(_("s", "name")).compile
-  Select.from(students as "s").take(_("s", "id")).sortBy($ => ($("s", "name"), Desc($("s", "id")))).compile
+  Select.from(students as "s").where(_("s", "name") === "name?").compile
+  Select.from(students as "s").where(_("s", "name") === "yo".literal[varchar]).compile
+  Select.from(students as "s").where(_("s", "name") === Some("dude").literalOption[varchar]).compile
+  Select.from(students as "s").where($ => ($("s", "name") === "name?") or ($("s", "id") === "ids?")).compile
+  Select.from(students as "s").sortBy(_("s", "name")).compile
+  Select.from(students as "s").sortBy($ => ($("s", "name"), Desc($("s", "id")))).compile
   Select.from(students as "s").innerJoin(exams as "e").on(_("student_id") === _("s", "id")).compile
   Select.from(students as "s").innerJoin(exams as "e").on(_("student_id") === _("s", "id")).compile
 

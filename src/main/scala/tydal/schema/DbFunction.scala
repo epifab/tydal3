@@ -22,10 +22,6 @@ trait DbFunction3[F, G, H, Type] extends DbFunction[(F, G, H), Type]:
 
 trait DbAggregationFunction[F, Type] extends DbFunction1[F, Type]
 
-final class Distinct[T, F <: Field[T]](val param: F) extends DbFunction1[F, T]:
-  def dbType: DbType[T] = param.dbType
-  def dbName: String = "distinct"
-
 final class Avg[T, F <: Field[T], U](val param: F)(
   using
   rational: Rational[T, U],

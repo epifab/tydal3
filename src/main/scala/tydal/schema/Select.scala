@@ -99,35 +99,3 @@ class JoinBuilder[
 ](left: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit], right: Right, joinType: JoinType):
   def on[On <: LogicalExpr](f: (Selectable[RightFields], SelectContext[Fields, From]) => On):  SelectQuery[Join[From, Right, On], Fields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(Join(left.from, right, f(right, left), joinType), left.fields, left.groupBy, left.where, left.having, left.sortBy, left.offset, left.limit)
-
-
-
-
-
-object Bug:
-
-  case class X[A <: Greeting](a: A):
-    def build(using XBuilder[A]): Unit = ()
-
-  sealed trait Greeting
-  case class Kind[X <: Greeting](x: Greeting) extends Greeting
-  case object Regards extends Greeting
-
-  trait XBuilder[XX]
-
-  object XBuilder:
-    given y[YY](using YBuilder[YY]): XBuilder[YY] with { }
-
-  trait YBuilder[YY]
-
-  object YBuilder:
-    given kind[X <: Greeting](using YBuilder[X]): YBuilder[Kind[X]] with { }
-    given regards: YBuilder[Regards.type] with { }
-
-
-
-
-//  summon[XBuilder[Regards.type]](using XBuilder.y(using YBuilder.hello[Regards.type]))
-
-
-//  X(World).build

@@ -9,16 +9,6 @@ object LogicalExprFragment:
   given alwaysTrue: LogicalExprFragment[AlwaysTrue, EmptyTuple] with
     def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, EmptyTuple)
 
-//  given whereFilterOption[F <: Filter, P <: Tuple, Q <: Tuple](
-//    using
-//    where: LogicalExprFragment[F, P],
-//    literalOptions: LiteralOptions[P, Q]
-//  ): LogicalExprFragment[FilterOption[F], Q] =
-//  instance((filter: FilterOption[F]) => filter.filter match {
-//    case Some(e) => where.build(e).mapPlaceholders(literalOptions.build)
-//    case None => CompiledQueryFragment(None, literalOptions.empty)
-//  })
-
   given isDefined[F <: Field[_], T <: Tuple](using fragment: FieldFragment[F, T]): LogicalExprFragment[F, T] with
     def build(f: F): CompiledQueryFragment[T] = fragment.build(f).append(" is not null")
 

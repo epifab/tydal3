@@ -1,6 +1,6 @@
 package tydal.schema
 
-import java.time.{LocalDate, Instant}
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 trait DbType[T]:
@@ -29,6 +29,7 @@ trait Enumerated[T]:
   def fromString(s: String): T
 
 object DbType:
+  type Aux[T, U] = DbType[T] { type Out = U }
 
   given DbType[char] with
     type Out = String
