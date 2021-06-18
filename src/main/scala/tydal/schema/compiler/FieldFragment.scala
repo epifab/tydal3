@@ -15,7 +15,8 @@ object FieldFragment:
     def build(field: Aliased[T, F, A]): CompiledQueryFragment[Output] = inner.build(field.field)
 
   given fieldRef[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
-    def build(field: RelationField[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(s"${field.relationAlias.value}.${field.name.value}")
+    def build(field: RelationField[Src, Alias, T]): CompiledQueryFragment[EmptyTuple] =
+      CompiledQueryFragment(s"${field.relationAlias.value}.${field.name.value}")
 
   given cast[F <: Field[_], Output <: Tuple](
     using
@@ -37,10 +38,10 @@ object FieldFragment:
       inner.build(func.params).wrap(s"${func.dbName}(", ")")
 
   given namedPlaceholder[P <: NamedPlaceholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
-    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
+    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(Questionmark, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
   given literal[P <: Literal[_]]: FieldFragment[P, P *: EmptyTuple] with
-    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(s"?::${placeholder.dbType.dbName}", placeholder)
+    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(Questionmark, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
 
 trait FieldAsAliasSrc:

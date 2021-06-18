@@ -13,4 +13,4 @@ object QueryCompiler:
     using
     fragment: SelectQueryFragment[S, Input]
   ): QueryCompiler[S, Input, Output] with
-    def build(select: S): CompiledQuery[Input, Output] = fragment.build(select).get(select.fields)
+    def build(select: S): CompiledQuery[Input, Output] = ??? // fragment.build(select).get(select.fields)

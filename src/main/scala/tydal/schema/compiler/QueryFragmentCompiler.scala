@@ -6,8 +6,17 @@ import Tuple.Concat
 trait QueryFragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledQueryFragment[Input]
 
+sealed trait Questionmark:
+  override val toString: String = "?"
 
-case class CompiledQueryFragment[Input <: Tuple](sql: Option[String], input: Input):
+object Questionmark extends Questionmark
+
+case class CompiledQueryFragment[Input <: Tuple](parts: List[String | Questionmark], codecs: Input):
+
+  def sql: String = parts.foldLeft("") {
+    case (x, s: String) => x + s
+    case (x, Questionmark) => x + "?"
+  }
 
   def `++`(other: String): CompiledQueryFragment[Input] = append(" " + other)
 
@@ -20,48 +29,31 @@ case class CompiledQueryFragment[Input <: Tuple](sql: Option[String], input: Inp
   def `+,+`[I2 <: Tuple](other: CompiledQueryFragment[I2]): CompiledQueryFragment[Input Concat I2] =
     concatenateOptional(other, ", ")
 
-  def wrap(before: String, after: String): CompiledQueryFragment[Input] = map(before + _ + after)
+  def wrap(before: String, after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else (before :: parts) :+ after, codecs)
 
-  def append(after: String): CompiledQueryFragment[Input] = map(_ + after)
+  def append(after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else parts :+ after, codecs)
 
-  def prepend(before: String): CompiledQueryFragment[Input] = map(before + _)
-
-  def map(f: String => String): CompiledQueryFragment[Input] = CompiledQueryFragment(sql.map(f), input)
-
-  def mapInput[I2 <: Tuple](f: Input => I2): CompiledQueryFragment[I2] = CompiledQueryFragment(sql, f(input))
+  def prepend(before: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else before :: parts, codecs)
 
   def concatenateOptional[I2 <: Tuple](other: CompiledQueryFragment[I2], separator: String): CompiledQueryFragment[Input Concat I2] =
     CompiledQueryFragment(
-      Seq(sql, other.sql)
-        .flatten
-        .reduceOption(_ ++ separator ++ _),
-      input ++ other.input
+      (parts.isEmpty, other.parts.isEmpty) match
+        case (false, false) => parts ++ (separator :: other.parts)
+        case _ => parts ++ other.parts,
+      codecs ++ other.codecs
     )
 
   def concatenateRequired[I2 <: Tuple](other: CompiledQueryFragment[I2], separator: String): CompiledQueryFragment[Input Concat I2] =
     CompiledQueryFragment(
-      for {
-        s1 <- sql
-        s2 <- other.sql
-      } yield s1 + separator + s2,
-      input ++ other.input
+      (parts.isEmpty, other.parts.isEmpty) match
+        case (true, true) => parts ++ (separator :: other.parts)
+        case _ => Nil,
+      codecs ++ other.codecs
     )
 
-  def getOrElse[Output <: Tuple](default: String, output: Output): CompiledQuery[Input, Output] =
-    CompiledQuery(sql.getOrElse(default), input, output)
-
-  def orElse(s: Option[String]): CompiledQueryFragment[Input] =
-    new CompiledQueryFragment(sql.orElse(s), input)
-
-  def get[Output](output: Output): CompiledQuery[Input, Output] =
-    CompiledQuery(sql.get, input, output)
+  def orElse(s: String): CompiledQueryFragment[Input] =
+    if (parts.isEmpty) CompiledQueryFragment(s :: Nil, codecs) else this
 
 object CompiledQueryFragment:
-  def apply(sql: String): CompiledQueryFragment[EmptyTuple] =
-    CompiledQueryFragment(Some(sql), EmptyTuple)
-
-  def apply[P <: Placeholder[_]](sql: String, placeholder: P): CompiledQueryFragment[P *: EmptyTuple] =
-    CompiledQueryFragment(Some(sql), placeholder *: EmptyTuple)
-
-  def apply[Input <: Tuple](query: CompiledQuery[Input, _]): CompiledQueryFragment[Input] =
-    CompiledQueryFragment(Some(query.sql), query.input)
+  def empty: CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(Nil, EmptyTuple)
+  def apply(const: String): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(const :: Nil, EmptyTuple)

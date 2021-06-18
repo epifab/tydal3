@@ -6,7 +6,7 @@ trait CommaSeparatedListFragment[BaseCompiler[a, b <: Tuple] <: QueryFragmentCom
 
 object CommaSeparatedListFragment:
   given emptyTuple[BaseCompiler[a, b <: Tuple] <: QueryFragmentCompiler[a, b]]: CommaSeparatedListFragment[BaseCompiler, EmptyTuple, EmptyTuple] with
-    override def build(x: EmptyTuple): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, x)
+    override def build(x: EmptyTuple): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment.empty
 
   given nonEmptyTuple[BaseCompiler[a, b <: Tuple] <: QueryFragmentCompiler[a, b], HeadInput, HeadOutput <: Tuple, TailInput <: Tuple, TailOutput <: Tuple](
     using

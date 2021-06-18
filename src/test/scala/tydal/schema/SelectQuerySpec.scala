@@ -31,56 +31,59 @@ object exams extends TableSchema[
   )
 ]
 
+object Example extends App:
+  println(Select.from(students as "s").compile.sql)
+
 class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
 
   "Nothing selected" in {
     Select.from(students as "s").compile.sql shouldBe
-      Some("SELECT 1 FROM students s")
+      "SELECT 1 FROM students s"
   }
 
   "One column" in {
     Select.from(students as "s").take(_("s", "id")).compile.sql shouldBe
-      Some("SELECT s.id FROM students s")
+      "SELECT s.id FROM students s"
   }
 
   "Two columns" in {
     Select.from(students as "s").take($ => ($("s", "id"), $("s", "name"))).compile.sql shouldBe
-      Some("SELECT s.id, s.name FROM students s")
+      "SELECT s.id, s.name FROM students s"
   }
 
   "Placeholder" in {
     Select.from(students as "s").take(_ => "hello".placeholder[varchar]).compile.sql shouldBe
-      Some("SELECT ?::varchar FROM students s")
+      "SELECT ?::varchar FROM students s"
   }
 
   "Literal" in {
     Select.from(students as "s").take(_ => 14.literal[integer]).compile.sql shouldBe
-      Some("SELECT ?::integer FROM students s")
+      "SELECT ?::integer FROM students s"
   }
 
   "Aggregate" in {
     Select.from(students as "s").take($ => Max($("s", "name"))).compile.sql shouldBe
-      Some("SELECT MAX(s.name) FROM students s")
+      "SELECT MAX(s.name) FROM students s"
   }
 
   "Aliased" in {
     Select.from(students as "s").take(_("s", "name").as("hello")).compile.sql shouldBe
-      Some("SELECT s.name AS hello FROM students s")
+      "SELECT s.name AS hello FROM students s"
   }
 
   "Casted" in {
     Select.from(students as "s").take(_("s", "id").castTo[varchar]).compile.sql shouldBe
-      Some("SELECT s.id::varchar FROM students s")
+      "SELECT s.id::varchar FROM students s"
   }
 
   "Soft cast (nullable)" in {
     Select.from(students as "s").take(_("s", "id").nullable).compile.sql shouldBe
-      Some("SELECT s.id FROM students s")
+      "SELECT s.id FROM students s"
   }
 
   "Multiple alias" in {
     Select.from(students as "s").take(_("s", "name").as("hello").as("rocky")).compile.sql shouldBe
-      Some("SELECT s.name AS rocky FROM students s")
+      "SELECT s.name AS rocky FROM students s"
   }
 
   Select.from(students as "s").where(_("s", "name") === "name?").compile

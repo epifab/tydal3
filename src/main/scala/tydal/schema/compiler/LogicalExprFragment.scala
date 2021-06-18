@@ -7,7 +7,7 @@ trait LogicalExprFragment[-T, I <: Tuple] extends QueryFragmentCompiler[T, I]
 
 object LogicalExprFragment:
   given alwaysTrue: LogicalExprFragment[AlwaysTrue, EmptyTuple] with
-    def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(None, EmptyTuple)
+    def build(alwaysTrue: AlwaysTrue): CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment.empty
 
   given isDefined[F <: Field[_], T <: Tuple](using fragment: FieldFragment[F, T]): LogicalExprFragment[F, T] with
     def build(f: F): CompiledQueryFragment[T] = fragment.build(f).append(" is not null")
@@ -56,15 +56,15 @@ object LogicalExprFragment:
   given in[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
     using
     left: FieldFragment[F, T1],
-    right: QueryCompiler[S, T2, _]
+    right: SelectQueryFragment[S, T2]
   ): LogicalExprFragment[In[F, S], T1 Concat T2] with
     def build(e: In[F, S]): CompiledQueryFragment[T1 Concat T2] =
-      left.build(e.left).concatenateRequired(CompiledQueryFragment(right.build(e.right)).wrap("(", ")"), " IN ")
+      left.build(e.left).concatenateRequired(right.build(e.right).wrap("(", ")"), " IN ")
 
   given notIn[F <: Field[_], S <: SelectQuery[_, _, _, _, _, _, _, _], T1 <: Tuple, T2 <: Tuple](
     using
     left: FieldFragment[F, T1],
-    right: QueryCompiler[S, T2, _]
+    right: SelectQueryFragment[S, T2]
   ): LogicalExprFragment[NotIn[F, S], T1 Concat T2] with
     def build(e: NotIn[F, S]): CompiledQueryFragment[T1 Concat T2] =
-      left.build(e.left).concatenateRequired(CompiledQueryFragment(right.build(e.right)).wrap("(", ")"), " NOT IN ")
+      left.build(e.left).concatenateRequired(right.build(e.right).wrap("(", ")"), " NOT IN ")
