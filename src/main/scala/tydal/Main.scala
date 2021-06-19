@@ -64,7 +64,7 @@ enum Colour:
 
 given Enumerated[Colour] with
   def toString(e: Colour): String = e.toString
-  def fromString(s: String): Colour = Colour.valueOf(s)
+  def fromString(s: String): Option[Colour] = scala.util.Try(Colour.valueOf(s)).toOption
 
 object book extends TableSchema[
   "book",
