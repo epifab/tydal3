@@ -1,9 +1,7 @@
 package tydal.schema
 
-final class Cast[+F <: Field[_], U](val field: F)(using uType: DbType[U]) extends Field[U]:
-  def dbType: DbType[U] = uType
-  override def toString: String = s"$field::${uType.dbName}"
+final class Cast[+F <: Field[_], U](val field: F)(using val dbType: DbType[U]) extends Field[U]:
+  override def toString: String = s"$field::${dbType.dbName}"
 
-final class SoftCast[+F <: Field[_], U](val field: F)(using uType: DbType[U]) extends Field[U]:
-  def dbType: DbType[U] = uType
+final class SoftCast[+F <: Field[_], U](val field: F)(using val dbType: DbType[U]) extends Field[U]:
   override def toString: String = field.toString

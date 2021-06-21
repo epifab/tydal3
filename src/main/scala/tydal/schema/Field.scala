@@ -1,7 +1,11 @@
 package tydal.schema
 
 trait Field[T]:
-  def dbType: DbType[T]
+  val dbType: DbType[T]
+  type Out = dbType.Out
+
+  def encoder: skunk.Encoder[Out] = dbType.codec
+  def decoder: skunk.Decoder[Out] = dbType.codec
 
   def as[A](tag: A)(using DbIdentifier[tag.type]): Aliased[T, this.type, tag.type] = Aliased(this)
   

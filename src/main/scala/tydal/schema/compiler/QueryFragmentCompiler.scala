@@ -7,7 +7,7 @@ import cats.data.State
 trait QueryFragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledQueryFragment[Input]
 
-case class CompiledQueryFragment[Input <: Tuple](parts: List[String | State[Int, String]], codecs: Input):
+case class CompiledQueryFragment[Input <: Tuple](parts: List[String | State[Int, String]], input: Input):
 
   def sql: String = parts.foldLeft("") {
     case (x, s: String) => x + s
@@ -25,18 +25,18 @@ case class CompiledQueryFragment[Input <: Tuple](parts: List[String | State[Int,
   def `+,+`[I2 <: Tuple](other: CompiledQueryFragment[I2]): CompiledQueryFragment[Input Concat I2] =
     concatenateOptional(other, ", ")
 
-  def wrap(before: String, after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else (before :: parts) :+ after, codecs)
+  def wrap(before: String, after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else (before :: parts) :+ after, input)
 
-  def append(after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else parts :+ after, codecs)
+  def append(after: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else parts :+ after, input)
 
-  def prepend(before: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else before :: parts, codecs)
+  def prepend(before: String): CompiledQueryFragment[Input] = CompiledQueryFragment(if (parts.isEmpty) Nil else before :: parts, input)
 
   def concatenateOptional[I2 <: Tuple](other: CompiledQueryFragment[I2], separator: String): CompiledQueryFragment[Input Concat I2] =
     CompiledQueryFragment(
       (parts.isEmpty, other.parts.isEmpty) match
         case (false, false) => parts ++ (separator :: other.parts)
         case _ => parts ++ other.parts,
-      codecs ++ other.codecs
+      input ++ other.input
     )
 
   def concatenateRequired[I2 <: Tuple](other: CompiledQueryFragment[I2], separator: String): CompiledQueryFragment[Input Concat I2] =
@@ -44,11 +44,11 @@ case class CompiledQueryFragment[Input <: Tuple](parts: List[String | State[Int,
       (parts.isEmpty, other.parts.isEmpty) match
         case (true, true) => parts ++ (separator :: other.parts)
         case _ => Nil,
-      codecs ++ other.codecs
+      input ++ other.input
     )
 
   def orElse(s: String): CompiledQueryFragment[Input] =
-    if (parts.isEmpty) CompiledQueryFragment(s :: Nil, codecs) else this
+    if (parts.isEmpty) CompiledQueryFragment(s :: Nil, input) else this
 
 object CompiledQueryFragment:
   def empty: CompiledQueryFragment[EmptyTuple] = CompiledQueryFragment(Nil, EmptyTuple)

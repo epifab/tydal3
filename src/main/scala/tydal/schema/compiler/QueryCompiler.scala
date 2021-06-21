@@ -3,14 +3,18 @@ package tydal.schema.compiler
 import tydal.schema._
 import Tuple.Concat
 
-trait QueryCompiler[-Query, Input <: Tuple, Output]:
-  def build(query: Query): CompiledQuery[Input, Output]
+trait QueryCompiler[-Query, Input]:
+  def build(query: Query): CompiledQuery[Input]
 
-case class CompiledQuery[Input, Output](sql: String, input: Input, output: Output)
+case class CompiledQuery[Input](sql: String, encoder: skunk.Encoder[Input])
 
 object QueryCompiler:
-  given select[Input <: Tuple, Output, S <: SelectQuery[_, Output, _, _, _, _, _, _]](
+  given select[Input <: Tuple, InputEncoder <: Tuple, S] (
     using
-    fragment: SelectQueryFragment[S, Input]
-  ): QueryCompiler[S, Input, Output] with
-    def build(select: S): CompiledQuery[Input, Output] = ??? // fragment.build(select).get(select.fields)
+    fragment: SelectQueryFragment[S, Input],
+    encoder: EncoderAdapter[Input, InputEncoder]
+  ): QueryCompiler[S, InputEncoder] with
+    def build(select: S): CompiledQuery[InputEncoder] = {
+      val value = fragment.build(select)
+      CompiledQuery(value.sql, encoder(value.input))
+    }
