@@ -37,11 +37,11 @@ object FieldFragment:
     def build(func: DbFunction[FS, T]): CompiledQueryFragment[Output] =
       inner.build(func.params).wrap(s"${func.dbName}(", ")")
 
-  given namedPlaceholder[P <: NamedPlaceholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
-    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(Questionmark, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
+  given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
+    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(placeholder.dbType.codec.sql, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
   given literal[P <: Literal[_]]: FieldFragment[P, P *: EmptyTuple] with
-    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(Questionmark, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
+    def build(placeholder: P): CompiledQueryFragment[P *: EmptyTuple] = CompiledQueryFragment(List(placeholder.dbType.codec.sql, s"::${placeholder.dbType.dbName}"), placeholder *: EmptyTuple)
 
 
 trait FieldAsAliasSrc:

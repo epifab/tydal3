@@ -11,73 +11,73 @@ trait Field[T]:
 
   def ===[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): Equals[this.type, NamedPlaceholder[A, T]] = Equals(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): Equals[this.type, Placeholder[A, T]] = Equals(this, Placeholder(right)(using dbType))
 
   def !==[G <: Field[_]](right: G)(using AreComparable[this.type, G]): NotEquals[this.type, G] = NotEquals(this, right)
 
   def !==[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): NotEquals[this.type, NamedPlaceholder[A, T]] = NotEquals(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): NotEquals[this.type, Placeholder[A, T]] = NotEquals(this, Placeholder(right)(using dbType))
 
   def >[G <: Field[_]](right: G)(using AreComparable[this.type, G]): GreaterThan[this.type, G] = GreaterThan(this, right)
 
   def >[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): GreaterThan[this.type, NamedPlaceholder[A, T]] = GreaterThan(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): GreaterThan[this.type, Placeholder[A, T]] = GreaterThan(this, Placeholder(right)(using dbType))
 
   def <[G <: Field[_]](right: G)(using AreComparable[this.type, G]): LessThan[this.type, G] = LessThan(this, right)
 
   def <[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): LessThan[this.type, NamedPlaceholder[A, T]] = LessThan(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): LessThan[this.type, Placeholder[A, T]] = LessThan(this, Placeholder(right)(using dbType))
 
   def >=[G <: Field[_]](right: G)(using AreComparable[this.type, G]): GreaterThanOrEqual[this.type, G] = GreaterThanOrEqual(this, right)
 
   def >=[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): GreaterThanOrEqual[this.type, NamedPlaceholder[A, T]] = GreaterThanOrEqual(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): GreaterThanOrEqual[this.type, Placeholder[A, T]] = GreaterThanOrEqual(this, Placeholder(right)(using dbType))
 
   def <=[G <: Field[_]](right: G)(using AreComparable[this.type, G]): LessThanOrEqual[this.type, G] = LessThanOrEqual(this, right)
 
   def <=[A <: String with Singleton](right: A)(
     using
-    AreComparable[this.type, NamedPlaceholder[A, T]]
-  ): LessThanOrEqual[this.type, NamedPlaceholder[A, T]] = LessThanOrEqual(this, NamedPlaceholder(right)(using dbType))
+    AreComparable[this.type, Placeholder[A, T]]
+  ): LessThanOrEqual[this.type, Placeholder[A, T]] = LessThanOrEqual(this, Placeholder(right)(using dbType))
 
   def like[G <: Field[_]](right: G)(using IsText[T], IsText[G]): Like[this.type, G] = Like(this, right)
 
-  def like[A <: String with Singleton](right: A)(using IsText[T]): Like[this.type, NamedPlaceholder[A, T]] =
-    Like(this, NamedPlaceholder(right)(using dbType))
+  def like[A <: String with Singleton](right: A)(using IsText[T]): Like[this.type, Placeholder[A, T]] =
+    Like(this, Placeholder(right)(using dbType))
 
   def ilike[G <: Field[_]](right: G)(using IsText[T], IsText[G]): ILike[this.type, G] = ILike(this, right)
 
-  def ilike[A <: String with Singleton](right: A)(using IsText[T]): ILike[this.type, NamedPlaceholder[A, T]] =
-    ILike(this, NamedPlaceholder(right)(using dbType))
+  def ilike[A <: String with Singleton](right: A)(using IsText[T]): ILike[this.type, Placeholder[A, T]] =
+    ILike(this, Placeholder(right)(using dbType))
 
   def subsetOf[G <: Field[_]](right: G)(using AreComparableArray[this.type, G]): IsSubset[this.type, G] = IsSubset(this, right)
 
-  def subsetOf[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): IsSubset[this.type, NamedPlaceholder[A, T]] =
-    IsSubset(this, NamedPlaceholder(right)(using dbType))
+  def subsetOf[A <: String with Singleton](right: A)(using AreComparableArray[this.type, Placeholder[A, T]]): IsSubset[this.type, Placeholder[A, T]] =
+    IsSubset(this, Placeholder(right)(using dbType))
 
   def supersetOf[G <: Field[_]](right: G)(using AreComparableArray[this.type, G]): IsSuperset[this.type, G] = IsSuperset(this, right)
 
-  def supersetOf[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): IsSuperset[this.type, NamedPlaceholder[A, T]] =
-    IsSuperset(this, NamedPlaceholder(right)(using dbType))
+  def supersetOf[A <: String with Singleton](right: A)(using AreComparableArray[this.type, Placeholder[A, T]]): IsSuperset[this.type, Placeholder[A, T]] =
+    IsSuperset(this, Placeholder(right)(using dbType))
 
   def overlaps[G <: Field[_]](right: G)(using AreComparableArray[this.type, G]): Overlaps[this.type, G] = Overlaps(this, right)
 
-  def overlaps[A <: String with Singleton](right: A)(using AreComparableArray[this.type, NamedPlaceholder[A, T]]): Overlaps[this.type, NamedPlaceholder[A, T]] =
-    Overlaps(this, NamedPlaceholder(right)(using dbType))
+  def overlaps[A <: String with Singleton](right: A)(using AreComparableArray[this.type, Placeholder[A, T]]): Overlaps[this.type, Placeholder[A, T]] =
+    Overlaps(this, Placeholder(right)(using dbType))
 
   def anyOf[G <: Field[_]](right: G)(using CanContain[G, this.type]): AnyOf[this.type, G] = AnyOf(this, right)
 
-  def anyOf[A <: String with Singleton, U](right: A)(using DbType[array[T]], CanContain[array[T], T]): AnyOf[this.type, NamedPlaceholder[A, array[T]]] =
-    AnyOf(this, NamedPlaceholder(right))
+  def anyOf[A <: String with Singleton, U](right: A)(using DbType[array[T]], CanContain[array[T], T]): AnyOf[this.type, Placeholder[A, array[T]]] =
+    AnyOf(this, Placeholder(right))
 
   def in[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): In[this.type, S] = In(this, right)
 

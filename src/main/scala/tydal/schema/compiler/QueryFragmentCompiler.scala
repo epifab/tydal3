@@ -2,20 +2,16 @@ package tydal.schema.compiler
 
 import tydal.schema._
 import Tuple.Concat
+import cats.data.State
 
 trait QueryFragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledQueryFragment[Input]
 
-sealed trait Questionmark:
-  override val toString: String = "?"
-
-object Questionmark extends Questionmark
-
-case class CompiledQueryFragment[Input <: Tuple](parts: List[String | Questionmark], codecs: Input):
+case class CompiledQueryFragment[Input <: Tuple](parts: List[String | State[Int, String]], codecs: Input):
 
   def sql: String = parts.foldLeft("") {
     case (x, s: String) => x + s
-    case (x, Questionmark) => x + "?"
+    case (x, s: State[_, _]) => x + "?"
   }
 
   def `++`(other: String): CompiledQueryFragment[Input] = append(" " + other)
