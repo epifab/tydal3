@@ -14,14 +14,9 @@ trait EncoderAdapter[-T, U <: Tuple]:
 object EncoderAdapter:
   def apply[A, B <: Tuple](a: A)(using adapter: EncoderAdapter[A, B]): skunk.Encoder[B] = adapter(a)
 
-  given placeholder[A <: String with Singleton, T](using dbType: DbType[T]): EncoderAdapter[Placeholder[A, T], (A KeyValue dbType.Out) *: EmptyTuple] with
+  given placeholder[A <: String with Singleton, T, U](using dbType: DbType.Aux[T, U]): EncoderAdapter[Placeholder[A, T], (A KeyValue U) *: EmptyTuple] with
     def apply(placeholder: Placeholder[A, T]): Encoder[(A KeyValue dbType.Out) *: EmptyTuple] =
       dbType.codec.asEncoder.contramap { case kv *: EmptyTuple => kv.value }
-
-// todo: why does the following not work?
-//  given placeholder[A <: String with Singleton, T, Out]: EncoderAdapter[Placeholder.Aux[A, T, Out], (A, Out) *: EmptyTuple] with
-//    def apply(placeholder: Placeholder.Aux[A, T, Out]): Encoder[(A, Out) *: EmptyTuple] =
-//      placeholder.encoder.contramap { case (_, value) *: EmptyTuple => value }
 
   given literal[T]: EncoderAdapter[Literal[T], EmptyTuple] with
     def apply(literal: Literal[T]): Encoder[EmptyTuple] =

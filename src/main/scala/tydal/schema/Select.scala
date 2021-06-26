@@ -1,7 +1,6 @@
 package tydal.schema
 
 import tydal.schema.compiler.{QueryCompiler, CompiledQuery}
-import tydal.schema.compiler.{SelectQueryFragment, CompiledQueryFragment}
 
 
 trait Selectable[Fields]:
@@ -76,12 +75,8 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
     fields: RelationFields[alias.type, Fields, SubQueryFields]
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
-  def compile[Input](using compiler: QueryCompiler[this.type, Input]): CompiledQuery[Input] =
+  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): CompiledQuery[Input, Output] =
     compiler.build(this)
-
-//  def compile[Input <: Tuple](using compiler: SelectQueryFragment[this.type, Input]): CompiledQueryFragment[Input] =
-//    compiler.build(this)
-
 
 object Select:
   def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =

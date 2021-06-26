@@ -89,3 +89,6 @@ trait Field[T]:
 
   def asc: Asc[this.type] = Asc(this)
   def desc: Desc[this.type] = Desc(this)
+
+object Field:
+  type Aux[T, U] = Field[T] { type Out = U }

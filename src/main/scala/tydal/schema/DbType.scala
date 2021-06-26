@@ -105,9 +105,10 @@ object DbType:
     def codec: Codec[Seq[innerType.Out]] = ???  // todo: does skunk really support arrays?
     def dbName: String = s"${innerType.dbName}[]"
 
-  given[T: IsNotNullable](using innerType: DbType[T]): DbType[nullable[T]] with
-    type Out = Option[innerType.Out]
-    def codec: Codec[Option[innerType.Out]] = innerType.codec.opt
+  // todo: using dependent type here makes DecoderAdapter fail for Scala 3.0.0
+  given[T: IsNotNullable, U](using innerType: DbType.Aux[T, U]): DbType[nullable[T]] with
+    type Out = Option[U]
+    def codec: Codec[Option[U]] = innerType.codec.opt
     def dbName: String = innerType.dbName
 
   given[Name <: String, T] (using singleton: ValueOf[Name], enumerated: Enumerated[T]): DbType[`enum`[Name, T]] with
