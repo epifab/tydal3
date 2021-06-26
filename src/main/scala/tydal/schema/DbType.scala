@@ -11,22 +11,22 @@ trait DbType[T]:
   def codec: Codec[Out]
   def dbName: String
 
-trait char
-trait varchar
-trait text
-trait smallint
-trait integer
-trait bigint
-trait float4
-trait float8
-trait numeric
-trait bool
-trait uuid
-trait date
-trait timestamp
-trait array[T]
-trait nullable[T]
-trait `enum`[Name, T]
+type char
+type varchar
+type text
+type smallint
+type integer
+type bigint
+type float4
+type float8
+type numeric
+type bool
+type uuid
+type date
+type timestamp
+type array[T]
+type nullable[T]
+type `enum`[Name, T]
 
 trait Enumerated[T]:
   def toString(t: T): String
