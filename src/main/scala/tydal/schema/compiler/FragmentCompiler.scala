@@ -2,24 +2,24 @@ package tydal.schema.compiler
 
 import tydal.schema._
 import Tuple.Concat
+import skunk.Command
 import cats.data.State
+import cats.Traverse.ops.toAllTraverseOps
 
 trait FragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledFragment[Input]
 
 case class CompiledFragment[Input <: Tuple](parts: List[String | State[Int, String]], input: Input):
 
-  def sql: String = parts.foldLeft("") {
-    case (x, s: String) => x + s
-    case (x, s: State[_, _]) => x + "?"
-  }
+  lazy val sql: String =
+    parts.traverse {
+      case s: String => State.pure[Int, String](s)
+      case s: State[_, _] => s
+    }.runA(1).value.combineAll
 
   def `++`(other: String): CompiledFragment[Input] = append(" " + other)
 
   def `++`[I2 <: Tuple](other: CompiledFragment[I2]): CompiledFragment[Input Concat I2] =
-    concatenateOptional(other, " ")
-
-  def `+ +`[I2 <: Tuple](other: CompiledFragment[I2]): CompiledFragment[Input Concat I2] =
     concatenateOptional(other, " ")
 
   def `+,+`[I2 <: Tuple](other: CompiledFragment[I2]): CompiledFragment[Input Concat I2] =

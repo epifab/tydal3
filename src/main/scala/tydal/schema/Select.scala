@@ -1,6 +1,7 @@
 package tydal.schema
 
-import tydal.schema.compiler.{QueryCompiler, CompiledQuery}
+import skunk.Query
+import tydal.schema.compiler.QueryCompiler
 
 
 trait Selectable[Fields]:
@@ -75,7 +76,7 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
     fields: RelationFields[alias.type, Fields, SubQueryFields]
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
-  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): CompiledQuery[Input, Output] =
+  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
     compiler.build(this)
 
 object Select:
