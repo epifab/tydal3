@@ -62,9 +62,10 @@ import tydal.schema._
 enum Colour:
   case red, white
 
-given Enumerated[Colour] with
-  def toString(e: Colour): String = e.toString
-  def fromString(s: String): Option[Colour] = scala.util.Try(Colour.valueOf(s)).toOption
+object Colour:
+  given Enumerated[Colour] with
+    def toString(e: Colour): String = e.toString
+    def fromString(s: String): Option[Colour] = scala.util.Try(Colour.valueOf(s)).toOption
 
 object book extends TableSchema[
   "book",

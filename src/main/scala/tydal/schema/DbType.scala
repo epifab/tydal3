@@ -25,6 +25,7 @@ type uuid
 type date
 type timestamp
 type array[T]
+type json[T]  // todo: encoding / decoding
 type nullable[T]
 type `enum`[Name, T]
 

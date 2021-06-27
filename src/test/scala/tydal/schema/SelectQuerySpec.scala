@@ -4,12 +4,22 @@ import tydal.schema.compiler._
 import org.scalatest.freespec._
 import org.scalatest.matchers._
 
+enum Interest:
+  case music, art, history, math
+
+object Interest:
+  given Enumerated[Interest] with
+    def toString(interest: Interest): String = interest.toString
+    def fromString(s: String): Option[Interest] = Some(Interest.valueOf(s))
+
 object students extends TableSchema[
   "students",
   (
     "id" :=: uuid,
     "name" :=: varchar,
-    "date_of_birth" :=: date
+    "email" :=: nullable[varchar],
+    "date_of_birth" :=: date,
+    "interests" :=: array[`enum`["interest", Interest]]
   )
 ]
 
@@ -31,8 +41,6 @@ object exams extends TableSchema[
   )
 ]
 
-object Example extends App:
-  println(Select.from(students as "s").compile.sql)
 
 class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
 
