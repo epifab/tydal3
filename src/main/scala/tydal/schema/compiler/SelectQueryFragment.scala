@@ -31,11 +31,11 @@ object SelectQueryFragment:
     FieldsInput Concat FromInput Concat WhereInput Concat GroupByInput Concat HavingInput Concat SortByInput Concat OffsetInput Concat LimitInput
   ] with
     def build(select: SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit]): CompiledFragment[FieldsInput Concat FromInput Concat WhereInput Concat GroupByInput Concat HavingInput Concat SortByInput Concat OffsetInput Concat LimitInput] =
-      fields.build(select.fields).orElse("1").prepend("SELECT ") `+ +`
-        from.build(select.from).prepend("FROM ") `+ +`
-        where.build(select.where).prepend("WHERE ") `+ +`
-        groupBy.build(select.groupBy).prepend("GROUP BY ") `+ +`
-        having.build(select.having).prepend("HAVING ") `+ +`
-        sortBy.build(select.sortBy).prepend("ORDER BY ") `+ +`
-        offset.build(select.offset).prepend("OFFSET ") `+ +`
-        limit.build(select.limit).prepend("LIMIT ")
+      fields.build(select.fields).orElse("1").prepend("SELECT ") ++
+       from.build(select.from).prepend("FROM ") ++
+       where.build(select.where).prepend("WHERE ") ++
+       groupBy.build(select.groupBy).prepend("GROUP BY ") ++
+       having.build(select.having).prepend("HAVING ") ++
+       sortBy.build(select.sortBy).prepend("ORDER BY ") ++
+       offset.build(select.offset).prepend("OFFSET ") ++
+       limit.build(select.limit).prepend("LIMIT ")
