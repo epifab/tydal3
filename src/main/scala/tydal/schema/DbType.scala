@@ -4,7 +4,7 @@ import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 import skunk.Codec
 import skunk.codec.{all => codecs}
-import skunk.data.{Type => TypeName}
+import skunk.data.{Type => TypeName, Arr}
 
 trait DbType[T]:
   type Out
@@ -101,10 +101,19 @@ object DbType:
     def codec: Codec[Instant] = codecs.timestamp.imap(_.atZone(ZoneOffset.UTC).toInstant)(i => LocalDateTime.ofInstant(i, ZoneOffset.UTC))
     override def dbName: String = "timestamp"
 
-  given[T](using innerType: DbType[T]): DbType[array[T]] with
-    type Out = Seq[innerType.Out]
-    def codec: Codec[Seq[innerType.Out]] = ???  // todo: does skunk really support arrays?
-    def dbName: String = s"${innerType.dbName}[]"
+  given varcharArr: DbType[array[varchar]] with
+    type Out = Arr[String]
+    def codec: Codec[Arr[String]] = codecs._varchar
+    override def dbName: String = "varchar[]"
+
+  given enumArr[Name <: String, T](
+    using
+    singleton: ValueOf[Name],
+    enumerated: Enumerated[T]
+  ): DbType[array[`enum`[Name, T]]] with
+    type Out = Arr[T]
+    def codec: Codec[Arr[T]] = Codec.array[T](enumerated.toString, x => enumerated.fromString(x).toRight(s"Invalid element $x"), TypeName("_" + singleton.value, List(TypeName(singleton.value))))
+    override def dbName: String = s"${singleton.value}[]"
 
   // todo: using dependent type here makes DecoderAdapter fail for Scala 3.0.0
   given[T: IsNotNullable, U](using innerType: DbType.Aux[T, U]): DbType[nullable[T]] with
@@ -112,7 +121,7 @@ object DbType:
     def codec: Codec[Option[U]] = innerType.codec.opt
     def dbName: String = innerType.dbName
 
-  given[Name <: String, T] (using singleton: ValueOf[Name], enumerated: Enumerated[T]): DbType[`enum`[Name, T]] with
+  given[Name <: String, T](using singleton: ValueOf[Name], enumerated: Enumerated[T]): DbType[`enum`[Name, T]] with
     type Out = T
     def codec: Codec[T] = codecs.`enum`[T](enumerated.toString, enumerated.fromString, TypeName(singleton.value))
     def dbName: String = singleton.value

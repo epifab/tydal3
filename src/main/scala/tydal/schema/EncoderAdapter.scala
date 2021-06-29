@@ -38,15 +38,6 @@ object EncoderAdapter:
       override val types: List[Type] = head(t.head).types ++ tail(t.tail).types
       override val sql: State[Int, String] = (head(t.head).sql, tail(t.tail).sql).mapN((a, b) => s"$a, $b")
 
-//  given nonEmpty[H, HEnc, T <: Tuple, TEnc <: Tuple](
-//    using
-//    head: EncoderAdapter[H, HEnc],
-//    tail: EncoderAdapter[T, TEnc],
-//    // split: Split[Concat[HEnc, TEnc], HEnc, TEnc]
-//  ): EncoderAdapter[H *: T, HEnc *: TEnc] with
-//    def apply(t: H *: T): Encoder[HEnc *: TEnc] = ???
-
-
 
 trait Split[Src <: Tuple, A <: Tuple, B <: Tuple]:
   def apply(ab: Src): (A, B)

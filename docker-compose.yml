@@ -1,0 +1,13 @@
+version: '3'
+services:
+  postgres:
+    build: ./docker/postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: p4ssw0rd
+      POSTGRES_DB: tydal

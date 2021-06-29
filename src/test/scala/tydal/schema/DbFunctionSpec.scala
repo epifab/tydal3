@@ -13,4 +13,4 @@ object MinSpec extends App with DbFunctionSpec:
   println(Min(Column["x", varchar]))
 
 object UnnestSpec extends DbFunctionSpec:
-  Unnest(Column["x", array[bool]]): DbFunction1[Column["x", array[bool]], bool]
+  Unnest(Column["x", array[varchar]]): DbFunction1[Column["x", array[varchar]], varchar]
