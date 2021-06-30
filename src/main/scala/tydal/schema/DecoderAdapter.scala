@@ -33,9 +33,9 @@ object DecoderAdapter:
   ): DecoderAdapter[H *: T, Concat[HDec, TDec]] with
     def apply(t: H *: T): Decoder[Concat[HDec, TDec]] = new Decoder[Concat[HDec, TDec]]:
       override def decode(offset: Int, ss: List[Option[String]]): Either[Decoder.Error, Concat[HDec, TDec]] =
-        val (sa, sb) = ss.splitAt(types.length)
         val headDecoder: Decoder[HDec] = head(t.head)
         val tailDecoder: Decoder[TDec] = tail(t.tail)
+        val (sa, sb) = ss.splitAt(headDecoder.types.length)
         for {
           h <- headDecoder.decode(offset, sa)
           t <- tailDecoder.decode(offset, sb)
