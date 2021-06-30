@@ -16,7 +16,6 @@ case class ConcertArtistRecord(id: UUID, headliner: Boolean)
 case class TicketRecord(price: BigDecimal, currency: Currency)
 
 case class Concert(
-  id: UUID,
   begin: Instant,
   end: Instant,
   venueName: String,
@@ -78,7 +77,7 @@ object ConcertsRepo:
             x("t", "currency") as "currency",
             Min(x("t", "price")) as "min_price"
           ))
-          .groupBy(_("cid"))
+          .groupBy(x => (x("cid"), x("currency")))
           .as("tx")
       ).on(_("cid") === _("c", "id"))
       .take(x => (
@@ -143,7 +142,6 @@ object ConcertsRepo:
             .fold[Option[Concert]](None) {
               case (None, (id, begin, end, venueName, artistIndex, artistName, currency, price)) =>
                 Some(Concert(
-                  id = id,
                   begin = begin,
                   end = end,
                   venueName = venueName,

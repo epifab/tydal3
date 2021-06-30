@@ -1,7 +1,8 @@
 package tydal.schema
 
-import cats.effect._
 import cats.Monad
+import cats.effect._
+import cats.effect.unsafe.IORuntime
 import cats.implicits._
 import natchez.Trace.Implicits.noop
 import org.scalatest.freespec._
@@ -13,13 +14,14 @@ import skunk.implicits._
 import tydal.schema.repos.Schema._
 import tydal.schema.repos._
 
-import java.time.Instant
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 
-object IntegrationSpec extends IOApp:
-  
+class IntegrationSpec extends AnyFreeSpec with should.Matchers:
+
+  implicit val runtime: IORuntime = cats.effect.unsafe.IORuntime.global
+
   val session: Resource[IO, Session[IO]] =
     Session.single(
       host     = "localhost",
@@ -30,34 +32,48 @@ object IntegrationSpec extends IOApp:
       strategy = Strategy.SearchPath
     )
 
-  def run(args: List[String]): IO[ExitCode] =
-    val repos = (for {
-      artistsRepo <- ArtistsRepo(IO(UUID.randomUUID()), session)
-      venuesRepo <- VenuesRepo(IO(UUID.randomUUID()), session)
-      concertsRepo <- ConcertsRepo(IO(UUID.randomUUID()), session)
-    } yield ((artistsRepo, venuesRepo, concertsRepo)))
+  val repos = (for {
+    artistsRepo <- ArtistsRepo(IO(UUID.randomUUID()), session)
+    venuesRepo <- VenuesRepo(IO(UUID.randomUUID()), session)
+    concertsRepo <- ConcertsRepo(IO(UUID.randomUUID()), session)
+  } yield ((artistsRepo, venuesRepo, concertsRepo)))
+
+  "A bunch of semi-complex queries can run" in {
+    val expectedConcert = Concert(
+      Instant.parse("2015-03-01T20:00:00Z"),
+      Instant.parse("2015-03-02T01:00:00Z"),
+      "Roundhouse",
+      Map(
+        1 -> "Radiohead",
+        2 -> "Caribou"
+      ),
+      Map(
+        Currency.GBP -> 15.5,
+        Currency.USD -> 90.0
+      )
+    )
 
     repos.use { case (artists, venues, concerts) =>
       for {
         radiohead <- artists.create("Radiohead", List(Genre.Rock, Genre.Electronic, Genre.Psychedelic))
         caribou <- artists.create("Caribou", List(Genre.Electronic))
-        roundhouse <- venues.create("Roundhouse", Some("London"))
+        roundhouse <- venues.create(expectedConcert.venueName, Some("London"))
         concertId <- concerts.create(
           roundhouse,
-          Instant.parse("2015-03-01T20:00:00Z"),
-          Instant.parse("2015-03-02T01:00:00Z"),
+          expectedConcert.begin,
+          expectedConcert.end,
           List(
             ConcertArtistRecord(radiohead, headliner = true),
             ConcertArtistRecord(caribou, headliner = false),
           ),
           List(
-            TicketRecord(BigDecimal(15.5), Currency.GBP),
-            TicketRecord(BigDecimal(45.0), Currency.GBP),
-            TicketRecord(BigDecimal(90.0), Currency.USD)
+            TicketRecord(expectedConcert.cheapestTickets(Currency.GBP), Currency.GBP),
+            TicketRecord(BigDecimal(99.99), Currency.GBP),
+            TicketRecord(BigDecimal(245.0), Currency.GBP),
+            TicketRecord(expectedConcert.cheapestTickets(Currency.USD), Currency.USD)
           )
         )
         concert <- concerts.findOne(concertId)
-        _ <- IO(println(concert))
-      } yield ExitCode.Success
-    }
-
+      } yield assert(concert == Some(expectedConcert))
+    }.unsafeRunSync()
+  }

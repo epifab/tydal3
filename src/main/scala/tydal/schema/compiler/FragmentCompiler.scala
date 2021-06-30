@@ -42,7 +42,7 @@ case class CompiledFragment[Input <: Tuple](parts: List[String | State[Int, Stri
   def concatenateRequired[I2 <: Tuple](other: CompiledFragment[I2], separator: String): CompiledFragment[Input Concat I2] =
     CompiledFragment(
       (parts.isEmpty, other.parts.isEmpty) match
-        case (true, true) => parts ++ (separator :: other.parts)
+        case (false, false) => parts ++ (separator :: other.parts)
         case _ => Nil,
       input ++ other.input
     )

@@ -26,4 +26,4 @@ object RelationsFragment:
       tailCompiler.build(join.tail) ++ (join.joinType match
         case JoinType.inner => "INNER JOIN"
         case JoinType.left => "LEFT JOIN"
-      ) ++ headCompiler.build(join.head) ++ "ON" ++ onCompiler.build(join.on)
+      ) ++ headCompiler.build(join.head) ++ onCompiler.build(join.on).prepend("ON ")
