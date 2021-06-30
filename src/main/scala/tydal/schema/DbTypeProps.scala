@@ -34,7 +34,7 @@ object IsNumerical:
 
 
 object IsText:
-  given IsText[char] with { }
+  given sizedVarchar[Size]: IsText[varcharOf[Size]] with { }
   given IsText[varchar] with { }
   given IsText[text] with { }
   given[T: IsText]: IsText[nullable[T]] with { }

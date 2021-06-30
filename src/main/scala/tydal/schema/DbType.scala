@@ -11,8 +11,8 @@ trait DbType[T]:
   def codec: Codec[Out]
   def dbName: String
 
-type char
 type varchar
+type varcharOf[size]
 type text
 type smallint
 type integer
@@ -36,14 +36,14 @@ trait Enumerated[T]:
 object DbType:
   type Aux[T, U] = DbType[T] { type Out = U }
 
-  given DbType[char] with
-    type Out = String
-    def codec: Codec[String] = codecs.varchar   // no codecs for char?
-    def dbName: String = "char"
-
   given DbType[varchar] with
     type Out = String
     def codec: Codec[String] = codecs.varchar
+    def dbName: String = "varchar"
+
+  given[Size <: Int](using singleton: ValueOf[Size]): DbType[varcharOf[Size]] with
+    type Out = String
+    def codec: Codec[String] = codecs.varchar(singleton.value)
     def dbName: String = "varchar"
 
   given DbType[text] with

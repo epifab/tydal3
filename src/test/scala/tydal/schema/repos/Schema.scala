@@ -25,7 +25,7 @@ object Schema:
     "artist",
     (
       "id" :=: uuid,
-      "name" :=: varchar,
+      "name" :=: varcharOf[128],
       "genres" :=: array[`enum`["genre", Genre]]
     )
   ]
@@ -34,7 +34,7 @@ object Schema:
     "venue",
     (
       "id" :=: uuid,
-      "name" :=: varchar,
+      "name" :=: varcharOf[128],
       "address" :=: nullable[text]
     )
   ]

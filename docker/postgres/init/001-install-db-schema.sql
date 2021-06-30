@@ -1,4 +1,4 @@
-CREATE TYPE genre as ENUM('Rock', 'Pop', 'Metal');
+CREATE TYPE genre as ENUM('Rock', 'Psychedelic', 'Electronic', 'Pop', 'Metal');
 CREATE TYPE currency as ENUM('GBP', 'USD', 'EUR');
 
 create table artist(
