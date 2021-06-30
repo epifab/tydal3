@@ -65,7 +65,7 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
     JoinBuilder(this, right, JoinType.inner)
 
   def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
-    JoinBuilder(this, nullable(right), JoinType.inner)
+    JoinBuilder(this, nullable(right), JoinType.left)
 
   def inRange[NewOffset <: Int with Singleton, NewLimit <: Int with Singleton](newOffset: NewOffset, newLimit: NewLimit): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[newOffset.type], Some[newLimit.type]] =
     SelectQuery(from, fields, groupBy, where, having, sortBy, Some(newOffset), Some(newLimit))

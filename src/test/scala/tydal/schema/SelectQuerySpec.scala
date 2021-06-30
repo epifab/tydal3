@@ -59,7 +59,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
     }
   }
 
-  "Joins" - {
+  "Join" - {
     "Single inner join" in {
       Select
         .from(concert as "c")
@@ -67,9 +67,114 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
         .compile
         .sql shouldBe "SELECT 1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id"
     }
+
+    "Multiple joins" in {
+      val sql = Select
+        .from(concert as "c")
+        .innerJoin(venue as "v").on(_ ("id") === _ ("c", "venue_id"))
+        .leftJoin(ticket as "t").on(_ ("concert_id") === _ ("c", "id"))
+        .compile
+        .sql
+      println(sql)
+      sql shouldBe "SELECT 1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id LEFT JOIN ticket t ON t.concert_id = c.id"
+    }
+
+    "Join subquery" in {
+      Select
+        .from(concert as "c")
+        .leftJoin(
+          Select
+            .from(concert as "c2")
+            .take(_("c2", "venue_id") as "vid")
+            .as("c3")
+        ).on(_("vid") === _("c", "venue_id"))
+        .compile
+        .sql shouldBe "SELECT 1 FROM concert c LEFT JOIN (SELECT c2.venue_id AS vid FROM concert c2) c3 ON c3.vid = c.venue_id"
+    }
   }
 
-  Select.from(artist as "a").where(_("a", "name") === "name?").compile
+  "Binary expression" - {
+    "Equals" in {
+      Select.from(artist as "a").where(_("a", "name") === "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name = $1"
+    }
+
+    "Not equals" in {
+      Select.from(artist as "a").where(_("a", "name") !== "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name <> $1"
+    }
+
+    "Greater than" in {
+      Select.from(artist as "a").where(_("a", "name") > "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name > $1"
+    }
+
+    "Less than" in {
+      Select.from(artist as "a").where(_("a", "name") < "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name < $1"
+    }
+
+    "Greater or equal than" in {
+      Select.from(artist as "a").where(_("a", "name") >= "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name >= $1"
+    }
+
+    "Less or equal than" in {
+      Select.from(artist as "a").where(_("a", "name") <= "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name <= $1"
+    }
+
+    "Like" in {
+      Select.from(artist as "a").where(_("a", "name") like "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name LIKE $1"
+    }
+
+    "Case insensitive like" in {
+      Select.from(artist as "a").where(_("a", "name") ilike "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name ILIKE $1"
+    }
+
+    "Is subset" in {
+      Select.from(artist as "a").where(_("a", "genres") subsetOf "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.genres <@ $1"
+    }
+
+    "Is superset" in {
+      Select.from(artist as "a").where(_("a", "genres") supersetOf "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.genres @> $1"
+    }
+
+    "Overlaps" in {
+      Select.from(artist as "a").where(_("a", "genres") overlaps "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.genres && $1"
+    }
+
+    "Is any of" in {
+      Select.from(artist as "a").where(_("a", "name") anyOf "?").compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.name = ANY($1)"
+    }
+
+    "In subquery" in {
+      Select
+        .from(artist as "a")
+        .where(_("a", "id") in Select
+          .from(concert_artist as "ca")
+          .take(_("ca", "artist_id") as "aid")
+        ).compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.id IN (SELECT ca.artist_id AS aid FROM concert_artist ca)"
+    }
+
+    "Not in subquery" in {
+      Select
+        .from(artist as "a")
+        .where(_("a", "id") notIn Select
+          .from(concert_artist as "ca")
+          .take(_("ca", "artist_id") as "aid")
+        ).compile.sql shouldBe
+        "SELECT 1 FROM artist a WHERE a.id NOT IN (SELECT ca.artist_id AS aid FROM concert_artist ca)"
+    }
+  }
+
   Select.from(artist as "a").where(_("a", "name") === "yo".literal[varchar]).compile
   Select.from(artist as "a").where($ => ($("a", "name") === "name?") or ($("a", "id") === "ids?")).compile
   Select.from(artist as "a").sortBy(_("a", "name")).compile

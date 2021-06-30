@@ -14,7 +14,7 @@ object RelationsFragment:
     def build(subQuery: SubQuery[Alias, Fields, S]): CompiledFragment[T] =
       fragment.build(subQuery.select)
         .wrap("(", ")")
-        .append(s" AS ${subQuery.alias.value}")
+        .append(" " + subQuery.alias.value)
 
   given join[Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr, TailOutput <: Tuple, HeadOutput <: Tuple, OnOutput <: Tuple](
     using

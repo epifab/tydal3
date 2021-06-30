@@ -41,7 +41,7 @@ object LogicalExprFragment:
       val e2 = right.build(filter.right)
       filter match
         case _: Equals[_, _] => e1.concatenateRequired(e2, " = ")
-        case _: NotEquals[_, _] => e1.concatenateRequired(e2, " != ")
+        case _: NotEquals[_, _] => e1.concatenateRequired(e2, " <> ")
         case _: GreaterThan[_, _] => e1.concatenateRequired(e2, " > ")
         case _: LessThan[_, _] => e1.concatenateRequired(e2, " < ")
         case _: GreaterThanOrEqual[_, _] => e1.concatenateRequired(e2, " >= ")

@@ -106,6 +106,11 @@ object DbType:
     def codec: Codec[Arr[String]] = codecs._varchar
     override def dbName: String = "varchar[]"
 
+  given varcharOfArr[Size <: Int](using singleton: ValueOf[Size]): DbType[array[varcharOf[Size]]] with
+    type Out = Arr[String]
+    def codec: Codec[Arr[String]] = codecs._varchar
+    def dbName: String = "varchar[]"
+
   given enumArr[Name <: String, T](
     using
     singleton: ValueOf[Name],
