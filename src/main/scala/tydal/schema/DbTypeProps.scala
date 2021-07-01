@@ -13,9 +13,9 @@ trait IsTemporal[-T] extends DbTypeProps
 trait IsArray[-T] extends DbTypeProps
 
 object IsInteger:
-  given IsInteger[smallint] with { }
-  given IsInteger[integer] with { }
-  given IsInteger[bigint] with { }
+  given IsInteger[int2] with { }
+  given IsInteger[int4] with { }
+  given IsInteger[int8] with { }
   given[T: IsInteger]: IsInteger[nullable[T]] with { }
   given[T: IsInteger]: IsInteger[Field[T]] with { }
 
@@ -29,7 +29,7 @@ object IsRational:
 
 
 object IsNumerical:
-  given integer[T: IsInteger]: IsNumerical[T] with { }
+  given int4[T: IsInteger]: IsNumerical[T] with { }
   given rational[T: IsRational]: IsNumerical[T] with { }
 
 
@@ -57,12 +57,12 @@ object IsArray:
 trait Rational[T, U]
 
 object Rational:
-  given Rational[smallint, float4] with { }
-  given Rational[integer, float4] with { }
-  given Rational[bigint, float8] with { }
-  given nullableSmallint: Rational[nullable[smallint], nullable[float4]] with { }
-  given nullableInt: Rational[nullable[integer], nullable[float4]] with { }
-  given nullableBigint: Rational[nullable[bigint], nullable[float8]] with { }
+  given Rational[int2, float4] with { }
+  given Rational[int4, float4] with { }
+  given Rational[int8, float8] with { }
+  given nullableSmallint: Rational[nullable[int2], nullable[float4]] with { }
+  given nullableInt: Rational[nullable[int4], nullable[float4]] with { }
+  given nullableBigint: Rational[nullable[int8], nullable[float8]] with { }
   given[T: IsRational]: Rational[T, T] with { }
 
 

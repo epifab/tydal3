@@ -14,9 +14,9 @@ trait DbType[T]:
 type varchar
 type varcharOf[size]
 type text
-type smallint
-type integer
-type bigint
+type int2
+type int4
+type int8
 type float4
 type float8
 type numeric
@@ -51,20 +51,20 @@ object DbType:
     def codec: Codec[String] = codecs.text
     def dbName: String = "text"
 
-  given DbType[smallint] with
+  given DbType[int2] with
     type Out = Short
     def codec: Codec[Short] = codecs.int2
-    def dbName: String = "smallint"
+    def dbName: String = "int2"
 
-  given DbType[integer] with
+  given DbType[int4] with
     type Out = Int
     def codec: Codec[Int] = codecs.int4
-    def dbName: String = "integer"
+    def dbName: String = "int4"
 
-  given DbType[bigint] with
+  given DbType[int8] with
     type Out = Long
     def codec: Codec[Long] = codecs.int8
-    def dbName: String = "bigint"
+    def dbName: String = "int8"
 
   given DbType[float4] with
     type Out = Float

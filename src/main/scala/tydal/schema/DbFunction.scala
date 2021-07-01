@@ -45,8 +45,8 @@ extension [T, F <: Field[T]](field: F)
 
 final class Count[+F <: Field[_]](val param: F)(
   using
-  val dbType: DbType[bigint]
-) extends Aggregation[F, bigint]:
+  val dbType: DbType[int8]
+) extends Aggregation[F, int8]:
   override val dbName: String = "COUNT"
 
 extension [F <: Field[_]](field: F)

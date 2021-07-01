@@ -29,7 +29,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
     }
 
     "Literal" in {
-      Select.from(artist as "a").take(_ => 14.literal[integer]).compile.sql shouldBe
+      Select.from(artist as "a").take(_ => 14.literal[int4]).compile.sql shouldBe
         "SELECT $1 FROM artist a"
     }
 
@@ -175,17 +175,28 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
     }
   }
 
-  Select.from(artist as "a").where(_("a", "name") === "yo".literal[varchar]).compile
-  Select.from(artist as "a").where($ => ($("a", "name") === "name?") or ($("a", "id") === "ids?")).compile
-  Select.from(artist as "a").sortBy(_("a", "name")).compile
-  Select.from(artist as "a").sortBy($ => ($("a", "name"), Desc($("a", "id")))).compile
-  Select.from(artist as "a").innerJoin(concert_artist as "ca").on(_("artist_id") === _("a", "id")).compile
-  Select.from(artist as "a").innerJoin(concert_artist as "ca").on(_("artist_id") === _("a", "id")).compile
+  "Sort by" - {
+    "Single field, default order" in {
+      Select.from(artist as "a").sortBy(_("a", "name")).compile.sql shouldBe
+        "SELECT 1 FROM artist a ORDER BY a.name"
+    }
 
-  Select.from(artist as "a")
-    .leftJoin(concert_artist as "ca").on(_("artist_id") === _("a", "id"))
-    .leftJoin(concert as "c").on(_("id") === _("ca", "concert_id"))
-    .compile
+    "Two fields, default and descending order" in {
+      Select.from(artist as "a").sortBy($ => (Asc($("a", "name")), Desc($("a", "id")))).compile.sql shouldBe
+        "SELECT 1 FROM artist a ORDER BY a.name ASC, a.id DESC"
+    }
+  }
+
+  "Group by - having" in {
+    Select
+      .from(artist as "a")
+      .groupBy(x => Unnest(x("a", "genres")))
+      .take(x => (Unnest(x("a", "genres")) as "genre", Count(x("a", "id"))))
+      .having(x => Count(x("a", "id")) > 2.literal[int4])
+      .compile
+      .sql shouldBe
+      "SELECT UNNEST(a.genres) AS genre, COUNT(a.id) FROM artist a GROUP BY UNNEST(a.genres) HAVING COUNT(a.id) > $1"
+  }
 
   Select.from(artist as "a")
     .innerJoin(

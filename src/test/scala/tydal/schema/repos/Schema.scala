@@ -65,6 +65,6 @@ object Schema:
       "concert_id" :=: uuid,
       "artist_id" :=: uuid,
       "headliner" :=: bool,
-      "index" :=: integer
+      "index" :=: int4
     )
   ]
