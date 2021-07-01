@@ -4,7 +4,6 @@ import cats.Monad
 import cats.effect._
 import cats.effect.unsafe.IORuntime
 import cats.implicits._
-import natchez.Trace.Implicits.noop
 import org.scalatest.freespec._
 import org.scalatest.matchers._
 import skunk._
@@ -18,19 +17,7 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 
-class IntegrationSpec extends AnyFreeSpec with should.Matchers:
-
-  implicit val runtime: IORuntime = cats.effect.unsafe.IORuntime.global
-
-  val session: Resource[IO, Session[IO]] =
-    Session.single(
-      host     = "localhost",
-      port     = 5432,
-      user     = "root",
-      password = Some("p4ssw0rd"),
-      database = "tydal",
-      strategy = Strategy.SearchPath
-    )
+class RepositoryExampleSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
 
   val repos = (for {
     artistsRepo <- ArtistsRepo(IO(UUID.randomUUID()), session)

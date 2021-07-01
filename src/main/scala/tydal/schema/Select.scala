@@ -35,7 +35,7 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset <: Option[Int], Limit <: Option[Int]](
+final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset <: Option[Int], Limit <: Option[Int]](
   val from: From,
   val fields: Fields,
   val groupBy: GroupBy,
@@ -46,7 +46,7 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
   val limit: Limit
 ) extends SelectContext[Fields, From]:
 
-  def take[NewFields: ListOfFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
+  def take[NewFields: NonEmptyListOfFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
 
   def groupBy[NewGroupBy: ListOfFields](f: SelectContext[Fields, From] => NewGroupBy): SelectQuery[From, Fields, NewGroupBy, Where, Having, SortBy, Offset, Limit] =
@@ -80,13 +80,13 @@ final class SelectQuery[From <: Relations, Fields: ListOfFields, GroupBy: ListOf
     compiler.build(this)
 
 object Select:
-  def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
-    SelectQuery(relation, EmptyTuple, EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
+  def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, Const[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
+    SelectQuery(relation, 1[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
 
 
 class JoinBuilder[
   From <: Relations,
-  Fields: ListOfFields,
+  Fields: NonEmptyListOfFields,
   GroupBy: ListOfFields,
   Where <: LogicalExpr,
   Having <: LogicalExpr,

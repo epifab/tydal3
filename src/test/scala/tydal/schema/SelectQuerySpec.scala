@@ -2,188 +2,489 @@ package tydal.schema
 
 import org.scalatest.freespec._
 import org.scalatest.matchers._
-import tydal.schema.repos.Schema._
+import skunk.Query
 import tydal.schema.compiler._
+import tydal.schema.repos.Schema._
 
-class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
+class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
+
+  private def testQuery[A, B](query: Query[A, B], expectedSql: String, input: A): List[B] =
+    query.sql shouldBe expectedSql
+    session
+      .flatMap(_.prepare(query))
+      .use(_.stream(input, 4).compile.toList)
+      .unsafeRunSync()
 
   "Query fields" - {
     "Nothing selected" in {
-      Select.from(artist as "a").compile.sql shouldBe
-        "SELECT 1 FROM artist a"
+      testQuery(
+        Select.from(artist as "a").compile,
+        "SELECT $1 FROM artist a",
+        EmptyTuple
+      )
     }
 
     "One column" in {
-      Select.from(artist as "a").take(_("a", "id")).compile.sql shouldBe
-        "SELECT a.id FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_("a", "id")).compile,
+        "SELECT a.id FROM artist a",
+        EmptyTuple
+      )
     }
 
     "Two columns" in {
-      Select.from(artist as "a").take($ => ($("a", "id"), $("a", "name"))).compile.sql shouldBe
-        "SELECT a.id, a.name FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take($ => ($("a", "id"), $("a", "name"))).compile,
+        "SELECT a.id, a.name FROM artist a",
+        EmptyTuple
+      )
     }
 
     "Placeholder" in {
-      Select.from(artist as "a").take(_ => Placeholder["hello", varchar]).compile.sql shouldBe
-        "SELECT $1 FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_ => Placeholder["hello", varchar]).compile,
+        "SELECT $1 FROM artist a",
+        Tuple("hello" ~~> "blah")
+      )
     }
 
     "Const" in {
-      Select.from(artist as "a").take(_ => 14[int4]).compile.sql shouldBe
-        "SELECT $1 FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_ => 14[int4]).compile,
+        "SELECT $1 FROM artist a",
+        EmptyTuple
+      )
     }
 
-    "Aggregate" in {
-      Select.from(artist as "a").take($ => Max($("a", "name"))).compile.sql shouldBe
-        "SELECT MAX(a.name) FROM artist a"
+    "Aggregation (MAX)" - {
+      "max int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(14.toShort[int2])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Short] *: EmptyTuple]
+      }
+
+      "max nullable int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(Option(14.toShort)[nullable[int2]])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Short] *: EmptyTuple]
+      }
+
+      "max int4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(14[int4])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Int] *: EmptyTuple]
+      }
+
+      "max int8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(14.toLong[int8])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Long] *: EmptyTuple]
+      }
+
+      "max float4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(14.2.toFloat[float4])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Float] *: EmptyTuple]
+      }
+
+      "max float8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(14.2[float8])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Double] *: EmptyTuple]
+      }
+
+      "max numeric" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max(BigDecimal(14.2)[numeric])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "max text" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max("hello"[text])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+
+      "max varchar" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max("hello"[varchar])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+
+      "max sized varchar" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Max("hello"[varcharOf[128]])).compile,
+          "SELECT MAX($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+    }
+
+    "Aggregation (MIN)" - {
+      "min int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(14.toShort[int2])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Short] *: EmptyTuple]
+      }
+
+      "min nullable int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(Option(14.toShort)[nullable[int2]])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Short] *: EmptyTuple]
+      }
+
+      "min int4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(14[int4])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Int] *: EmptyTuple]
+      }
+
+      "min int8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(14.toLong[int8])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Long] *: EmptyTuple]
+      }
+
+      "min float4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(14.2.toFloat[float4])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Float] *: EmptyTuple]
+      }
+
+      "min float8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(14.2[float8])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Double] *: EmptyTuple]
+      }
+
+      "min numeric" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min(BigDecimal(14.2)[numeric])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "min text" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min("hello"[text])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+
+      "min varchar" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min("hello"[varchar])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+
+      "min sized varchar" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Min("hello"[varcharOf[128]])).compile,
+          "SELECT MIN($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[String] *: EmptyTuple]
+      }
+    }
+
+    "Aggregation (AVG)" - {
+      "avg int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(14.toShort[int2])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "avg nullable int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(Option(14.toShort)[nullable[int2]])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "avg int4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(14[int4])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "avg int8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(14.toLong[int8])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "avg float4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(14.2.toFloat[float4])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Double] *: EmptyTuple]
+      }
+
+      "avg float8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(14.2[float8])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Double] *: EmptyTuple]
+      }
+
+      "avg numeric" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Avg(BigDecimal(14.2)[numeric])).compile,
+          "SELECT AVG($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
     }
 
     "Aliased" in {
-      Select.from(artist as "a").take(_("a", "name").as("hello")).compile.sql shouldBe
-        "SELECT a.name AS hello FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_("a", "name").as("hello")).compile,
+        "SELECT a.name AS hello FROM artist a",
+        EmptyTuple
+      )
     }
 
     "Casted" in {
-      Select.from(artist as "a").take(_("a", "id").castTo[varchar]).compile.sql shouldBe
-        "SELECT a.id::varchar FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_("a", "id").castTo[varchar]).compile,
+        "SELECT a.id::varchar FROM artist a",
+        EmptyTuple
+      )
     }
 
     "Soft cast (nullable)" in {
-      Select.from(artist as "a").take(_("a", "id").nullable).compile.sql shouldBe
-        "SELECT a.id FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_("a", "id").nullable).compile,
+        "SELECT a.id FROM artist a",
+        EmptyTuple
+      )
     }
 
     "Multiple alias" in {
-      Select.from(artist as "a").take(_("a", "name").as("hello").as("rocky")).compile.sql shouldBe
-        "SELECT a.name AS rocky FROM artist a"
+      testQuery(
+        Select.from(artist as "a").take(_("a", "name").as("hello").as("rocky")).compile,
+        "SELECT a.name AS rocky FROM artist a",
+        EmptyTuple
+      )
     }
   }
 
   "Join" - {
     "Single inner join" in {
-      Select
-        .from(concert as "c")
-        .innerJoin(venue as "v").on(_("id") === _("c", "venue_id"))
-        .compile
-        .sql shouldBe "SELECT 1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id"
+      testQuery(
+        Select
+          .from(concert as "c")
+          .innerJoin(venue as "v").on(_("id") === _("c", "venue_id"))
+          .compile,
+        "SELECT $1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id",
+        EmptyTuple
+      )
     }
 
     "Multiple joins" in {
-      val sql = Select
-        .from(concert as "c")
-        .innerJoin(venue as "v").on(_ ("id") === _ ("c", "venue_id"))
-        .leftJoin(ticket as "t").on(_ ("concert_id") === _ ("c", "id"))
-        .compile
-        .sql
-      println(sql)
-      sql shouldBe "SELECT 1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id LEFT JOIN ticket t ON t.concert_id = c.id"
+      testQuery(
+        Select
+          .from(concert as "c")
+          .innerJoin(venue as "v").on(_ ("id") === _ ("c", "venue_id"))
+          .leftJoin(ticket as "t").on(_ ("concert_id") === _ ("c", "id"))
+          .compile,
+        "SELECT $1 FROM concert c INNER JOIN venue v ON v.id = c.venue_id LEFT JOIN ticket t ON t.concert_id = c.id",
+        EmptyTuple
+      )
     }
 
     "Join subquery" in {
-      Select
-        .from(concert as "c")
-        .leftJoin(
-          Select
-            .from(concert as "c2")
-            .take(_("c2", "venue_id") as "vid")
-            .as("c3")
-        ).on(_("vid") === _("c", "venue_id"))
-        .compile
-        .sql shouldBe "SELECT 1 FROM concert c LEFT JOIN (SELECT c2.venue_id AS vid FROM concert c2) c3 ON c3.vid = c.venue_id"
+      testQuery(
+        Select
+          .from(concert as "c")
+          .leftJoin(
+            Select
+              .from(concert as "c2")
+              .take(_("c2", "venue_id") as "vid")
+              .as("c3")
+          ).on(_("vid") === _("c", "venue_id"))
+          .compile,
+        "SELECT $1 FROM concert c LEFT JOIN (SELECT c2.venue_id AS vid FROM concert c2) c3 ON c3.vid = c.venue_id",
+        EmptyTuple
+      )
     }
   }
 
   "Binary expression" - {
     "Equals" in {
-      Select.from(artist as "a").where(_("a", "name") === "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name = $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") === "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name = $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Not equals" in {
-      Select.from(artist as "a").where(_("a", "name") !== "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name <> $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") !== "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name <> $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Greater than" in {
-      Select.from(artist as "a").where(_("a", "name") > "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name > $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") > "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name > $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Less than" in {
-      Select.from(artist as "a").where(_("a", "name") < "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name < $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") < "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name < $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Greater or equal than" in {
-      Select.from(artist as "a").where(_("a", "name") >= "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name >= $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") >= "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name >= $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Less or equal than" in {
-      Select.from(artist as "a").where(_("a", "name") <= "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name <= $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") <= "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name <= $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Like" in {
-      Select.from(artist as "a").where(_("a", "name") like "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name LIKE $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") like "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name LIKE $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Case insensitive like" in {
-      Select.from(artist as "a").where(_("a", "name") ilike "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name ILIKE $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") ilike "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name ILIKE $2",
+        Tuple("?" ~~> "foo")
+      )
     }
 
     "Is subset" in {
-      Select.from(artist as "a").where(_("a", "genres") subsetOf "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.genres <@ $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "genres") subsetOf "?").compile,
+        "SELECT $1 FROM artist a WHERE a.genres <@ $2",
+        Tuple("?" ~~> skunk.data.Arr(Genre.Rock, Genre.Psychedelic))
+      )
     }
 
     "Is superset" in {
-      Select.from(artist as "a").where(_("a", "genres") supersetOf "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.genres @> $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "genres") supersetOf "?").compile,
+        "SELECT $1 FROM artist a WHERE a.genres @> $2",
+        Tuple("?" ~~> skunk.data.Arr(Genre.Rock, Genre.Psychedelic))
+      )
     }
 
     "Overlaps" in {
-      Select.from(artist as "a").where(_("a", "genres") overlaps "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.genres && $1"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "genres") overlaps "?").compile,
+        "SELECT $1 FROM artist a WHERE a.genres && $2",
+        Tuple("?" ~~> skunk.data.Arr(Genre.Rock, Genre.Psychedelic))
+      )
     }
 
     "Is any of" in {
-      Select.from(artist as "a").where(_("a", "name") anyOf "?").compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.name = ANY($1)"
+      testQuery(
+        Select.from(artist as "a").where(_("a", "name") anyOf "?").compile,
+        "SELECT $1 FROM artist a WHERE a.name = ANY($2)",
+        Tuple("?" ~~> skunk.data.Arr("foo", "bar"))
+      )
     }
 
     "In subquery" in {
-      Select
-        .from(artist as "a")
-        .where(_("a", "id") in Select
-          .from(concert_artist as "ca")
-          .take(_("ca", "artist_id") as "aid")
-        ).compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.id IN (SELECT ca.artist_id AS aid FROM concert_artist ca)"
+      testQuery(
+        Select
+          .from(artist as "a")
+          .where(_("a", "id") in Select
+            .from(concert_artist as "ca")
+            .take(_("ca", "artist_id") as "aid")
+          ).compile,
+        "SELECT $1 FROM artist a WHERE a.id IN (SELECT ca.artist_id AS aid FROM concert_artist ca)",
+        EmptyTuple
+      )
     }
 
     "Not in subquery" in {
-      Select
-        .from(artist as "a")
-        .where(_("a", "id") notIn Select
-          .from(concert_artist as "ca")
-          .take(_("ca", "artist_id") as "aid")
-        ).compile.sql shouldBe
-        "SELECT 1 FROM artist a WHERE a.id NOT IN (SELECT ca.artist_id AS aid FROM concert_artist ca)"
+      testQuery(
+        Select
+          .from(artist as "a")
+          .where(_("a", "id") notIn Select
+            .from(concert_artist as "ca")
+            .take(_("ca", "artist_id") as "aid")
+          ).compile,
+        "SELECT $1 FROM artist a WHERE a.id NOT IN (SELECT ca.artist_id AS aid FROM concert_artist ca)",
+        EmptyTuple
+      )
     }
   }
 
   "Sort by" - {
     "Single field, default order" in {
       Select.from(artist as "a").sortBy(_("a", "name")).compile.sql shouldBe
-        "SELECT 1 FROM artist a ORDER BY a.name"
+        "SELECT $1 FROM artist a ORDER BY a.name"
     }
 
     "Two fields, default and descending order" in {
       Select.from(artist as "a").sortBy($ => (Asc($("a", "name")), Desc($("a", "id")))).compile.sql shouldBe
-        "SELECT 1 FROM artist a ORDER BY a.name ASC, a.id DESC"
+        "SELECT $1 FROM artist a ORDER BY a.name ASC, a.id DESC"
     }
   }
 
@@ -205,7 +506,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
         .innerJoin(ticket as "t").on(_("concert_id") === _("ca", "concert_id"))
         .take(x => (
           x("ca", "artist_id") as "artist_id",
-          x("t", "price").min as "lowest_price"
+          Min(x("t", "price")) as "lowest_price"
         ))
         .as("tx")
     ).on(_("artist_id") === _("a", "id"))

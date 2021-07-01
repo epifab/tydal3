@@ -57,13 +57,13 @@ object IsArray:
 trait Rational[T, U]
 
 object Rational:
-  given Rational[int2, float4] with { }
-  given Rational[int4, float4] with { }
-  given Rational[int8, float8] with { }
-  given nullableSmallint: Rational[nullable[int2], nullable[float4]] with { }
-  given nullableInt: Rational[nullable[int4], nullable[float4]] with { }
-  given nullableBigint: Rational[nullable[int8], nullable[float8]] with { }
-  given[T: IsRational]: Rational[T, T] with { }
+  given Rational[int2, numeric] with { }
+  given Rational[int4, numeric] with { }
+  given Rational[int8, numeric] with { }
+  given Rational[float4, float8] with { }
+  given Rational[float8, float8] with { }
+  given Rational[numeric, numeric] with { }
+  given [T, U](using Rational[T, U]): Rational[nullable[T], nullable[U]] with { }
 
 
 trait IsNullable[-T]
