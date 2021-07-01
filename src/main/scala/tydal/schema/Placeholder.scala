@@ -2,7 +2,7 @@ package tydal.schema
 
 import tydal.schema
 
-final class Placeholder[Name <: String with Singleton, T](val name: Name)(using val dbType: DbType[T]) extends Field[T]
+final class Placeholder[Name, T](using val name: DbIdentifier[Name], val dbType: DbType[T]) extends Field[T]
 
 object Placeholder:
   type Aux[Name <: String with Singleton, T, U] = Placeholder[Name, T] { type Out = U }
@@ -15,8 +15,8 @@ trait ColumnPlaceholders[-Columns, Placeholders]:
   def value: Placeholders
 
 object ColumnPlaceholders:
-  given column[Name <: String with Singleton, T: DbType](using singleton: ValueOf[Name]): ColumnPlaceholders[Column[Name, T], Placeholder[Name, T]] with
-    def value: Placeholder[Name, T] = Placeholder[Name, T](singleton.value)
+  given column[Name, T: DbType](using DbIdentifier[Name]): ColumnPlaceholders[Column[Name, T], Placeholder[Name, T]] with
+    def value: Placeholder[Name, T] = Placeholder[Name, T]
 
   given empty: ColumnPlaceholders[EmptyTuple, EmptyTuple] with
     def value: EmptyTuple = EmptyTuple
@@ -27,10 +27,6 @@ object ColumnPlaceholders:
     tail: ColumnPlaceholders[Tail, TailPlaceholders]
   ): ColumnPlaceholders[Head *: Tail, HeadPlaceholder *: TailPlaceholders] with
     def value: HeadPlaceholder *: TailPlaceholders = head.value *: tail.value
-
-
-extension[Name <: String with Singleton](name: Name)
-  def placeholder[T: DbType]: Placeholder[Name, T] = Placeholder(name)
 
 extension[Key <: String with Singleton](key: Key)
   def ~~>[T](value: T): KeyValue[Key, T] = KeyValue(key, value)

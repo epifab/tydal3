@@ -18,9 +18,9 @@ object EncoderAdapter:
     def apply(placeholder: Placeholder[A, T]): Encoder[(A KeyValue dbType.Out) *: EmptyTuple] =
       dbType.codec.asEncoder.contramap { case kv *: EmptyTuple => kv.value }
 
-  given literal[T]: EncoderAdapter[Literal[T], EmptyTuple] with
-    def apply(literal: Literal[T]): Encoder[EmptyTuple] =
-      literal.dbType.codec.asEncoder.contramap(_ => literal.value)
+  given const[T]: EncoderAdapter[Const[T], EmptyTuple] with
+    def apply(const: Const[T]): Encoder[EmptyTuple] =
+      const.dbType.codec.asEncoder.contramap(_ => const.value)
 
   given empty: EncoderAdapter[EmptyTuple, EmptyTuple] with
     def apply(et: EmptyTuple): Encoder[EmptyTuple] = Void.codec.asEncoder.contramap[EmptyTuple](_ => Void)

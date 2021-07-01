@@ -40,7 +40,7 @@ object FieldFragment:
   given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledFragment[P *: EmptyTuple] = CompiledFragment(List(placeholder.dbType.codec.sql), placeholder *: EmptyTuple)
 
-  given literal[P <: Literal[_]]: FieldFragment[P, P *: EmptyTuple] with
+  given const[P <: Const[_]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledFragment[P *: EmptyTuple] = CompiledFragment(List(placeholder.dbType.codec.sql), placeholder *: EmptyTuple)
 
 

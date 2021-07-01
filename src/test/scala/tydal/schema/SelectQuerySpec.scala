@@ -24,12 +24,12 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
     }
 
     "Placeholder" in {
-      Select.from(artist as "a").take(_ => "hello".placeholder[varchar]).compile.sql shouldBe
+      Select.from(artist as "a").take(_ => Placeholder["hello", varchar]).compile.sql shouldBe
         "SELECT $1 FROM artist a"
     }
 
-    "Literal" in {
-      Select.from(artist as "a").take(_ => 14.literal[int4]).compile.sql shouldBe
+    "Const" in {
+      Select.from(artist as "a").take(_ => 14[int4]).compile.sql shouldBe
         "SELECT $1 FROM artist a"
     }
 
@@ -192,7 +192,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers:
       .from(artist as "a")
       .groupBy(x => Unnest(x("a", "genres")))
       .take(x => (Unnest(x("a", "genres")) as "genre", Count(x("a", "id"))))
-      .having(x => Count(x("a", "id")) > 2.literal[int4])
+      .having(x => Count(x("a", "id")) > 2[int4])
       .compile
       .sql shouldBe
       "SELECT UNNEST(a.genres) AS genre, COUNT(a.id) FROM artist a GROUP BY UNNEST(a.genres) HAVING COUNT(a.id) > $1"

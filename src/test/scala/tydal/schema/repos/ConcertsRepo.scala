@@ -90,7 +90,7 @@ object ConcertsRepo:
         x("tx", "currency"),
         x("tx", "min_price")
       ))
-      .where(_("c", "id") === "id?".placeholder[uuid])
+      .where(_("c", "id") === "id?")
       .sortBy(x => (x("c", "begins_at"), x("ca", "index")))
       .compile
 
