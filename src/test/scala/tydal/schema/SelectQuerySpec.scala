@@ -278,6 +278,64 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       }
     }
 
+    "Aggregation (SUM)" - {
+      "sum int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(14.toShort[int2])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Long] *: EmptyTuple]
+      }
+
+      "sum optional int2" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(Option(14.toShort)[nullable[int2]])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Long] *: EmptyTuple]
+      }
+
+      "sum int4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(14[int4])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Long] *: EmptyTuple]
+      }
+
+      "sum int8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(14.toLong[int8])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+
+      "sum float4" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(14.2.toFloat[float4])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Float] *: EmptyTuple]
+      }
+
+      "sum float8" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(14.2[float8])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[Double] *: EmptyTuple]
+      }
+
+      "sum numeric" in {
+        testQuery(
+          Select.from(artist as "a").take(_ => Sum(BigDecimal(14.2)[numeric])).compile,
+          "SELECT SUM($1) FROM artist a",
+          EmptyTuple
+        ): List[Option[BigDecimal] *: EmptyTuple]
+      }
+    }
+
     "Aliased" in {
       testQuery(
         Select.from(artist as "a").take(_("a", "name").as("hello")).compile,

@@ -2,13 +2,25 @@ package tydal.schema
 
 // The result type of aggregations such as MAX and MIN can change.
 // Text-like fields get, for some reason, converted to TEXT, regardless of their original type
-trait AggregationType[T, U]
+trait MinMaxType[T, U]
 
 trait DefaultAggregationType:
-  given unchanged[T: DbType]: AggregationType[T, T] with { }
+  given unchanged[T: DbType]: MinMaxType[T, T] with { }
 
-object AggregationType extends DefaultAggregationType:
-  given textLike[T: IsText]: AggregationType[T, nullable[text]] with { }
+object MinMaxType extends DefaultAggregationType:
+  given textLike[T: IsText]: MinMaxType[T, nullable[text]] with { }
+
+// The result type of SUM
+trait SumType[T, U]
+
+object SumType:
+  given SumType[int2, int8] with { }
+  given SumType[int4, int8] with { }
+  given SumType[int8, numeric] with { }
+  given SumType[float4, float4] with { }
+  given SumType[float8, float8] with { }
+  given SumType[numeric, numeric] with { }
+  given [T, U](using SumType[T, U]): SumType[nullable[T], nullable[U]] with { }
 
 
 trait DbFunction[+Params <: Tuple, Type] extends Field[Type]:
@@ -42,14 +54,13 @@ final class Avg[T, +F <: Field[T], U, +G <: Field[U], V](val param: F)(
   override val dbName: String = "AVG"
 
 
-final class Sum[T: IsNumerical, +F <: Field[T]](val param: F)(
+final class Sum[T: IsNumerical, +F <: Field[T], U, +G <: Field[U], V](val param: F)(
   using
-  override val dbType: DbType[T]
-) extends Aggregation[F, T]:
+  nullable: Nullable[F, G],
+  sumType: SumType[U, V],
+  override val dbType: DbType[V]
+) extends Aggregation[F, V]:
   override val dbName: String = "SUM"
-
-extension [T, F <: Field[T]](field: F)
-  def sum(using IsNumerical[T], DbType[T]): Sum[T, F] = Sum(field)
 
 
 final class Count[+F <: Field[_]](val param: F)(
@@ -65,7 +76,7 @@ extension [F <: Field[_]](field: F)
 final class Min[T, +F <: Field[T], U, G <: Field[U], V](val param: F)(
   using
   nullable: Nullable[F, G],
-  aggregationType: AggregationType[U, V],
+  aggregationType: MinMaxType[U, V],
   override val dbType: DbType[V]
 ) extends Aggregation[F, V]:
   override val dbName: String = "MIN"
@@ -74,7 +85,7 @@ final class Min[T, +F <: Field[T], U, G <: Field[U], V](val param: F)(
 final class Max[T, +F <: Field[T], U, G <: Field[U], V](val param: F)(
   using
   nullable: Nullable[F, G],
-  aggregationType: AggregationType[U, V],
+  aggregationType: MinMaxType[U, V],
   override val dbType: DbType[V]
 ) extends Aggregation[F, V]:
   override val dbName: String = "MAX"
