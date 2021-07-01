@@ -18,11 +18,11 @@ comparing fields of unrelated types,
 or decoding the results of a query into an incompatible data structure.
 
 Here's a basic example:
-
 ```scala
-import tydal.schema._
-import skunk.Query
+import cats.effect.IO
 import skunk.data.Arr
+import skunk.{Query, Session}
+import tydal.schema._
 
 object artist extends TableSchema[
   "artist",
@@ -33,24 +33,23 @@ object artist extends TableSchema[
   )
 ]
 
-val query: Query[
-  // input
-  (
-    "genres?" ~~> Arr[String], 
-    "name?" ~~> String
-  ),
-  // output
-  (
-    java.util.UUID,
-    String,
-    Arr[String]
-  )
-] = 
+val query =
   Select
     .from(artist as "a")
-    .where(x => (x("a", "genres") intersects "genres?") or (x("a", "name") like "name?"))
+    .take(x => (x("a", "id"), x("a", "name"), x("a", "genres")))
+    .where(x => (x("a", "genres") overlaps "genres?") or (x("a", "name") like "name?"))
     .sortBy(_("a", "name"))
+    .inRange("offset?", "limit?")
     .compile
+
+// For more information on how to initiate a skunk Session please refer to https://tpolecat.github.io/skunk/
+def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String])]] =
+  session.prepare(query).use(_.stream((
+    "genres?" ~~> Arr("Rock", "Psychedelic"),
+    "name?" ~~> "%Floyd",
+    "offset?" ~~> 0L,
+    "limit?" ~~> 50
+  ), 8).compile.toList)
 ```
 
 ## Support
