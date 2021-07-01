@@ -63,7 +63,7 @@ object ConcertsRepo:
       ))
       .compile
 
-  private val selectConcert =
+  val selectConcert =
     Select
       .from(concert as "c")
       .innerJoin(venue as "v").on(_("id") === _("c", "venue_id"))

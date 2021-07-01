@@ -35,7 +35,7 @@ trait SelectContext[Fields, From] extends Selectable[Fields]:
   ): Field = finder2.find(finder1.find(from))
 
 
-final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset <: Option[Int], Limit <: Option[Int]](
+final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset: OptionalInt8, Limit: OptionalInt4](
   val from: From,
   val fields: Fields,
   val groupBy: GroupBy,
@@ -67,8 +67,8 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
     JoinBuilder(this, nullable(right), JoinType.left)
 
-  def inRange[NewOffset <: Int with Singleton, NewLimit <: Int with Singleton](newOffset: NewOffset, newLimit: NewLimit): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[newOffset.type], Some[newLimit.type]] =
-    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(newOffset), Some(newLimit))
+  def inRange[OffsetPlaceholder <: String, LimitPlaceholder <: String](offsetPlaceholder: OffsetPlaceholder, limitPlaceholder: LimitPlaceholder)(using DbIdentifier[offsetPlaceholder.type], DbIdentifier[limitPlaceholder.type]): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[Placeholder[offsetPlaceholder.type, int8]], Some[Placeholder[limitPlaceholder.type, int4]]] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(Placeholder[offsetPlaceholder.type, int8]), Some(Placeholder[limitPlaceholder.type, int4]))
 
   def as[Alias, SubQueryFields](alias: Alias)(
     using
@@ -91,8 +91,8 @@ class JoinBuilder[
   Where <: LogicalExpr,
   Having <: LogicalExpr,
   SortBy: SortByClasue,
-  Offset <: Option[Int],
-  Limit <: Option[Int],
+  Offset: OptionalInt8,
+  Limit: OptionalInt4,
   RightAlias,
   RightFields,
   Right <: Relation[RightAlias, RightFields]

@@ -336,6 +336,14 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       }
     }
 
+    "Aggregation (COUNT)" in {
+      testQuery(
+        Select.from(venue as "v").take(x => Count(x("v", "address"))).compile,
+        "SELECT COUNT(v.address) FROM venue v",
+        EmptyTuple
+      ): List[Long *: EmptyTuple]
+    }
+
     "Coalesce" in {
       testQuery(
         Select.from(venue as "v").take(x => Coalesce(x("v", "address"), "Somewhere"[text])).compile,
@@ -554,7 +562,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     }
   }
 
-  "Group by - having" in {
+  "Group by - having (with UNNEST)" in {
     Select
       .from(artist as "a")
       .groupBy(x => Unnest(x("a", "genres")))
@@ -565,18 +573,58 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "SELECT UNNEST(a.genres) AS genre, COUNT(a.id) FROM artist a GROUP BY UNNEST(a.genres) HAVING COUNT(a.id) > $1"
   }
 
-  Select.from(artist as "a")
-    .innerJoin(
+  "Limit and offset" in {
+    testQuery(
+      Select.from(artist as "a").inRange("offset", "limit").compile,
+      "SELECT $1 FROM artist a OFFSET $2 LIMIT $3",
+      ("offset" ~~> 10000L, "limit" ~~> 40)
+    )
+  }
+
+  "Complex query" in {
+    testQuery(
       Select
-        .from(concert_artist as "ca")
-        .innerJoin(ticket as "t").on(_("concert_id") === _("ca", "concert_id"))
+        .from(concert as "c")
+        .innerJoin(venue as "v").on(_ ("id") === _ ("c", "venue_id"))
+        .innerJoin(concert_artist as "ca").on(_ ("concert_id") === _ ("c", "id"))
+        .innerJoin(artist as "a").on(_ ("id") === _ ("ca", "artist_id"))
+        .leftJoin(
+          Select
+            .from(ticket as "t")
+            .take(x => (
+              x("t", "concert_id") as "cid",
+              x("t", "currency") as "currency",
+              Min(x("t", "price")) as "min_price"
+            ))
+            .groupBy(x => (x("cid"), x("currency")))
+            .as("tx")
+        ).on(_ ("cid") === _ ("c", "id"))
         .take(x => (
-          x("ca", "artist_id") as "artist_id",
-          Min(x("t", "price")) as "lowest_price"
+          x("c", "begins_at"),
+          x("v", "name") as "venue_name",
+          x("a", "name") as "artist_name",
+          x("tx", "currency"),
+          x("tx", "min_price")
         ))
-        .as("tx")
-    ).on(_("artist_id") === _("a", "id"))
-    .compile
+        .where(x => (x("a", "name") anyOf "artists?") or x("tx", "min_price") < "price?")
+        .sortBy(x => (x("c", "begins_at"), x("ca", "index")))
+        .inRange("offset", "limit")
+        .compile,
+      "SELECT c.begins_at, v.name AS venue_name, a.name AS artist_name, tx.currency, tx.min_price" +
+        " FROM concert c INNER JOIN venue v ON v.id = c.venue_id" +
+        " INNER JOIN concert_artist ca ON ca.concert_id = c.id" +
+        " INNER JOIN artist a ON a.id = ca.artist_id" +
+        " LEFT JOIN (" +
+        "SELECT t.concert_id AS cid, t.currency AS currency, MIN(t.price) AS min_price" +
+        " FROM ticket t" +
+        " GROUP BY t.concert_id, t.currency" +
+        ") tx ON tx.cid = c.id" +
+        " WHERE a.name = ANY($1) OR tx.min_price < $2" +
+        " ORDER BY c.begins_at, ca.index" +
+        " OFFSET $3 LIMIT $4",
+      ("artists?" ~~> skunk.data.Arr("Radiohead", "Depeche Mode"), "price?" ~~> Option(BigDecimal(5)), "offset" ~~> 0, "limit" ~~> 10)
+    )
+  }
 
 //  val query =
 //    Select
