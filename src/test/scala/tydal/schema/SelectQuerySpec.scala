@@ -336,6 +336,14 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       }
     }
 
+    "Coalesce" in {
+      testQuery(
+        Select.from(venue as "v").take(x => Coalesce(x("v", "address"), "Somewhere"[text])).compile,
+        "SELECT COALESCE(v.address, $1) FROM venue v",
+        EmptyTuple
+      ): List[String *: EmptyTuple]
+    }
+
     "Aliased" in {
       testQuery(
         Select.from(artist as "a").take(_("a", "name").as("hello")).compile,
