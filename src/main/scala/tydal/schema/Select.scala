@@ -5,10 +5,12 @@ import tydal.schema.compiler.QueryCompiler
 
 
 trait Selectable[Fields]:
+  def `*`: Fields
+
   def apply[Tag <: Singleton, Needle](tag: Tag)(
     using
     finder: Finder[Fields, Needle, Tag]
-  ): Needle
+  ): Needle = finder.find(*)
 
 
 trait SelectableT[-S, T]
@@ -20,13 +22,10 @@ object SelectableT:
 
 trait SelectContext[Fields, From] extends Selectable[Fields]:
 
-  def fields: Fields
-  def from: From
+  val fields: Fields
+  val from: From
 
-  def apply[Tag <: Singleton, Field](tag: Tag)(
-    using
-    finder: Finder[Fields, Field, Tag]
-  ): Field = finder.find(fields)
+  override def `*`: Fields = fields
 
   def apply[Tag1 <: Singleton, Tag2 <: Singleton, Source, Field](tag1: Tag1, tag2: Tag2)(
     using
@@ -67,8 +66,17 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   def leftJoin[RightAlias, RightFields, Right <: Relation[RightAlias, RightFields], NullableFields, NullableRight <: Relation[RightAlias, NullableFields]](right: Right)(using nullable: LooseRelation[RightAlias, RightFields, Right, NullableFields, NullableRight]): JoinBuilder[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit, RightAlias, NullableFields, NullableRight] =
     JoinBuilder(this, nullable(right), JoinType.left)
 
-  def inRange[OffsetPlaceholder <: String, LimitPlaceholder <: String](offsetPlaceholder: OffsetPlaceholder, limitPlaceholder: LimitPlaceholder)(using DbIdentifier[offsetPlaceholder.type], DbIdentifier[limitPlaceholder.type]): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[Placeholder[offsetPlaceholder.type, int8]], Some[Placeholder[limitPlaceholder.type, int4]]] =
-    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(Placeholder[offsetPlaceholder.type, int8]), Some(Placeholder[limitPlaceholder.type, int4]))
+  def limit[PName <: String](limit: PName)(using ValueOf[limit.type]): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Some[Placeholder[limit.type, int4]]] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, offset, Some(Placeholder[limit.type, int4]))
+
+  def limit[L <: Const[int4]](limit: L): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Some[L]] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, offset, Some(limit))
+
+  def offset[PName <: String](offset: PName)(using ValueOf[offset.type]): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[Placeholder[offset.type, int8]], Limit] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(Placeholder[offset.type, int8]), limit)
+
+  def offset[L <: Const[int8]](offset: L): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[L], Limit] =
+    SelectQuery(from, fields, groupBy, where, having, sortBy, Some(offset), limit)
 
   def as[Alias, SubQueryFields](alias: Alias)(
     using

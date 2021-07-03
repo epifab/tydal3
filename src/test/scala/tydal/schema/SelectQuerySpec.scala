@@ -575,9 +575,9 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
   "Limit and offset" in {
     testQuery(
-      Select.from(artist as "a").inRange("offset", "limit").compile,
+      Select.from(artist as "a").offset("offset?").limit("limit?").compile,
       "SELECT $1 FROM artist a OFFSET $2 LIMIT $3",
-      ("offset" ~~> 10000L, "limit" ~~> 40)
+      ("offset?" ~~> 10000L, "limit?" ~~> 40)
     )
   }
 
@@ -608,7 +608,8 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         ))
         .where(x => (x("a", "name") anyOf "artists?") or x("tx", "min_price") < "price?")
         .sortBy(x => (x("c", "begins_at"), x("ca", "index")))
-        .inRange("offset", "limit")
+        .offset(0L[int8])
+        .limit("limit")
         .compile,
       "SELECT c.begins_at, v.name AS venue_name, a.name AS artist_name, tx.currency, tx.min_price" +
         " FROM concert c INNER JOIN venue v ON v.id = c.venue_id" +
@@ -622,7 +623,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         " WHERE a.name = ANY($1) OR tx.min_price < $2" +
         " ORDER BY c.begins_at, ca.index" +
         " OFFSET $3 LIMIT $4",
-      ("artists?" ~~> skunk.data.Arr("Radiohead", "Depeche Mode"), "price?" ~~> Option(BigDecimal(5)), "offset" ~~> 0, "limit" ~~> 10)
+      ("artists?" ~~> skunk.data.Arr("Radiohead", "Depeche Mode"), "price?" ~~> Option(BigDecimal(5)), "limit" ~~> 10)
     )
   }
 

@@ -24,8 +24,8 @@ object SelectQueryFragment:
      groupBy: CommaSeparatedListFragment[FieldFragment, GroupBy, GroupByInput],
      having: LogicalExprFragment[Having, HavingInput],
      sortBy: CommaSeparatedListFragment[SortByFragment, SortBy, SortByInput],
-     offset: OptionalPlaceholderFragment[Offset, OffsetInput],
-     limit: OptionalPlaceholderFragment[Limit, LimitInput]
+     offset: OptionalInputFragment[Offset, OffsetInput],
+     limit: OptionalInputFragment[Limit, LimitInput]
    ): SelectQueryFragment[
     SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Offset, Limit],
     FieldsInput Concat FromInput Concat WhereInput Concat GroupByInput Concat HavingInput Concat SortByInput Concat OffsetInput Concat LimitInput

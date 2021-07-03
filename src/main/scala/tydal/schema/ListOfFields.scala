@@ -16,11 +16,12 @@ object NonEmptyListOfFields:
   given one[H](using ListOfFields[H]): NonEmptyListOfFields[H *: EmptyTuple] with { }
 
 
-trait OptionalPlaceholder[Type, -X]
+trait OptionalInput[Type, -X]
 
-object OptionalPlaceholder:
-  given none[Type]: OptionalPlaceholder[Type, None.type] with { }
-  given some[Name, Type]: OptionalPlaceholder[Type, Some[Placeholder[Name, Type]]] with { }
+object OptionalInput:
+  given none[Type]: OptionalInput[Type, None.type] with { }
+  given somePlaceholder[Name, Type]: OptionalInput[Type, Some[Placeholder[Name, Type]]] with { }
+  given someConst[Type]: OptionalInput[Type, Some[Const[Type]]] with { }
 
-type OptionalInt4[-X] = OptionalPlaceholder[int4, X]
-type OptionalInt8[-X] = OptionalPlaceholder[int8, X]
+type OptionalInt4[-X] = OptionalInput[int4, X]
+type OptionalInt8[-X] = OptionalInput[int8, X]
