@@ -1,63 +1,67 @@
 package tydal.schema
 
 import cats.data.State
-import skunk.Encoder
-import skunk.Void
-import skunk.data.Type
 import cats.implicits.catsSyntaxTuple2Semigroupal
+import skunk.{Encoder, Void}
+import skunk.data.Type
+import skunk.syntax.all._
 
-import Tuple.Concat
 
-trait EncoderFactory[-T, U <: Tuple]:
+trait CombinedEncoder[E1, E2, E]:
+  def apply(e1: Encoder[E1], e2: Encoder[E2]): Encoder[E]
+
+
+trait DefaultCombiner:
+  given tuple2[A, B]: CombinedEncoder[A, B, (A, B)] with
+    def apply(e1: Encoder[A], e2: Encoder[B]): Encoder[(A, B)] = new Encoder[(A, B)]:
+      override def encode(ab: (A, B)): List[Option[String]] = e1.encode(ab(0)) ++ e2.encode(ab(1))
+      override val types: List[Type] = e1.types ++ e2.types
+      override val sql: State[Int, String] = (e1.sql, e2.sql).mapN((a, b) => s"$a, $b")
+
+trait TupleCombiner extends DefaultCombiner:
+  given tuple3[A, B <: Tuple]: CombinedEncoder[A, B, A *: B] with
+    def apply(e1: Encoder[A], e2: Encoder[B]): Encoder[A *: B] = new Encoder[A *: B]:
+      override def encode(ab: A *: B): List[Option[String]] = e1.encode(ab.head) ++ e2.encode(ab.tail)
+      override val types: List[Type] = e1.types ++ e2.types
+      override val sql: State[Int, String] = (e1.sql, e2.sql).mapN((a, b) => s"$a, $b")
+
+trait VoidLeftCombiner extends TupleCombiner:
+  given unitLeft[A]: CombinedEncoder[A, Void, A] with
+    def apply(e1: Encoder[A], e2: Encoder[Void]): Encoder[A] = new Encoder[A]:
+      override def encode(a: A): List[Option[String]] = e1.encode(a) ++ e2.encode(Void)
+      override val types: List[Type] = e1.types ++ e2.types
+      override val sql: State[Int, String] = (e1.sql, e2.sql).mapN((a, b) => s"$a, $b")
+
+object CombinedEncoder extends VoidLeftCombiner:
+  given unitRight[A]: CombinedEncoder[Void, A, A] with
+    def apply(e1: Encoder[Void], e2: Encoder[A]): Encoder[A] = new Encoder[A]:
+      override def encode(a: A): List[Option[String]] = e1.encode(Void) ++ e2.encode(a)
+      override val types: List[Type] = e1.types ++ e2.types
+      override val sql: State[Int, String] = (e1.sql, e2.sql).mapN((a, b) => s"$a, $b")
+
+
+trait EncoderFactory[-T, U]:
   def apply(t: T): Encoder[U]
 
 object EncoderFactory:
-  def apply[A, B <: Tuple](a: A)(using adapter: EncoderFactory[A, B]): skunk.Encoder[B] = adapter(a)
+  def apply[A, B](a: A)(using adapter: EncoderFactory[A, B]): skunk.Encoder[B] = adapter(a)
 
-  given placeholder[A <: String with Singleton, T, U](using dbType: DbType.Aux[T, U]): EncoderFactory[Placeholder[A, T], (A KeyValue U) *: EmptyTuple] with
-    def apply(placeholder: Placeholder[A, T]): Encoder[(A KeyValue dbType.Out) *: EmptyTuple] =
-      dbType.codec.asEncoder.contramap { case kv *: EmptyTuple => kv.value }
+  given placeholder[A <: String with Singleton, T, U](using dbType: DbType.Aux[T, U]): EncoderFactory[Placeholder[A, T], (A KeyValue U)] with
+    def apply(placeholder: Placeholder[A, T]): Encoder[(A KeyValue dbType.Out)] =
+      dbType.codec.asEncoder.contramap(_.value)
 
-  given const[T]: EncoderFactory[Const[T], EmptyTuple] with
-    def apply(const: Const[T]): Encoder[EmptyTuple] =
+  given const[T]: EncoderFactory[Const[T], Void] with
+    def apply(const: Const[T]): Encoder[Void] =
       const.dbType.codec.asEncoder.contramap(_ => const.value)
 
-  given empty: EncoderFactory[EmptyTuple, EmptyTuple] with
-    def apply(et: EmptyTuple): Encoder[EmptyTuple] = Void.codec.asEncoder.contramap[EmptyTuple](_ => Void)
+  given empty: EncoderFactory[EmptyTuple, Void] with
+    def apply(et: EmptyTuple): Encoder[Void] = Void.codec.asEncoder.contramap(_ => Void)
 
-  given nonEmpty[H, HEnc <: Tuple, T <: Tuple, TEnc <: Tuple](
+  given nonEmpty[H, T <: Tuple, HEnc, TEnc, Enc](
     using
     head: EncoderFactory[H, HEnc],
     tail: EncoderFactory[T, TEnc],
-    split: Split[Concat[HEnc, TEnc], HEnc, TEnc]
-  ): EncoderFactory[H *: T, Concat[HEnc, TEnc]] with
-    def apply(t: H *: T): Encoder[Concat[HEnc, TEnc]] = new Encoder[Concat[HEnc, TEnc]]:
-      override def encode(ab: Concat[HEnc, TEnc]): List[Option[String]] =
-        val (a, b) = split(ab)
-        head(t.head).encode(a) ++ tail(t.tail).encode(b)
-      override val types: List[Type] = head(t.head).types ++ tail(t.tail).types
-      override val sql: State[Int, String] = (head(t.head).sql, tail(t.tail).sql).mapN((a, b) => s"$a, $b")
-
-
-trait Split[Src <: Tuple, A <: Tuple, B <: Tuple]:
-  def apply(ab: Src): (A, B)
-
-object Split:
-  given secondHalf[A <: Tuple]: Split[A, EmptyTuple, A] with
-    def apply(ab: A): (EmptyTuple, A) = (EmptyTuple, ab)
-
-  given firstHalf[Head, ATail <: Tuple, Tail <: Tuple, B <: Tuple](
-    using
-    tailSplit: Split[Tail, ATail, B]
-  ): Split[Head *: Tail, Head *: ATail, B] with
-    def apply(ab: Head *: Tail): (Head *: ATail, B) =
-      val xx: (ATail, B) = tailSplit(ab.tail)
-      (ab.head *: xx._1, xx._2)
-
-
-object SplitSpec:
-  summon[Split[(1, 2), EmptyTuple, (1, 2)]]
-  summon[Split[(1, 2), (1, 2), EmptyTuple]]
-  summon[Split[EmptyTuple, EmptyTuple, EmptyTuple]]
-  summon[Split[(1, 2, 3, 4, 5), (1, 2), (3, 4, 5)]]
-  summon[Split[Concat[(1, 2), (3, 4, 5)], (1, 2), (3, 4, 5)]]
+    combined: CombinedEncoder[HEnc, TEnc, Enc]
+  ): EncoderFactory[H *: T, Enc] with
+    def apply(t: H *: T): Encoder[Enc] =
+      combined(head(t.head), tail(t.tail))

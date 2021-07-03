@@ -6,8 +6,8 @@ import cats.Traverse.ops.toAllTraverseOps
 import cats.effect.Resource
 import cats.effect.kernel.Concurrent
 import skunk.Session
-import Schema._
 import tydal.schema._
+import tydal.schema.repos.Schema._
 
 import java.time.Instant
 import java.util.UUID
@@ -104,8 +104,7 @@ object ConcertsRepo:
 
       repo = new ConcertsRepo[F] {
         override def create(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID] =
-          // todo: uncommentin the following I get could not find an instance of Monad[F], why?
-          // s.transaction.use { _ =>
+          s.transaction.use { _ =>
             for {
               concertId <- newId
               _ <- insertConcertStatement.execute((
@@ -134,11 +133,11 @@ object ConcertsRepo:
                 } yield ()
               }
             } yield concertId
-          // }
+          }
 
         override def findOne(concertId: UUID): F[Option[Concert]] =
           selectConcertStatement
-            .stream(("id?" ~~> concertId) *: EmptyTuple, 128)
+            .stream("id?" ~~> concertId, 128)
             .fold[Option[Concert]](None) {
               case (None, (id, begin, end, venueName, artistIndex, artistName, currency, price)) =>
                 Some(Concert(

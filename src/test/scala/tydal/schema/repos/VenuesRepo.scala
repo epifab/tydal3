@@ -4,9 +4,8 @@ import cats.Monad
 import cats.Monad.ops.toAllMonadOps
 import cats.effect.Resource
 import skunk.Session
-import Schema.{Genre, venue}
 import tydal.schema._
-import tydal.schema.repos.ArtistsRepo.insertCommand
+import tydal.schema.repos.Schema.{Genre, venue}
 
 import java.util.UUID
 
