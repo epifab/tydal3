@@ -62,7 +62,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(14.toShort[int2])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Short] *: EmptyTuple]
+        ): List[Option[Short]]
       }
 
       "max nullable int2" in {
@@ -70,7 +70,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(Option(14.toShort)[nullable[int2]])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Short] *: EmptyTuple]
+        ): List[Option[Short]]
       }
 
       "max int4" in {
@@ -78,7 +78,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(14[int4])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Int] *: EmptyTuple]
+        ): List[Option[Int]]
       }
 
       "max int8" in {
@@ -86,7 +86,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(14.toLong[int8])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Long] *: EmptyTuple]
+        ): List[Option[Long]]
       }
 
       "max float4" in {
@@ -94,7 +94,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(14.2.toFloat[float4])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Float] *: EmptyTuple]
+        ): List[Option[Float]]
       }
 
       "max float8" in {
@@ -102,7 +102,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(14.2[float8])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Double] *: EmptyTuple]
+        ): List[Option[Double]]
       }
 
       "max numeric" in {
@@ -110,7 +110,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max(BigDecimal(14.2)[numeric])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "max text" in {
@@ -118,7 +118,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max("hello"[text])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
 
       "max varchar" in {
@@ -126,7 +126,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max("hello"[varchar])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
 
       "max sized varchar" in {
@@ -134,7 +134,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Max("hello"[varcharOf[128]])).compile,
           "SELECT MAX($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
     }
 
@@ -144,7 +144,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(14.toShort[int2])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Short] *: EmptyTuple]
+        ): List[Option[Short]]
       }
 
       "min nullable int2" in {
@@ -152,7 +152,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(Option(14.toShort)[nullable[int2]])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Short] *: EmptyTuple]
+        ): List[Option[Short]]
       }
 
       "min int4" in {
@@ -160,7 +160,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(14[int4])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Int] *: EmptyTuple]
+        ): List[Option[Int]]
       }
 
       "min int8" in {
@@ -168,7 +168,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(14.toLong[int8])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Long] *: EmptyTuple]
+        ): List[Option[Long]]
       }
 
       "min float4" in {
@@ -176,7 +176,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(14.2.toFloat[float4])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Float] *: EmptyTuple]
+        ): List[Option[Float]]
       }
 
       "min float8" in {
@@ -184,7 +184,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(14.2[float8])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Double] *: EmptyTuple]
+        ): List[Option[Double]]
       }
 
       "min numeric" in {
@@ -192,7 +192,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min(BigDecimal(14.2)[numeric])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "min text" in {
@@ -200,7 +200,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min("hello"[text])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
 
       "min varchar" in {
@@ -208,7 +208,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min("hello"[varchar])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
 
       "min sized varchar" in {
@@ -216,7 +216,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Min("hello"[varcharOf[128]])).compile,
           "SELECT MIN($1) FROM artist a",
           EmptyTuple
-        ): List[Option[String] *: EmptyTuple]
+        ): List[Option[String]]
       }
     }
 
@@ -226,7 +226,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(14.toShort[int2])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "avg nullable int2" in {
@@ -234,7 +234,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(Option(14.toShort)[nullable[int2]])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "avg int4" in {
@@ -242,7 +242,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(14[int4])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "avg int8" in {
@@ -250,7 +250,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(14.toLong[int8])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "avg float4" in {
@@ -258,7 +258,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(14.2.toFloat[float4])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Double] *: EmptyTuple]
+        ): List[Option[Double]]
       }
 
       "avg float8" in {
@@ -266,7 +266,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(14.2[float8])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Double] *: EmptyTuple]
+        ): List[Option[Double]]
       }
 
       "avg numeric" in {
@@ -274,7 +274,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Avg(BigDecimal(14.2)[numeric])).compile,
           "SELECT AVG($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
     }
 
@@ -284,7 +284,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(14.toShort[int2])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Long] *: EmptyTuple]
+        ): List[Option[Long]]
       }
 
       "sum optional int2" in {
@@ -292,7 +292,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(Option(14.toShort)[nullable[int2]])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Long] *: EmptyTuple]
+        ): List[Option[Long]]
       }
 
       "sum int4" in {
@@ -300,7 +300,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(14[int4])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Long] *: EmptyTuple]
+        ): List[Option[Long]]
       }
 
       "sum int8" in {
@@ -308,7 +308,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(14.toLong[int8])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
 
       "sum float4" in {
@@ -316,7 +316,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(14.2.toFloat[float4])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Float] *: EmptyTuple]
+        ): List[Option[Float]]
       }
 
       "sum float8" in {
@@ -324,7 +324,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(14.2[float8])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[Double] *: EmptyTuple]
+        ): List[Option[Double]]
       }
 
       "sum numeric" in {
@@ -332,7 +332,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
           Select.from(artist as "a").take(_ => Sum(BigDecimal(14.2)[numeric])).compile,
           "SELECT SUM($1) FROM artist a",
           EmptyTuple
-        ): List[Option[BigDecimal] *: EmptyTuple]
+        ): List[Option[BigDecimal]]
       }
     }
 
@@ -341,7 +341,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         Select.from(venue as "v").take(x => Count(x("v", "address"))).compile,
         "SELECT COUNT(v.address) FROM venue v",
         EmptyTuple
-      ): List[Long *: EmptyTuple]
+      ): List[Long]
     }
 
     "Coalesce" in {
@@ -349,7 +349,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         Select.from(venue as "v").take(x => Coalesce(x("v", "address"), "Somewhere"[text])).compile,
         "SELECT COALESCE(v.address, $1) FROM venue v",
         EmptyTuple
-      ): List[String *: EmptyTuple]
+      ): List[String]
     }
 
     "Aliased" in {

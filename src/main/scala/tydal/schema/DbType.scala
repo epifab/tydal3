@@ -120,7 +120,7 @@ object DbType:
     def codec: Codec[Arr[T]] = Codec.array[T](enumerated.toString, x => enumerated.fromString(x).toRight(s"Invalid element $x"), TypeName("_" + singleton.value, List(TypeName(singleton.value))))
     override def dbName: String = s"${singleton.value}[]"
 
-  // todo: using dependent type here makes DecoderAdapter fail for Scala 3.0.0
+  // todo: using dependent type here makes DecoderFactory fail for Scala 3.0.0
   given[T: IsNotNullable, U](using innerType: DbType.Aux[T, U]): DbType[nullable[T]] with
     type Out = Option[U]
     def codec: Codec[Option[U]] = innerType.codec.opt

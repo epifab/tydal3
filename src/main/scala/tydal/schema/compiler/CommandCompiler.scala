@@ -1,6 +1,6 @@
 package tydal.schema.compiler
 
-import tydal.schema.EncoderAdapter
+import tydal.schema.EncoderFactory
 import skunk.Command
 
 trait CommandCompiler[-T, I <: Tuple]:
@@ -11,7 +11,7 @@ object CommandCompiler:
     using
     origin: skunk.util.Origin,
     fragment: InsertCommandFragment[T, I],
-    encoder: EncoderAdapter[I, IX]
+    encoder: EncoderFactory[I, IX]
   ): CommandCompiler[T, IX] with
     def build(command: T): Command[IX] =
       val f = fragment.build(command)

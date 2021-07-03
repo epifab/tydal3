@@ -8,12 +8,12 @@ trait QueryCompiler[-Q, Input, Output]:
   def build(query: Q): Query[Input, Output]
 
 object QueryCompiler:
-  given select[Input <: Tuple, InputEncoder <: Tuple, Output, OutputDecoder <: Tuple, S <: SelectQuery[_, Output, _, _, _, _, _, _]] (
+  given select[Input <: Tuple, InputEncoder <: Tuple, Output, OutputDecoder, S <: SelectQuery[_, Output, _, _, _, _, _, _]] (
     using
     origin: skunk.util.Origin,
     fragment: SelectQueryFragment[S, Input],
-    encoder: EncoderAdapter[Input, InputEncoder],
-    decoder: DecoderAdapter[Output, OutputDecoder],
+    encoder: EncoderFactory[Input, InputEncoder],
+    decoder: DecoderFactory[Output, OutputDecoder],
   ): QueryCompiler[S, InputEncoder, OutputDecoder] with
     def build(select: S): Query[InputEncoder, OutputDecoder] = {
       val value = fragment.build(select)

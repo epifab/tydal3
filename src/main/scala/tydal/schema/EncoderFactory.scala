@@ -8,29 +8,29 @@ import cats.implicits.catsSyntaxTuple2Semigroupal
 
 import Tuple.Concat
 
-trait EncoderAdapter[-T, U <: Tuple]:
+trait EncoderFactory[-T, U <: Tuple]:
   def apply(t: T): Encoder[U]
 
-object EncoderAdapter:
-  def apply[A, B <: Tuple](a: A)(using adapter: EncoderAdapter[A, B]): skunk.Encoder[B] = adapter(a)
+object EncoderFactory:
+  def apply[A, B <: Tuple](a: A)(using adapter: EncoderFactory[A, B]): skunk.Encoder[B] = adapter(a)
 
-  given placeholder[A <: String with Singleton, T, U](using dbType: DbType.Aux[T, U]): EncoderAdapter[Placeholder[A, T], (A KeyValue U) *: EmptyTuple] with
+  given placeholder[A <: String with Singleton, T, U](using dbType: DbType.Aux[T, U]): EncoderFactory[Placeholder[A, T], (A KeyValue U) *: EmptyTuple] with
     def apply(placeholder: Placeholder[A, T]): Encoder[(A KeyValue dbType.Out) *: EmptyTuple] =
       dbType.codec.asEncoder.contramap { case kv *: EmptyTuple => kv.value }
 
-  given const[T]: EncoderAdapter[Const[T], EmptyTuple] with
+  given const[T]: EncoderFactory[Const[T], EmptyTuple] with
     def apply(const: Const[T]): Encoder[EmptyTuple] =
       const.dbType.codec.asEncoder.contramap(_ => const.value)
 
-  given empty: EncoderAdapter[EmptyTuple, EmptyTuple] with
+  given empty: EncoderFactory[EmptyTuple, EmptyTuple] with
     def apply(et: EmptyTuple): Encoder[EmptyTuple] = Void.codec.asEncoder.contramap[EmptyTuple](_ => Void)
 
   given nonEmpty[H, HEnc <: Tuple, T <: Tuple, TEnc <: Tuple](
     using
-    head: EncoderAdapter[H, HEnc],
-    tail: EncoderAdapter[T, TEnc],
+    head: EncoderFactory[H, HEnc],
+    tail: EncoderFactory[T, TEnc],
     split: Split[Concat[HEnc, TEnc], HEnc, TEnc]
-  ): EncoderAdapter[H *: T, Concat[HEnc, TEnc]] with
+  ): EncoderFactory[H *: T, Concat[HEnc, TEnc]] with
     def apply(t: H *: T): Encoder[Concat[HEnc, TEnc]] = new Encoder[Concat[HEnc, TEnc]]:
       override def encode(ab: Concat[HEnc, TEnc]): List[Option[String]] =
         val (a, b) = split(ab)
