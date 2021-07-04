@@ -1,10 +1,11 @@
 package tydal.schema
 
-import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
-import java.util.UUID
 import skunk.Codec
 import skunk.codec.{all => codecs}
-import skunk.data.{Type => TypeName, Arr}
+import skunk.data.{Arr, Type}
+
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
+import java.util.UUID
 
 trait DbType[T]:
   type Out
@@ -101,6 +102,11 @@ object DbType:
     def codec: Codec[Instant] = codecs.timestamp.imap(_.atZone(ZoneOffset.UTC).toInstant)(i => LocalDateTime.ofInstant(i, ZoneOffset.UTC))
     override def dbName: String = "timestamp"
 
+  given uuidArr: DbType[array[uuid]] with
+    type Out = Arr[UUID]
+    def codec: Codec[Arr[UUID]] = Codec.array[UUID](_.toString, s => scala.util.Try(UUID.fromString(s)).toEither.left.map(_ => "Invalid UUID"), Type._uuid)
+    override def dbName: String = "uuid[]"
+
   given varcharArr: DbType[array[varchar]] with
     type Out = Arr[String]
     def codec: Codec[Arr[String]] = codecs._varchar
@@ -117,7 +123,7 @@ object DbType:
     enumerated: Enumerated[T]
   ): DbType[array[`enum`[Name, T]]] with
     type Out = Arr[T]
-    def codec: Codec[Arr[T]] = Codec.array[T](enumerated.toString, x => enumerated.fromString(x).toRight(s"Invalid element $x"), TypeName("_" + singleton.value, List(TypeName(singleton.value))))
+    def codec: Codec[Arr[T]] = Codec.array[T](enumerated.toString, x => enumerated.fromString(x).toRight(s"Invalid element $x"), Type("_" + singleton.value, List(Type(singleton.value))))
     override def dbName: String = s"${singleton.value}[]"
 
   // todo: using dependent type here makes DecoderFactory fail for Scala 3.0.0
@@ -128,5 +134,5 @@ object DbType:
 
   given[Name <: String, T](using singleton: ValueOf[Name], enumerated: Enumerated[T]): DbType[`enum`[Name, T]] with
     type Out = T
-    def codec: Codec[T] = codecs.`enum`[T](enumerated.toString, enumerated.fromString, TypeName(singleton.value))
+    def codec: Codec[T] = codecs.`enum`[T](enumerated.toString, enumerated.fromString, Type(singleton.value))
     def dbName: String = singleton.value

@@ -30,10 +30,7 @@ class RepositoryExampleSpec extends AnyFreeSpec with should.Matchers with Integr
       Instant.parse("2015-03-01T20:00:00Z"),
       Instant.parse("2015-03-02T01:00:00Z"),
       "Roundhouse",
-      Map(
-        1 -> "Radiohead",
-        2 -> "Caribou"
-      ),
+      List("Radiohead", "Caribou"),
       Map(
         Currency.GBP -> 15.5,
         Currency.USD -> 90.0
