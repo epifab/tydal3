@@ -36,19 +36,20 @@ object artist extends TableSchema[
 val query =
   Select
     .from(artist as "a")
-    .take(x => (x("a", "id"), x("a", "name"), x("a", "genres")))
+    .take(_("a").*)
     .where(x => (x("a", "genres") overlaps "genres?") or (x("a", "name") like "name?"))
     .sortBy(_("a", "name"))
     .limit("limit?")
     .compile
 
-// For more information on how to initiate a skunk Session please refer to https://tpolecat.github.io/skunk/
+// For more information on how to initiate a Session
+// or to run a query please refer to https://tpolecat.github.io/skunk/
 def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String])]] =
   session.prepare(query).use(_.stream((
     "genres?" ~~> Arr("Rock", "Psychedelic"),
     "name?" ~~> "%Floyd",
     "limit?" ~~> 50
-  ), 8).compile.toList)
+  ), 10).compile.toList)
 ```
 
 ## Support

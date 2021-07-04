@@ -40,7 +40,6 @@ object ConcertsRepo:
       ))
       .compile
 
-
   private val insertConcertArtist =
     Insert
       .into(concert_artist)

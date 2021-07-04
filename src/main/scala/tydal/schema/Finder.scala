@@ -4,12 +4,13 @@ package tydal.schema
 trait Finder[-Haystack, +Needle, Tag]:
   def find(haystack: Haystack): Needle
 
-object Finder:
-  given head[Needle, Tag, Head, Tail <: Tuple](using finder: Finder[Head, Needle, Tag]): Finder[Head *: Tail, Needle, Tag] with
-    def find(haystack: Head *: Tail): Needle = finder.find(haystack.head)
-
+trait TailFinder:
   given tail[Needle, Tag, Head, Tail <: Tuple](using finder: Finder[Tail, Needle, Tag]): Finder[Head *: Tail, Needle, Tag] with
     def find(haystack: Head *: Tail): Needle = finder.find(haystack.tail)
+
+object Finder extends TailFinder:
+  given head[Needle, Tag, Head, Tail <: Tuple](using finder: Finder[Head, Needle, Tag]): Finder[Head *: Tail, Needle, Tag] with
+    def find(haystack: Head *: Tail): Needle = finder.find(haystack.head)
 
   given column[Name, Type]: Finder[Column[Name, Type], Column[Name, Type], Name] with
     def find(haystack: Column[Name, Type]): Column[Name, Type] = haystack
@@ -26,8 +27,8 @@ object Finder:
   given relationField[RelationAlias, RelationFields, Needle, Tag](using finder: Finder[RelationFields, Needle, Tag]): Finder[Relation[RelationAlias, RelationFields], Needle, Tag] with
     def find(haystack: Relation[RelationAlias, RelationFields]): Needle = finder.find(haystack.fields)
 
-  given relation[Alias, Fields]: Finder[Relation[Alias, Fields], Relation[Alias, Fields], Alias] with
-    def find(haystack: Relation[Alias, Fields]): Relation[Alias, Fields] = haystack
+  given relation[Alias, Fields, R <: Relation[Alias, Fields]]: Finder[R, R, Alias] with
+    def find(haystack: R): R = haystack
 
   given joinHead[Alias, Needle, Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr](using headFinder: Finder[Head, Needle, Alias]): Finder[Join[Tail, Head, On], Needle, Alias] with
     def find(haystack: Join[Tail, Head, On]): Needle = headFinder.find(haystack.head)

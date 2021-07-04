@@ -5,12 +5,12 @@ import tydal.schema.compiler.QueryCompiler
 
 
 trait Selectable[Fields]:
-  def `*`: Fields
+  def fields: Fields
 
   def apply[Tag <: Singleton, Needle](tag: Tag)(
     using
     finder: Finder[Fields, Needle, Tag]
-  ): Needle = finder.find(*)
+  ): Needle = finder.find(fields)
 
 
 trait SelectableT[-S, T]
@@ -18,14 +18,19 @@ trait SelectableT[-S, T]
 object SelectableT:
   given tuple[S <: Selectable[_], T, F <: Field[T]]: SelectableT[Selectable[F *: EmptyTuple], T] with { }
   given field[S <: Selectable[_], T, F <: Field[T]]: SelectableT[Selectable[F], T] with { }
+  given selectContextTupled[S <: SelectContext[_, _], T, F <: Field[T], A]: SelectableT[SelectContext[F *: EmptyTuple, A], T] with { }
+  given selectContextField[S <: SelectContext[_, _], T, F <: Field[T], A]: SelectableT[SelectContext[F, A], T] with { }
 
 
-trait SelectContext[Fields, From] extends Selectable[Fields]:
+trait SelectContext[Fields, From]:
 
   val fields: Fields
   val from: From
 
-  override def `*`: Fields = fields
+  def apply[Tag <: Singleton, Needle](tag: Tag)(
+    using
+    finder: Finder[(Fields, From), Needle, Tag]
+  ): Needle = finder.find((fields, from))
 
   def apply[Tag1 <: Singleton, Tag2 <: Singleton, Source, Field](tag1: Tag1, tag2: Tag2)(
     using
