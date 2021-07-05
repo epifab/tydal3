@@ -1,11 +1,11 @@
-package tydal.test.repos
+package tydal.examples.repos
 
 import cats.Monad
 import cats.Monad.ops.toAllMonadOps
 import cats.effect.Resource
 import skunk.Session
 import tydal._
-import tydal.test.repos.Schema.{Genre, venue}
+import Schema.{Genre, venue}
 
 import java.util.UUID
 

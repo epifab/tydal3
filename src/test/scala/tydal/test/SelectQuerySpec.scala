@@ -3,9 +3,9 @@ package tydal.test
 import org.scalatest.freespec._
 import org.scalatest.matchers._
 import skunk.{Query, Void}
+import tydal.Schema._
 import tydal._
 import tydal.compiler._
-import tydal.test.repos.Schema._
 
 class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
 

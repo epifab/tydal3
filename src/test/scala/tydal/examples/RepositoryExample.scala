@@ -1,4 +1,4 @@
-package tydal.test
+package tydal.examples
 
 import cats.Monad
 import cats.effect._
@@ -10,14 +10,15 @@ import skunk._
 import skunk.codec.all._
 import skunk.data.Arr
 import skunk.implicits._
-import tydal.test.repos.Schema._
-import tydal.test.repos._
+import tydal.Schema.{Currency, Genre}
+import tydal.examples.repos._
+import tydal.test.IntegrationTesting
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 
-class RepositoryExampleSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
+class RepositoryExample extends AnyFreeSpec with should.Matchers with IntegrationTesting:
 
   val repos = (for {
     artistsRepo <- ArtistsRepo(IO(UUID.randomUUID()), session)

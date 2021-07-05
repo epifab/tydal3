@@ -1,6 +1,4 @@
-package tydal.test.repos
-
-import tydal._
+package tydal
 
 object Schema:
 
@@ -10,6 +8,7 @@ object Schema:
   object Currency:
     given Enumerated[Currency] with
       override def fromString(s: String): Option[Currency] = scala.util.Try(Currency.valueOf(s)).toOption
+
       override def toString(t: Currency): String = t.toString
 
   enum Genre:
@@ -18,6 +17,7 @@ object Schema:
   object Genre:
     given Enumerated[Genre] with
       override def fromString(s: String): Option[Genre] = scala.util.Try(Genre.valueOf(s)).toOption
+
       override def toString(t: Genre): String = t.toString
 
 

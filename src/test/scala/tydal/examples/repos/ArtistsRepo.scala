@@ -1,11 +1,11 @@
-package tydal.test.repos
+package tydal.examples.repos
 
 import cats.Monad
 import cats.Monad.ops.toAllMonadOps
 import cats.effect.Resource
 import skunk.Session
 import tydal._
-import tydal.test.repos.Schema._
+import Schema._
 
 import java.util.UUID
 
@@ -14,6 +14,7 @@ trait ArtistsRepo[F[_]]:
   def create(name: String, genres: List[Genre]): F[UUID]
 
 object ArtistsRepo:
+
   private val insertCommand =
     Insert
       .into(artist)

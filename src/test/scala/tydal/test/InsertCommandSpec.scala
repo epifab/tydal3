@@ -4,7 +4,6 @@ import org.scalatest.freespec._
 import org.scalatest.matchers._
 import tydal._
 import tydal.compiler._
-import tydal.test.repos.Schema
 
 import java.util.UUID
 

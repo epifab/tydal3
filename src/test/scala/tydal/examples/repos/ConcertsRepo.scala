@@ -1,4 +1,4 @@
-package tydal.test.repos
+package tydal.examples.repos
 
 import cats.data.{NonEmptyList, OptionT}
 import cats.effect.{Concurrent, Resource}
@@ -7,7 +7,7 @@ import cats.{Functor, Monad}
 import skunk.data.Arr
 import skunk.{PreparedQuery, Session}
 import tydal._
-import tydal.test.repos.Schema._
+import Schema._
 
 import java.time.Instant
 import java.util.UUID
