@@ -2,6 +2,7 @@ package tydal.test
 
 import skunk.{Encoder, Void}
 import tydal._
+import tydal.compiler.EncoderFactory
 
 object EncoderFactorySpec:
   EncoderFactory("3"[varchar]): Encoder[Void]

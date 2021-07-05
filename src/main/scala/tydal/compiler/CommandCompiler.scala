@@ -1,6 +1,5 @@
 package tydal.compiler
 
-import tydal.EncoderFactory
 import skunk.Command
 
 trait CommandCompiler[-T, I <: Tuple]:

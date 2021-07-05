@@ -1,23 +1,19 @@
-package tydal
+package tydal.compiler
 
 import cats.data.State
-import skunk.Decoder
-import skunk.Void
 import skunk.data.Type
 import skunk.syntax.all._
+import skunk.{Decoder, Void}
+import tydal._
 
 import scala.Tuple.Concat
+
 
 trait DecoderFactory[-T, U]:
   def apply(t: T): Decoder[U]
 
 object DecoderFactory:
-  def apply[A, B](a: A)(using adapter: DecoderFactory[A, B]): Decoder[B] = adapter(a)
-
-  // todo: next doens't work, because of https://github.com/lampepfl/dotty/issues/12940
-//  given field[T, U]: DecoderFactory[Field.Aux[T, U], U *: EmptyTuple] with
-//    def apply(t: Field.Aux[T, U]): Decoder[U *: EmptyTuple] =
-//      t.decoder.map { case value => value *: EmptyTuple }
+  def apply[A, B](a: A)(using factory: DecoderFactory[A, B]): Decoder[B] = factory(a)
 
   given field[T, U](using dbType: DbType.Aux[T, U]): DecoderFactory[Field[T], U] with
     def apply(t: Field[T]): Decoder[U] =
