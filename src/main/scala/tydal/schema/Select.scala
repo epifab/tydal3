@@ -16,10 +16,10 @@ trait Selectable[Fields]:
 trait SelectableT[-S, T]
 
 object SelectableT:
-  given tuple[S <: Selectable[_], T, F <: Field[T]]: SelectableT[Selectable[F *: EmptyTuple], T] with { }
-  given field[S <: Selectable[_], T, F <: Field[T]]: SelectableT[Selectable[F], T] with { }
-  given selectContextTupled[S <: SelectContext[_, _], T, F <: Field[T], A]: SelectableT[SelectContext[F *: EmptyTuple, A], T] with { }
-  given selectContextField[S <: SelectContext[_, _], T, F <: Field[T], A]: SelectableT[SelectContext[F, A], T] with { }
+  given tuple[T, F <: Field[T], S <: Selectable[F *: EmptyTuple]]: SelectableT[S, T] with { }
+  given field[T, F <: Field[T], S <: Selectable[F]]: SelectableT[S, T] with { }
+  given selectContextTupled[T, F <: Field[T], S <: SelectContext[F *: EmptyTuple, _]]: SelectableT[S, T] with { }
+  given selectContextField[T, F <: Field[T], S <: SelectContext[F, _]]: SelectableT[S, T] with { }
 
 
 trait SelectContext[Fields, From]:

@@ -1,11 +1,9 @@
 package tydal.schema.repos
 
-import cats.Monad
-import cats.Monad.ops.toAllMonadOps
-import cats.Traverse.ops.toAllTraverseOps
-import cats.data.OptionT
-import cats.effect.Resource
-import cats.effect.kernel.Concurrent
+import cats.data.{NonEmptyList, OptionT}
+import cats.effect.{Resource, Concurrent}
+import cats.implicits._
+import cats.{Functor, Monad}
 import skunk.data.Arr
 import skunk.{PreparedQuery, Session}
 import tydal.schema._
@@ -28,6 +26,7 @@ case class Concert(
 trait ConcertsRepo[F[_]]:
   def create(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID]
   def findOne(concertId: UUID): F[Option[Concert]]
+  def findManyByArtistName(artistName: String): F[List[Concert]]
 
 object ConcertsRepo:
 
@@ -64,7 +63,7 @@ object ConcertsRepo:
       ))
       .compile
 
-  private val selectConcertsByIdQuery =
+  private val selectConcertsQuery =
     Select
       .from(concert as "c")
       .innerJoin(venue as "v").on(_("id") === _("c", "venue_id"))
@@ -75,10 +74,23 @@ object ConcertsRepo:
         x("v", "name") as "venue_name"
       ))
       .sortBy(_("c", "begins_at"))
+
+  private val selectConcertsByIdQuery =
+    selectConcertsQuery
       .where(_("c", "id") anyOf "ids?")
       .compile
 
-  val selectArtistsQuery =
+  private val selectConcertsByArtistNameQuery =
+    selectConcertsQuery
+      .where(_("c", "id") in Select
+        .from(artist as "a")
+        .innerJoin(concert_artist as "ca").on(_ ("artist_id") === _ ("a", "id"))
+        .take(_ ("ca", "concert_id"))
+        .where(_ ("a", "name") like "artistName?")
+      )
+      .compile
+
+  private val selectArtistsQuery =
     Select
       .from(concert_artist as "ca")
       .innerJoin(artist as "a").on(_("id") === _("ca", "artist_id"))
@@ -87,7 +99,7 @@ object ConcertsRepo:
       .sortBy(x => (x("ca", "concert_id"), x("ca", "index")))
       .compile
 
-  val selectCheapestTicketsQUery =
+  private val selectCheapestTicketsQUery =
     Select
       .from(ticket as "t")
       .take(x => (
@@ -109,6 +121,7 @@ object ConcertsRepo:
       insertConcertArtist <- s.prepare(insertConcertArtistCommand)
       insertTicket <- s.prepare(insertTicketCommand)
       selectConcertById: PreparedQuery[F, "ids?" ~~> Arr[UUID], (UUID, Instant, Instant, String)] <- s.prepare(selectConcertsByIdQuery)
+      selectConcertsByArtistName: PreparedQuery[F, "artistName?" ~~> String, (UUID, Instant, Instant, String)] <- s.prepare(selectConcertsByArtistNameQuery)
       selectArtists: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, String)] <- s.prepare(selectArtistsQuery)
       selectTickets: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, Currency, Option[BigDecimal])] <- s.prepare(selectCheapestTicketsQUery)
 
@@ -145,18 +158,25 @@ object ConcertsRepo:
             } yield concertId
           }
 
-        override def findOne(concertId: UUID): F[Option[Concert]] =
-          (for {
-            concert <- OptionT(selectConcertById.option("ids?" ~~> Arr(concertId)))
-            artists <- OptionT.whenF(concert.nonEmpty)(selectArtists.stream("concertIds?" ~~> Arr(concertId), 128).compile.toList)
-            tickets <- OptionT.whenF(concert.nonEmpty)(selectTickets.stream("concertIds?" ~~> Arr(concertId), 128).compile.toList)
-          } yield (Concert(
-            concert(1),
-            concert(2),
-            concert(3),
-            artists.collect { case (concertId, artistName) if concertId == concert(0) => artistName },
-            tickets.collect { case (concertId, currency, Some(price)) => currency -> price }.toMap
-          ))).value
-       }
+        private def find[C[t] <: IterableOnce[t]: Functor](concerts: F[C[(UUID, Instant, Instant, String)]]): F[C[Concert]] =
+          for {
+            cs <- concerts
+            concertIds = Arr(cs.map(_(0)).iterator.toList: _*)
+            artists <- selectArtists.stream("concertIds?" ~~> concertIds, 128).compile.toList
+            tickets <- selectTickets.stream("concertIds?" ~~> concertIds, 128).compile.toList
+            concerts = cs.map(c => Concert(
+              c(1),
+              c(2),
+              c(3),
+              artists.collect { case (concertId, artistName) if concertId == c(0) => artistName },
+              tickets.collect { case (concertId, currency, Some(price)) => currency -> price }.toMap
+            ))
+          } yield concerts
 
+        override def findOne(concertId: UUID): F[Option[Concert]] =
+          find[Option](selectConcertById.option("ids?" ~~> Arr(concertId)))
+
+        override def findManyByArtistName(artistName: String): F[List[Concert]] =
+          find[List](selectConcertsByArtistName.stream("artistName?" ~~> "%Floyd", 128).compile.toList)
+      }
     } yield repo
