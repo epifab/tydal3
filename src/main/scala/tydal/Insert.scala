@@ -2,17 +2,18 @@ package tydal
 
 import tydal.compiler.CommandCompiler
 
-class InsertCommand[TableName, Placeholders](val placeholders: Placeholders)(using val tableName: DbIdentifier[TableName]):
+class InsertCommand[TableName, TableColumns, KeyValues](val table: TableSchema[TableName, TableColumns], val keyValues: KeyValues):
+  def fields[Fields, NewPlaceholders](f: Selectable[TableColumns] => Fields)(
+    using
+    placeholders: ColumnPlaceholders[Fields, NewPlaceholders]
+  ): InsertCommand[TableName, TableColumns, NewPlaceholders] =
+    InsertCommand[TableName, TableColumns, NewPlaceholders](table, placeholders.value)
+
   def compile[Input <: Tuple](using compiler: CommandCompiler[this.type, Input]): skunk.Command[Input] =
     compiler.build(this)
 
 object Insert:
-  class InsertCommandStep1[TableName, Columns](using val tableName: DbIdentifier[TableName]):
-    def fields[Fields, Placeholders](f: Selectable[Columns] => Fields)(
-      using
-      placeholders: ColumnPlaceholders[Fields, Placeholders]
-    ): InsertCommand[TableName, Placeholders] =
-      InsertCommand[TableName, Placeholders](placeholders.value)
-
-  def into[TableName, Columns](table: TableSchema[TableName, Columns]): InsertCommandStep1[TableName, Columns] =
-    InsertCommandStep1(using table.name)
+  def into[TableName, TableColumns, Placeholders](table: TableSchema[TableName, TableColumns])(
+    using
+    placeholders: ColumnPlaceholders[TableColumns, Placeholders]
+  ): InsertCommand[TableName, TableColumns, Placeholders] = InsertCommand(table, placeholders.value)

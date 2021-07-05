@@ -9,12 +9,12 @@ case class KeyValue[A <: String with Singleton, +T](key: A, value: T)
 
 type ~~>[A <: String with Singleton, +T] = KeyValue[A, T]
 
-trait ColumnPlaceholders[-Columns, Placeholders]:
-  def value: Placeholders
+trait ColumnPlaceholders[-Columns, ColumnValues]:
+  def value: ColumnValues
 
 object ColumnPlaceholders:
-  given column[Name, T: DbType](using DbIdentifier[Name]): ColumnPlaceholders[Column[Name, T], Placeholder[Name, T]] with
-    def value: Placeholder[Name, T] = Placeholder[Name, T]
+  given column[Name <: String with Singleton, T: DbType](using singleton: ValueOf[Name], dbi: DbIdentifier[Name]): ColumnPlaceholders[Column[Name, T], (Name ~~> Placeholder[Name, T])] with
+    def value: Name ~~> Placeholder[Name, T] = singleton.value ~~> Placeholder[Name, T]
 
   given empty: ColumnPlaceholders[EmptyTuple, EmptyTuple] with
     def value: EmptyTuple = EmptyTuple

@@ -15,3 +15,13 @@ object CommandCompiler:
     def build(command: T): Command[IX] =
       val f = fragment.build(command)
       Command(f.sql, origin, encoder(f.input))
+
+  given update[T, I <: Tuple, IX <: Tuple] (
+    using
+    origin: skunk.util.Origin,
+    fragment: UpdateCommandFragment[T, I],
+    encoder: EncoderFactory[I, IX]
+  ): CommandCompiler[T, IX] with
+    def build(command: T): Command[IX] =
+      val f = fragment.build(command)
+      Command(f.sql, origin, encoder(f.input))

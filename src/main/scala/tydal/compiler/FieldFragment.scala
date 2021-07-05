@@ -14,6 +14,10 @@ object FieldFragment:
   ): FieldFragment[Aliased[T, F, A], Output] with
     def build(field: Aliased[T, F, A]): CompiledFragment[Output] = inner.build(field.field)
 
+  given column[Name, T]: FieldFragment[Column[Name, T], EmptyTuple] with
+    def build(field: Column[Name, T]): CompiledFragment[EmptyTuple] =
+      CompiledFragment(field.name.value)
+
   given fieldRef[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
     def build(field: RelationField[Src, Alias, T]): CompiledFragment[EmptyTuple] =
       CompiledFragment(s"${field.relationAlias.value}.${field.name.value}")
