@@ -18,7 +18,7 @@ object FieldFragment:
     def build(field: Column[Name, T]): CompiledFragment[EmptyTuple] =
       CompiledFragment(field.name.value)
 
-  given fieldRef[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
+  given relationField[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
     def build(field: RelationField[Src, Alias, T]): CompiledFragment[EmptyTuple] =
       CompiledFragment(s"${field.relationAlias.value}.${field.name.value}")
 
@@ -36,10 +36,11 @@ object FieldFragment:
 
   given dbFunction[FS <: Tuple, T, Output <: Tuple](
     using
-    inner: CommaSeparatedListFragment[FieldFragment, FS, Output]
+    inner: ListFragment[FieldFragment, FS, Output]
   ): FieldFragment[DbFunction[FS, T], Output] with
     def build(func: DbFunction[FS, T]): CompiledFragment[Output] =
-      inner.build(func.params).wrap(s"${func.dbName}(", ")")
+      if (func.infixNotation) inner.build(func.params, s" ${func.dbName} ")
+      else inner.build(func.params, ", ").wrap(s"${func.dbName}(", ")")
 
   given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledFragment[P *: EmptyTuple] = CompiledFragment(List(placeholder.dbType.codec.sql), placeholder *: EmptyTuple)

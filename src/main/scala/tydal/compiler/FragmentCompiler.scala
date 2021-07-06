@@ -22,9 +22,6 @@ case class CompiledFragment[Input <: Tuple](parts: List[String | State[Int, Stri
   def `++`[I2 <: Tuple](other: CompiledFragment[I2]): CompiledFragment[Input Concat I2] =
     concatenateOptional(other, " ")
 
-  def `+,+`[I2 <: Tuple](other: CompiledFragment[I2]): CompiledFragment[Input Concat I2] =
-    concatenateOptional(other, ", ")
-
   def wrap(before: String, after: String): CompiledFragment[Input] = CompiledFragment(if (parts.isEmpty) Nil else (before :: parts) :+ after, input)
 
   def append(after: String): CompiledFragment[Input] = CompiledFragment(if (parts.isEmpty) Nil else parts :+ after, input)

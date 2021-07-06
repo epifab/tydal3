@@ -26,6 +26,7 @@ object SumType:
 trait DbFunction[+Params <: Tuple, Type] extends Field[Type]:
   def params: Params
   def dbName: String
+  def infixNotation: Boolean = false
   override def toString: String = s"$dbName$params"
 
 trait DbFunction1[+F, Type] extends DbFunction[F *: EmptyTuple, Type]:
@@ -94,6 +95,21 @@ final class Max[T, +F <: Field[T], U, G <: Field[U], V](val param: F)(
 final class Coalesce[T, +F1 <: Field[nullable[T]], +F2 <: Field[T]](val param1: F1, val param2: F2) extends DbFunction2[F1, F2, T]:
   override val dbName: String = "COALESCE"
   override val dbType: DbType[T] = param2.dbType
+
+
+trait AddSubType[T, U, V]
+
+object AddSubType:
+  given[T: IsNumerical]: AddSubType[T, T, T] with { }
+
+
+final class Add[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U], V](val param1: F1, val param2: F2)(
+  using
+  addSubType: AddSubType[T, U, V],
+  override val dbType: DbType[V]
+) extends DbFunction2[F1, F2, V]:
+  override val dbName: String = "+"
+  override val infixNotation: Boolean = true
 
 
 trait Unnested[T, U]

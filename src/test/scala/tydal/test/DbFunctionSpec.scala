@@ -18,5 +18,8 @@ object AvgSpec extends DbFunctionSpec:
   Avg(Column["x", nullable[float8]]): Aggregation[Column["x", nullable[float8]], nullable[float8]]
   Avg(Column["x", nullable[numeric]]): Aggregation[Column["x", nullable[numeric]], nullable[numeric]]
 
+object AddSpec extends DbFunctionSpec:
+  Add(Column["x", int2], Column["x", int2]): DbFunction2[Column["x", int2], Column["x", int2], int2]
+
 object UnnestSpec extends DbFunctionSpec:
   Unnest(Column["x", array[varchar]]): DbFunction1[Column["x", array[varchar]], varchar]
