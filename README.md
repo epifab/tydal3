@@ -60,6 +60,14 @@ although it's obviously not exhaustive.
 The project is open source and you're welcome to collaborate.
 
 
+## Testing
+
+```shell
+$ docker-compose up -d
+$ sbt test
+```
+
+
 ## Release
 
 Not there yet! Stay tuned.
