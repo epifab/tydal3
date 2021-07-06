@@ -99,7 +99,38 @@ final class Coalesce[T, +F1 <: Field[nullable[T]], +F2 <: Field[T]](val param1: 
 
 trait AddSubType[T, U, V]
 
-object AddSubType:
+// todo: I was assuming that Postgres would apply a smart cast (e.g. float4 + int8 = float8, but it doesn't
+//  what it does instead is pretty unexplaninable to me, so an explicit cast is possibly preferable
+//
+//trait AddSubInt4:
+//  given rationalLeft[T: IsRational]: AddSubType[T, int4, float4] with { }
+//  given rationalRight[T: IsRational]: AddSubType[int4, T, float4] with { }
+//  given integerLeft[T: IsInteger]: AddSubType[T, int4, int4] with { }
+//  given integerRight[T: IsInteger]: AddSubType[int4, T, int4] with { }
+//
+//trait AddSubFloat4 extends AddSubInt4:
+//  given float4Right[T: IsNumerical]: AddSubType[T, float4, float4] with { }
+//  given float4Left[T: IsNumerical]: AddSubType[float4, T, float4] with { }
+//
+//trait AddSubInt8 extends AddSubFloat4:
+//  given rational8Left[T: IsRational]: AddSubType[T, int8, float8] with { }
+//  given rational8Right[T: IsRational]: AddSubType[int8, T, float8] with { }
+//  given integer8Left[T: IsInteger]: AddSubType[T, int8, int8] with { }
+//  given integer8Right[T: IsInteger]: AddSubType[int8, T, int8] with { }
+//
+//trait AddSubFloat8 extends AddSubInt8:
+//  given float8Right[T: IsNumerical]: AddSubType[T, float8, float8] with { }
+//  given float8Left[T: IsNumerical]: AddSubType[float8, T, float8] with { }
+//
+//trait AddSubNumerical extends AddSubFloat8:
+//  given numericRight[T: IsNumerical]: AddSubType[T, numeric, numeric] with { }
+//  given numericLeft[T: IsNumerical]: AddSubType[numeric, T, numeric] with { }
+
+trait AddSubTypeNullables:
+  given[T, U, V](using AddSubType[T, U, V]): AddSubType[nullable[T], U, V] with { }
+  given[T, U, V](using AddSubType[T, U, V]): AddSubType[T, nullable[U], V] with { }
+
+object AddSubType extends AddSubTypeNullables:
   given[T: IsNumerical]: AddSubType[T, T, T] with { }
 
 
@@ -109,6 +140,15 @@ final class Add[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U]
   override val dbType: DbType[V]
 ) extends DbFunction2[F1, F2, V]:
   override val dbName: String = "+"
+  override val infixNotation: Boolean = true
+
+
+final class Sub[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U], V](val param1: F1, val param2: F2)(
+  using
+  addSubType: AddSubType[T, U, V],
+  override val dbType: DbType[V]
+) extends DbFunction2[F1, F2, V]:
+  override val dbName: String = "-"
   override val infixNotation: Boolean = true
 
 

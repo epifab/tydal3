@@ -354,12 +354,52 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     }
 
     "Add" - {
-      "Two int4 fields" in {
+      "int4 + int4" in {
         testQuery(
-          Select.from(venue as "v").take(_ => Add(4[int4], 5[int4])).compile,
-          "SELECT $1 + $2 FROM venue v",
+          Select.from(venue as "v").take(_ => Add(4[int4], 8[int4])).compile,
+          "SELECT ($1 + $2) FROM venue v",
           Void
         ): List[Int]
+      }
+
+      "(int4 + int4) + int4" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Add(Add(4[int4], 8[int4]), 12[int4])).compile,
+          "SELECT (($1 + $2) + $3) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "int4 + (int4 + int4)" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Add(4[int4], Add(8[int4], 12[int4]))).compile,
+          "SELECT ($1 + ($2 + $3)) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "int4 + nullable[int4]" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Add(4[int4], Option(8)[nullable[int4]])).compile,
+          "SELECT ($1 + $2) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "nullable[int4] + int4" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Add(Option(8)[nullable[int4]], 4[int4])).compile,
+          "SELECT ($1 + $2) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "nullable[int4] + nullable[int4]" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Add(Option(4)[nullable[int4]], Option(8)[nullable[int4]])).compile,
+          "SELECT ($1 + $2) FROM venue v",
+          Void
+        ): List[Option[Int]]
       }
     }
 

@@ -39,7 +39,7 @@ object FieldFragment:
     inner: ListFragment[FieldFragment, FS, Output]
   ): FieldFragment[DbFunction[FS, T], Output] with
     def build(func: DbFunction[FS, T]): CompiledFragment[Output] =
-      if (func.infixNotation) inner.build(func.params, s" ${func.dbName} ")
+      if (func.infixNotation) inner.build(func.params, s" ${func.dbName} ").wrap("(", ")")
       else inner.build(func.params, ", ").wrap(s"${func.dbName}(", ")")
 
   given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
