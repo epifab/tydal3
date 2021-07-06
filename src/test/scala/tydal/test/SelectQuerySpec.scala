@@ -403,6 +403,56 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       }
     }
 
+    "Sub" - {
+      "int4 - int4" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(4[int4], 8[int4])).compile,
+          "SELECT ($1 - $2) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "(int4 - int4) - int4" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(Sub(4[int4], 8[int4]), 12[int4])).compile,
+          "SELECT (($1 - $2) - $3) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "int4 - (int4 - int4)" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(4[int4], Sub(8[int4], 12[int4]))).compile,
+          "SELECT ($1 - ($2 - $3)) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "int4 - nullable[int4]" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(4[int4], Option(8)[nullable[int4]])).compile,
+          "SELECT ($1 - $2) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "nullable[int4] - int4" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(Option(8)[nullable[int4]], 4[int4])).compile,
+          "SELECT ($1 - $2) FROM venue v",
+          Void
+        ): List[Int]
+      }
+
+      "nullable[int4] - nullable[int4]" in {
+        testQuery(
+          Select.from(venue as "v").take(_ => Sub(Option(4)[nullable[int4]], Option(8)[nullable[int4]])).compile,
+          "SELECT ($1 - $2) FROM venue v",
+          Void
+        ): List[Option[Int]]
+      }
+    }
+
     "Aliased" in {
       testQuery(
         Select.from(artist as "a").take(_("a", "name").as("hello")).compile,
