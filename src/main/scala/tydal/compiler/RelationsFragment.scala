@@ -1,7 +1,8 @@
 package tydal.compiler
 
 import tydal._
-import Tuple.Concat
+
+import scala.Tuple.Concat
 
 trait RelationsFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 
@@ -16,7 +17,7 @@ object RelationsFragment:
         .wrap("(", ")")
         .append(" " + subQuery.alias.value)
 
-  given join[Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr, TailOutput <: Tuple, HeadOutput <: Tuple, OnOutput <: Tuple](
+  given join[Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr, TailOutput <: Tuple, HeadOutput <: Tuple, OnOutput <: Tuple] (
     using
     tailCompiler: RelationsFragment[Tail, TailOutput],
     headCompiler: RelationsFragment[Head, HeadOutput],

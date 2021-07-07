@@ -90,6 +90,30 @@ trait Field[T]:
     using
     IsNumerical[T],
     IsNumerical[U],
-    AdditionType[T, U, V],
+    ArithmeticType[T, U, V],
     DbType[V]
   ): Add[T, this.type, U, F, V] = Add(this, that)
+
+  def -[U, F <: Field[U], V](that: F)(
+    using
+    IsNumerical[T],
+    IsNumerical[U],
+    ArithmeticType[T, U, V],
+    DbType[V]
+  ): Sub[T, this.type, U, F, V] = Sub(this, that)
+
+  def *[U, F <: Field[U], V](that: F)(
+    using
+    IsNumerical[T],
+    IsNumerical[U],
+    ArithmeticType[T, U, V],
+    DbType[V]
+  ): Mul[T, this.type, U, F, V] = Mul(this, that)
+
+  def /[U, F <: Field[U], V](that: F)(
+    using
+    IsNumerical[T],
+    IsNumerical[U],
+    ArithmeticType[T, U, V],
+    DbType[V]
+  ): Div[T, this.type, U, F, V] = Div(this, that)

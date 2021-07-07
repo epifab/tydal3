@@ -30,8 +30,8 @@ object Finder extends TailFinder:
   given relation[Alias, Fields, R <: Relation[Alias, Fields]]: Finder[R, R, Alias] with
     def find(haystack: R): R = haystack
 
-  given joinHead[Alias, Needle, Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr](using headFinder: Finder[Head, Needle, Alias]): Finder[Join[Tail, Head, On], Needle, Alias] with
+  given joinHead[Alias, Needle, Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr] (using headFinder: Finder[Head, Needle, Alias]): Finder[Join[Tail, Head, On], Needle, Alias] with
     def find(haystack: Join[Tail, Head, On]): Needle = headFinder.find(haystack.head)
 
-  given joinTail[Alias, Needle, Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr](using tailFinder: Finder[Tail, Needle, Alias]): Finder[Join[Tail, Head, On], Needle, Alias] with
+  given joinTail[Alias, Needle, Tail <: Relations, Head <: Relation[_, _], On <: LogicalExpr] (using tailFinder: Finder[Tail, Needle, Alias]): Finder[Join[Tail, Head, On], Needle, Alias] with
     def find(haystack: Join[Tail, Head, On]): Needle = tailFinder.find(haystack.tail)

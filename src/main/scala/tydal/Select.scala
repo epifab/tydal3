@@ -92,7 +92,16 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
     compiler.build(this)
 
+
+final class SimpleSelect[Fields](val fields: Fields):
+  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
+    compiler.build(this)
+
+
 object Select:
+  def apply[Fields: NonEmptyListOfFields](fields: Fields): SimpleSelect[Fields] =
+    SimpleSelect(fields)
+
   def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, Const[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
     SelectQuery(relation, 1[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
 

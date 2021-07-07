@@ -1,12 +1,19 @@
 package tydal.compiler
 
 import tydal._
-import tydal.{LogicalExpr, Relations}
-import Tuple.Concat
+
+import scala.Tuple.Concat
 
 trait SelectQueryFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 
 object SelectQueryFragment:
+  given simpleSelect[
+    Fields,
+    FieldsInput <: Tuple
+  ](using fields: ListFragment[FieldFragment, Fields, FieldsInput]): SelectQueryFragment[SimpleSelect[Fields], FieldsInput] with
+    def build(select: SimpleSelect[Fields]): CompiledFragment[FieldsInput] =
+      fields.build(select.fields, ", ").orElse("1").prepend("SELECT ")
+  
   given select[
     From <: Relations, FromInput <: Tuple,
     Fields, FieldsInput <: Tuple,
