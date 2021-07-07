@@ -21,6 +21,7 @@ type int8
 type float4
 type float8
 type numeric
+type numericOf[precision, scale]
 type bool
 type uuid
 type date
@@ -42,9 +43,9 @@ object DbType:
     def codec: Codec[String] = codecs.varchar
     def dbName: String = "varchar"
 
-  given[Size <: Int](using singleton: ValueOf[Size]): DbType[varcharOf[Size]] with
+  given[Size <: Int](using size: ValueOf[Size]): DbType[varcharOf[Size]] with
     type Out = String
-    def codec: Codec[String] = codecs.varchar(singleton.value)
+    def codec: Codec[String] = codecs.varchar(size.value)
     def dbName: String = "varchar"
 
   given DbType[text] with
@@ -80,6 +81,11 @@ object DbType:
   given DbType[numeric] with
     type Out = BigDecimal
     def codec: Codec[BigDecimal] = codecs.numeric
+    def dbName: String = "numeric"
+
+  given [Precision <: Int, Scale <: Int](using precision: ValueOf[Precision], scale: ValueOf[Scale]): DbType[numericOf[Precision, Scale]] with
+    type Out = BigDecimal
+    def codec: Codec[BigDecimal] = codecs.numeric(precision.value, scale.value)
     def dbName: String = "numeric"
 
   given DbType[bool] with

@@ -108,6 +108,7 @@ object IsTextSpec extends TypePropsSpec:
 object IsNumericalSpec extends TypePropsSpec:
   summon[IsNumerical[Column["some_int", nullable[int8]]]]
   summon[IsNumerical[Column["some_float", nullable[float4]]]]
+  summon[IsNumerical[Column["some_numeric", nullable[numericOf[10, 4]]]]]
   summon[NotGiven[IsNumerical[Column["some_float", nullable[varchar]]]]]
 
 

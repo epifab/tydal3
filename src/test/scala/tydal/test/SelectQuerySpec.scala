@@ -372,6 +372,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "int2 + float4" in testAddition(2.toShort[int2], 2.toFloat[float4])
       "int2 + float8" in testAddition(2.toShort[int2], 2.toDouble[float8])
       "int2 + numeric" in testAddition(2.toShort[int2], BigDecimal(2)[numeric])
+      "int2 + numeric(p,s)" in testAddition(2.toShort[int2], BigDecimal(2)[numericOf[4, 2]])
 
       "int4 + int2" in testAddition(2[int4], 2.toShort[int2])
       "int4 + int4" in testAddition(2[int4], 2[int4])
@@ -379,6 +380,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "int4 + float4" in testAddition(2[int4], 2.toFloat[float4])
       "int4 + float8" in testAddition(2[int4], 2.toDouble[float8])
       "int4 + numeric" in testAddition(2[int4], BigDecimal(2)[numeric])
+      "int4 + numeric(p,s)" in testAddition(2[int4], BigDecimal(2)[numericOf[4, 2]])
 
       "int8 + int2" in testAddition(2L[int8], 2.toShort[int2])
       "int8 + int4" in testAddition(2L[int8], 2[int4])
@@ -386,6 +388,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "int8 + float4" in testAddition(2L[int8], 2.toFloat[float4])
       "int8 + float8" in testAddition(2L[int8], 2.toDouble[float8])
       "int8 + numeric" in testAddition(2L[int8], BigDecimal(2)[numeric])
+      "int8 + numeric(p,s)" in testAddition(2L[int8], BigDecimal(2)[numericOf[4, 2]])
 
       "float4 + int2" in testAddition(2.toFloat[float4], 2.toShort[int2])
       "float4 + int4" in testAddition(2.toFloat[float4], 2[int4])
@@ -393,6 +396,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "float4 + float4" in testAddition(2.toFloat[float4], 2.toFloat[float4])
       "float4 + float8" in testAddition(2.toFloat[float4], 2.toDouble[float8])
       "float4 + numeric" in testAddition(2.toFloat[float4], BigDecimal(2)[numeric])
+      "float4 + numeric(p,s)" in testAddition(2.toFloat[float4], BigDecimal(2)[numericOf[4, 2]])
 
       "float8 + int2" in testAddition(2.toDouble[float8], 2.toShort[int2])
       "float8 + int4" in testAddition(2.toDouble[float8], 2[int4])
@@ -400,6 +404,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "float8 + float4" in testAddition(2.toDouble[float8], 2.toFloat[float4])
       "float8 + float8" in testAddition(2.toDouble[float8], 2.toDouble[float8])
       "float8 + numeric" in testAddition(2.toDouble[float8], BigDecimal(2)[numeric])
+      "float8 + numeric(p,s)" in testAddition(2.toDouble[float8], BigDecimal(2)[numericOf[4, 2]])
 
       "numeric + int2" in testAddition(BigDecimal(2)[numeric], 2.toShort[int2])
       "numeric + int4" in testAddition(BigDecimal(2)[numeric], 2[int4])
@@ -407,6 +412,16 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       "numeric + float4" in testAddition(BigDecimal(2)[numeric], 2.toFloat[float4])
       "numeric + float8" in testAddition(BigDecimal(2)[numeric], 2.toDouble[float8])
       "numeric + numeric" in testAddition(BigDecimal(2)[numeric], BigDecimal(2)[numeric])
+      "numeric + numeric(p,s)" in testAddition(BigDecimal(2)[numeric], BigDecimal(2)[numericOf[4, 2]])
+
+      "numeric(p,s) + int2" in testAddition(BigDecimal(2)[numeric], 2.toShort[int2])
+      "numeric(p,s) + int4" in testAddition(BigDecimal(2)[numeric], 2[int4])
+      "numeric(p,s) + int8" in testAddition(BigDecimal(2)[numeric], 2L[int8])
+      "numeric(p,s) + float4" in testAddition(BigDecimal(2)[numeric], 2.toFloat[float4])
+      "numeric(p,s) + float8" in testAddition(BigDecimal(2)[numeric], 2.toDouble[float8])
+      "numeric(p,s) + numeric" in testAddition(BigDecimal(2)[numeric], BigDecimal(2)[numericOf[4, 4]])
+      "numeric(p1,s1) + numeric(p2,s2)" in testAddition(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]])
+      "numeric(p,s) + numeric(p,s)" in testAddition(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]])
 
       "(int4 + int4) + int4" in {
         testQuery(

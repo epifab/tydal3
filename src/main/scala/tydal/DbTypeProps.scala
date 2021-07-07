@@ -24,6 +24,7 @@ object IsRational:
   given IsRational[float4] with { }
   given IsRational[float8] with { }
   given IsRational[numeric] with { }
+  given[P, S]: IsRational[numericOf[P, S]] with { }
   given[T: IsRational]: IsRational[nullable[T]] with { }
   given[T: IsRational]: IsRational[Field[T]] with { }
 

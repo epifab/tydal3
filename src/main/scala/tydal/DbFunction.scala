@@ -99,11 +99,20 @@ final class Coalesce[T, +F1 <: Field[nullable[T]], +F2 <: Field[T]](val param1: 
 
 trait AdditionType[T, U, V]
 
+
+trait AdditionTypeNumericWithPrecisionAndScaleLowPriority:
+  // Result type is the same with the standard numeric
+  given numericLeft[Precision, Scale, T, U](using AdditionType[numeric, T, U]): AdditionType[numericOf[Precision, Scale], T, U] with { }
+  given numericRight[Precision, Scale, T, U](using AdditionType[numeric, T, U]): AdditionType[T, numericOf[Precision, Scale], U] with { }
+
+trait AdditionTypeNumericWithPrecisionAndScale extends AdditionTypeNumericWithPrecisionAndScaleLowPriority:
+  given differentPrecisions[Precision1, Scale1, Precision2, Scale2]: AdditionType[numericOf[Precision1, Scale1], numericOf[Precision2, Scale2], numeric] with { }
+
 trait AdditionTypeNullables:
   given[T, U, V](using AdditionType[T, U, V]): AdditionType[nullable[T], U, V] with { }
   given[T, U, V](using AdditionType[T, U, V]): AdditionType[T, nullable[U], V] with { }
 
-object AdditionType extends AdditionTypeNullables:
+object AdditionType extends AdditionTypeNullables with AdditionTypeNumericWithPrecisionAndScale:
   given[T: IsNumerical]: AdditionType[T, T, T] with { }
 
   given AdditionType[int2, int4, int4] with { }
