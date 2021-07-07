@@ -28,7 +28,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
     "Two columns" in {
       testQuery(
-        Select.from(artist as "a").take($ => ($("a", "id"), $("a", "name"))).compile,
+        Select.from(artist as "a").take(x => (x("a", "id"), x("a", "name"))).compile,
         "SELECT a.id, a.name FROM artist a",
         Void
       )
@@ -36,21 +36,33 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
     "Placeholder" in {
       testQuery(
-        Select.from(artist as "a").take(_ => Placeholder["hello", varchar]).compile,
-        "SELECT $1 FROM artist a",
+        Select(Placeholder["hello", varchar]).compile,
+        "SELECT $1",
         "hello" ~~> "blah"
-      )
+      ) shouldBe List("blah")
     }
 
     "Const" in {
       testQuery(
-        Select.from(artist as "a").take(_ => 14[int4]).compile,
-        "SELECT $1 FROM artist a",
+        Select(14[int4]).compile,
+        "SELECT $1",
         Void
-      )
+      ) shouldBe List(14)
     }
 
     "Aggregation (MAX)" - {
+
+      "select max from subquery" in {
+        testQuery(
+          Select
+            .from(Select(1[int4] as "bar") as "foo")
+            .take(x => Max(x("foo", "bar")))
+            .compile,
+          "SELECT MAX(foo.bar) FROM (SELECT $1 AS bar) foo",
+          Void
+        ) shouldBe List(Some(1))
+      }
+
       "max int2" in {
         testQuery(
           Select.from(artist as "a").take(_ => Max(14.toShort[int2])).compile,

@@ -93,9 +93,15 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
     compiler.build(this)
 
 
-final class SimpleSelect[Fields](val fields: Fields):
+final class SimpleSelect[Fields](val fields: Fields) extends Selectable[Fields]:
   def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
     compiler.build(this)
+
+  def as[Alias, SubQueryFields](alias: Alias)(
+    using
+    dbi: DbIdentifier[alias.type],
+    fields: RelationFields[alias.type, Fields, SubQueryFields]
+  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
 
 object Select:

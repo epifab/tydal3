@@ -10,7 +10,7 @@ object SelectQueryFragment:
   given simpleSelect[
     Fields,
     FieldsInput <: Tuple
-  ](using fields: ListFragment[FieldFragment, Fields, FieldsInput]): SelectQueryFragment[SimpleSelect[Fields], FieldsInput] with
+  ](using fields: ListFragment[FieldAsAliasFragment, Fields, FieldsInput]): SelectQueryFragment[SimpleSelect[Fields], FieldsInput] with
     def build(select: SimpleSelect[Fields]): CompiledFragment[FieldsInput] =
       fields.build(select.fields, ", ").orElse("1").prepend("SELECT ")
   
