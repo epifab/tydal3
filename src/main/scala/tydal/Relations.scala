@@ -10,7 +10,7 @@ sealed trait Relation[Alias, Fields] extends Relations with Selectable[Fields]:
 final class Table[Name, Alias, Fields](val fields: Fields)(using val name: DbIdentifier[Name], val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:
   override val toString: String = s"${name.value} as ${alias.value}"
 
-final class SubQuery[Alias, Fields, +S](val fields: Fields, val select: S)(using val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:
+final class SubQuery[Alias, Fields, +S <: SelectLike[_]](val fields: Fields, val select: S)(using val alias: DbIdentifier[Alias]) extends Relation[Alias, Fields]:
   override val toString: String = s"($select) as $alias"
 
 

@@ -11,7 +11,7 @@ object RelationsFragment:
     def build(table: Table[Name, Alias, Fields]): CompiledFragment[EmptyTuple] =
       CompiledFragment(s"${table.name.value} ${table.alias.value}")
 
-  given subQuery[Alias, Fields, S, T <: Tuple] (using fragment: SelectQueryFragment[S, T]): RelationsFragment[SubQuery[Alias, Fields, S], T] with
+  given subQuery[Alias, Fields, S <: SelectLike[_], T <: Tuple] (using fragment: SelectQueryFragment[S, T]): RelationsFragment[SubQuery[Alias, Fields, S], T] with
     def build(subQuery: SubQuery[Alias, Fields, S]): CompiledFragment[T] =
       fragment.build(subQuery.select)
         .wrap("(", ")")

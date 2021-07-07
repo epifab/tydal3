@@ -177,6 +177,6 @@ object ConcertsRepo:
           find[Option](selectConcertById.option("ids?" ~~> Arr(concertId)))
 
         override def findManyByArtistName(artistName: String): F[List[Concert]] =
-          find[List](selectConcertsByArtistName.stream("artistName?" ~~> "%Floyd", 128).compile.toList)
+          find[List](selectConcertsByArtistName.stream("artistName?" ~~> artistName, 128).compile.toList)
       }
     } yield repo

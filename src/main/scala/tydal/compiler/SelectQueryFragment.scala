@@ -46,3 +46,11 @@ object SelectQueryFragment:
        sortBy.build(select.sortBy, ", ").prepend("ORDER BY ") ++
        offset.build(select.offset).prepend("OFFSET ") ++
        limit.build(select.limit).prepend("LIMIT ")
+
+  given union[FieldsA, A <: SelectLike[FieldsA], FieldsB, B <: SelectLike[FieldsB], AInput <: Tuple, BInput <: Tuple] (
+    using
+    fragmentA: SelectQueryFragment[A, AInput],
+    fragmentB: SelectQueryFragment[B, BInput]
+  ): SelectQueryFragment[Union[FieldsA, A, FieldsB, B], AInput Concat BInput] with
+    def build(union: Union[FieldsA, A, FieldsB, B]): CompiledFragment[AInput Concat BInput] =
+      fragmentA.build(union.a) ++ "UNION" ++ fragmentB.build(union.b)

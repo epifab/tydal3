@@ -39,6 +39,22 @@ trait SelectContext[Fields, From]:
   ): Field = finder2.find(finder1.find(from))
 
 
+trait SelectLike[Fields]:
+  def fields: Fields
+
+  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
+    compiler.build(this)
+
+  def as[Alias, SubQueryFields](alias: Alias)(
+    using
+    dbi: DbIdentifier[alias.type],
+    fields: RelationFields[alias.type, Fields, SubQueryFields]
+  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
+
+  def union[ThatFields, That <: SelectLike[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
+    Union(this, that)
+
+
 final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset: OptionalInt8, Limit: OptionalInt4](
   val from: From,
   val fields: Fields,
@@ -48,7 +64,7 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   val sortBy: SortBy,
   val offset: Offset,
   val limit: Limit
-) extends SelectContext[Fields, From]:
+) extends SelectLike[Fields] with SelectContext[Fields, From]:
 
   def take[NewFields: NonEmptyListOfFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
@@ -83,32 +99,15 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   def offset[L <: Const[int8]](offset: L): SelectQuery[From, Fields, GroupBy, Where, Having, SortBy, Some[L], Limit] =
     SelectQuery(from, fields, groupBy, where, having, sortBy, Some(offset), limit)
 
-  def as[Alias, SubQueryFields](alias: Alias)(
-    using
-    dbi: DbIdentifier[alias.type],
-    fields: RelationFields[alias.type, Fields, SubQueryFields]
-  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
-  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
-    compiler.build(this)
-
-
-final class SimpleSelect[Fields](val fields: Fields) extends Selectable[Fields]:
-  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
-    compiler.build(this)
-
-  def as[Alias, SubQueryFields](alias: Alias)(
-    using
-    dbi: DbIdentifier[alias.type],
-    fields: RelationFields[alias.type, Fields, SubQueryFields]
-  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
+final class SimpleSelect[Fields](val fields: Fields) extends SelectLike[Fields] with Selectable[Fields]
 
 
 object Select:
   def apply[Fields: NonEmptyListOfFields](fields: Fields): SimpleSelect[Fields] =
     SimpleSelect(fields)
 
-  def from[R <: Relation[_, _]](relation: R): SelectQuery[relation.type, Const[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
+  def from[R <: Relation[_, _]](relation: R): SelectQuery[R, Const[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None.type, None.type] =
     SelectQuery(relation, 1[int4], EmptyTuple, AlwaysTrue, AlwaysTrue, EmptyTuple, None, None)
 
 
