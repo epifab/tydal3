@@ -354,17 +354,63 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     }
 
     "Add" - {
-      "int4 + int4" in {
+
+      def testAddition[A: IsNumerical, B: IsNumerical, C](a: Const[A], b: Const[B])(
+        using
+        AdditionType[A, B, C],
+        DbType[C]
+      ): List[C] =
         testQuery(
-          Select.from(venue as "v").take(_ => Add(4[int4], 8[int4])).compile,
+          Select.from(venue as "v").take(_ => a + b).compile,
           "SELECT ($1 + $2) FROM venue v",
           Void
-        ): List[Int]
-      }
+        ).asInstanceOf[List[C]]  // todo: is this really necessary?
+
+      "int2 + int4" in testAddition(2.toShort[int2], 2[int4])
+      "int2 + int2" in testAddition(2.toShort[int2], 2.toShort[int2])
+      "int2 + int8" in testAddition(2.toShort[int2], 2L[int8])
+      "int2 + float4" in testAddition(2.toShort[int2], 2.toFloat[float4])
+      "int2 + float8" in testAddition(2.toShort[int2], 2.toDouble[float8])
+      "int2 + numeric" in testAddition(2.toShort[int2], BigDecimal(2)[numeric])
+
+      "int4 + int2" in testAddition(2[int4], 2.toShort[int2])
+      "int4 + int4" in testAddition(2[int4], 2[int4])
+      "int4 + int8" in testAddition(2[int4], 2L[int8])
+      "int4 + float4" in testAddition(2[int4], 2.toFloat[float4])
+      "int4 + float8" in testAddition(2[int4], 2.toDouble[float8])
+      "int4 + numeric" in testAddition(2[int4], BigDecimal(2)[numeric])
+
+      "int8 + int2" in testAddition(2L[int8], 2.toShort[int2])
+      "int8 + int4" in testAddition(2L[int8], 2[int4])
+      "int8 + int8" in testAddition(2L[int8], 2L[int8])
+      "int8 + float4" in testAddition(2L[int8], 2.toFloat[float4])
+      "int8 + float8" in testAddition(2L[int8], 2.toDouble[float8])
+      "int8 + numeric" in testAddition(2L[int8], BigDecimal(2)[numeric])
+
+      "float4 + int2" in testAddition(2.toFloat[float4], 2.toShort[int2])
+      "float4 + int4" in testAddition(2.toFloat[float4], 2[int4])
+      "float4 + int8" in testAddition(2.toFloat[float4], 2L[int8])
+      "float4 + float4" in testAddition(2.toFloat[float4], 2.toFloat[float4])
+      "float4 + float8" in testAddition(2.toFloat[float4], 2.toDouble[float8])
+      "float4 + numeric" in testAddition(2.toFloat[float4], BigDecimal(2)[numeric])
+
+      "float8 + int2" in testAddition(2.toDouble[float8], 2.toShort[int2])
+      "float8 + int4" in testAddition(2.toDouble[float8], 2[int4])
+      "float8 + int8" in testAddition(2.toDouble[float8], 2L[int8])
+      "float8 + float4" in testAddition(2.toDouble[float8], 2.toFloat[float4])
+      "float8 + float8" in testAddition(2.toDouble[float8], 2.toDouble[float8])
+      "float8 + numeric" in testAddition(2.toDouble[float8], BigDecimal(2)[numeric])
+
+      "numeric + int2" in testAddition(BigDecimal(2)[numeric], 2.toShort[int2])
+      "numeric + int4" in testAddition(BigDecimal(2)[numeric], 2[int4])
+      "numeric + int8" in testAddition(BigDecimal(2)[numeric], 2L[int8])
+      "numeric + float4" in testAddition(BigDecimal(2)[numeric], 2.toFloat[float4])
+      "numeric + float8" in testAddition(BigDecimal(2)[numeric], 2.toDouble[float8])
+      "numeric + numeric" in testAddition(BigDecimal(2)[numeric], BigDecimal(2)[numeric])
 
       "(int4 + int4) + int4" in {
         testQuery(
-          Select.from(venue as "v").take(_ => Add(Add(4[int4], 8[int4]), 12[int4])).compile,
+          Select.from(venue as "v").take(_ => 4[int4] + 8[int4] + 12[int4]).compile,
           "SELECT (($1 + $2) + $3) FROM venue v",
           Void
         ): List[Int]
@@ -372,7 +418,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
       "int4 + (int4 + int4)" in {
         testQuery(
-          Select.from(venue as "v").take(_ => Add(4[int4], Add(8[int4], 12[int4]))).compile,
+          Select.from(venue as "v").take(_ => 4[int4] + (8[int4] + 12[int4])).compile,
           "SELECT ($1 + ($2 + $3)) FROM venue v",
           Void
         ): List[Int]

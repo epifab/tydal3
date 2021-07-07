@@ -85,3 +85,11 @@ trait Field[T]:
 
   def asc: Asc[this.type] = Asc(this)
   def desc: Desc[this.type] = Desc(this)
+
+  def +[U, F <: Field[U], V](that: F)(
+    using
+    IsNumerical[T],
+    IsNumerical[U],
+    AdditionType[T, U, V],
+    DbType[V]
+  ): Add[T, this.type, U, F, V] = Add(this, that)
