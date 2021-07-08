@@ -55,10 +55,10 @@ def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String]
 
 ## Support
 
-Tydal supports a fair amount of SQL syntax, including *joins*, *subqueries*, *aggregation functions* and more,
+Tydal supports a fair amount of SQL syntax, including *joins*, *subqueries*, *union*, *aggregation functions* and more,
 although it's obviously not exhaustive.  
-The project is open source and you're welcome to collaborate.
-
+For a complete list of supported features please refer to [this documentation](support.md).  
+The project is open source, and you're welcome to collaborate.
 
 ## Testing
 
