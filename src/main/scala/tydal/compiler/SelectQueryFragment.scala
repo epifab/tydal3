@@ -53,4 +53,4 @@ object SelectQueryFragment:
     fragmentB: SelectQueryFragment[B, BInput]
   ): SelectQueryFragment[Union[FieldsA, A, FieldsB, B], AInput Concat BInput] with
     def build(union: Union[FieldsA, A, FieldsB, B]): CompiledFragment[AInput Concat BInput] =
-      fragmentA.build(union.a) ++ "UNION" ++ fragmentB.build(union.b)
+      fragmentA.build(union.a) ++ (if (union.distinct) "UNION" else "UNION ALL") ++ fragmentB.build(union.b)

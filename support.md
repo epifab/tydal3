@@ -81,6 +81,7 @@
 - `offset`
 - `limit`
 - `union`
+- `unionAll`
 
 ## Commands
 

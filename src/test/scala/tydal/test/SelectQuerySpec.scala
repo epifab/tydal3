@@ -333,10 +333,21 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     )
   }
 
-  "Union" in {
-    testQuery(
-      (Select(4[int4]) union Select(5[int4]) union Select(6[int4])).compile,
-      "SELECT $1 UNION SELECT $2 UNION SELECT $3",
-      Void
-    ).toSet shouldBe Set(4, 5, 6)
+  "Union" - {
+    "union" in {
+      testQuery(
+        (Select(4[int4]) union Select(5[int4]) union Select(5[int4])).compile,
+        "SELECT $1 UNION SELECT $2 UNION SELECT $3",
+        Void
+      ).toSet shouldBe Set(4, 5)
+    }
+
+    "union all" in {
+      testQuery(
+        (Select(4[int4]) union Select(5[int4]) unionAll Select(5[int4])).compile,
+        "SELECT $1 UNION SELECT $2 UNION ALL SELECT $3",
+        Void
+      ).toSet shouldBe Set(4, 5, 5)
+    }
+
   }

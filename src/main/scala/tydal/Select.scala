@@ -52,7 +52,10 @@ trait SelectLike[Fields]:
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
   def union[ThatFields, That <: SelectLike[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
-    Union(this, that)
+    Union(this, that, distinct = true)
+
+  def unionAll[ThatFields, That <: SelectLike[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
+    Union(this, that, distinct = false)
 
 
 final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset: OptionalInt8, Limit: OptionalInt4](
