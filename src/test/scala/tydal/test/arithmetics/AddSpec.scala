@@ -1,5 +1,6 @@
 package tydal.test.arithmetics
 
+import cats.kernel.Eq
 import org.scalatest.Assertion
 import org.scalatest.freespec._
 import org.scalatest.matchers._
@@ -12,13 +13,14 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   def testAdd[A: IsNumerical, B: IsNumerical, C, Out](a: Const[A], b: Const[B], result: Out)(
     using
     ArithmeticType[A, B, C],
-    DbType.Aux[C, Out]
+    DbType.Aux[C, Out],
+    Eq[Out]
   ): Assertion =
-    testQuery(
+    testUnique(
       Select(a + b).compile,
       "SELECT ($1 + $2)",
-      Void
-    ).head shouldBe result
+      result
+    )
 
 
   "int2 + int4" in testAdd(2.toShort[int2], 2[int4], 4)

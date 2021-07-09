@@ -1,5 +1,7 @@
 package tydal
 
+import cats.kernel.Eq
+
 object Schema:
 
   enum Currency:
@@ -13,6 +15,9 @@ object Schema:
 
   enum Genre:
     case Rock, Psychedelic, Electronic, Pop, Metal
+
+  given Eq[Genre] with
+    override def eqv(x: Genre, y: Genre): Boolean = x == y
 
   object Genre:
     given Enumerated[Genre] with

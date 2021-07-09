@@ -15,8 +15,17 @@
 - `date`
 - `timestamp`
 - `array[vacrhar]`
+- `array[text]`
+- `array[int2]`
+- `array[int4]`
+- `array[int8]`
+- `array[float4]`
+- `array[float8]`
+- `array[numeric]`
 - `array[uuid]`
 - `enum`
+- `json`
+- `jsonb`
 
 ## Arithmetic functions
 

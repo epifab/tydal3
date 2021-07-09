@@ -1,6 +1,7 @@
 package tydal.test
 
 import cats.effect.unsafe.IORuntime
+import cats.kernel.Eq
 import org.scalatest.Assertion
 import org.scalatest.matchers._
 import skunk.{Query, Void}
@@ -16,6 +17,6 @@ trait IntegrationTesting extends SessionAware with should.Matchers:
       .use(_.stream(input, 4).compile.toList)
       .unsafeRunSync()
 
-  def testUnique[A](query: Query[Void, A], expectedQuery: String, expectedResult: A): Assertion =
+  def testUnique[A](query: Query[Void, A], expectedQuery: String, expectedResult: A)(using eq: Eq[A]): Assertion =
     query.sql shouldBe expectedQuery
-    session.flatMap(_.prepare(query)).use(_.unique(Void)).unsafeRunSync() shouldBe expectedResult
+    assert(eq.eqv(session.flatMap(_.prepare(query)).use(_.unique(Void)).unsafeRunSync(), expectedResult))
