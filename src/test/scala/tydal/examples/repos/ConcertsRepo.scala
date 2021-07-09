@@ -24,7 +24,7 @@ case class Concert(
 )
 
 trait ConcertsRepo[F[_]]:
-  def create(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID]
+  def add(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID]
   def findOne(concertId: UUID): F[Option[Concert]]
   def findManyByArtistName(artistName: String): F[List[Concert]]
 
@@ -126,7 +126,7 @@ object ConcertsRepo:
       selectTickets: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, Currency, Option[BigDecimal])] <- s.prepare(selectCheapestTicketsQUery)
 
       repo = new ConcertsRepo[F] {
-        override def create(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID] =
+        override def add(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID] =
           s.transaction.use { _ =>
             for {
               concertId <- newId

@@ -14,7 +14,7 @@
 - `uuid`
 - `date`
 - `timestamp`
-- `array[vacrhar]`
+- `array[varchar]`
 - `array[text]`
 - `array[int2]`
 - `array[int4]`

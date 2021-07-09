@@ -16,11 +16,11 @@ object FieldFragment:
 
   given column[Name, T]: FieldFragment[Column[Name, T], EmptyTuple] with
     def build(field: Column[Name, T]): CompiledFragment[EmptyTuple] =
-      CompiledFragment(field.name.value)
+      CompiledFragment(field.name.escaped)
 
   given relationField[Src, Alias, T]: FieldFragment[RelationField[Src, Alias, T], EmptyTuple] with
     def build(field: RelationField[Src, Alias, T]): CompiledFragment[EmptyTuple] =
-      CompiledFragment(s"${field.relationAlias.value}.${field.name.value}")
+      CompiledFragment(s"${field.relationAlias.escaped}.${field.name.escaped}")
 
   given cast[F <: Field[_], Output <: Tuple](
     using

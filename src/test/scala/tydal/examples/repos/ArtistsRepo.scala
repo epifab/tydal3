@@ -11,7 +11,7 @@ import java.util.UUID
 
 
 trait ArtistsRepo[F[_]]:
-  def create(name: String, genres: List[Genre]): F[UUID]
+  def add(name: String, genres: List[Genre]): F[UUID]
 
 object ArtistsRepo:
 
@@ -30,7 +30,7 @@ object ArtistsRepo:
       s <- session
       insertStatement <- s.prepare(insertCommand)
       repo = new ArtistsRepo[F]:
-        def create(name: String, genres: List[Genre]): F[UUID] =
+        def add(name: String, genres: List[Genre]): F[UUID] =
           for {
             id <- newId
             _ <- insertStatement.execute((

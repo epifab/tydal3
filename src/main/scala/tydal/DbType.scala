@@ -141,10 +141,10 @@ object DbType:
     override val codec: Codec[Arr[BigDecimal]] = codecs._numeric
     override val dbName: String = "numeric[]"
 
-  given numericOfArr[P, S]: DbType[array[numericOf[P, S]]] with
+  given numericOfArr[P <: Int, S <: Int](using precision: ValueOf[P], scale: ValueOf[S]): DbType[array[numericOf[P, S]]] with
     type Out = Arr[BigDecimal]
-    override val codec: Codec[Arr[BigDecimal]] = codecs._numeric
-    override val dbName: String = "numeric[]"
+    override val codec: Codec[Arr[BigDecimal]] = Codec.array[BigDecimal](_.toString, s => scala.util.Try(BigDecimal(s)).toEither.left.map(_ => "NaN"), Type(s"_numeric(${precision.value},${scale.value})", List(Type.numeric(precision.value, scale.value))))
+    override val dbName: String = s"numeric(${precision.value},${scale.value})[]"
 
   given uuidArr: DbType[array[uuid]] with
     type Out = Arr[UUID]

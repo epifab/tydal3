@@ -10,7 +10,7 @@ import Schema.{Genre, venue}
 import java.util.UUID
 
 trait VenuesRepo[F[_]]:
-  def create(name: String, address: Option[String]): F[UUID]
+  def add(name: String, address: Option[String]): F[UUID]
 
 object VenuesRepo:
   private val insertCommand =
@@ -28,7 +28,7 @@ object VenuesRepo:
       s <- session
       insertStatement <- s.prepare(insertCommand)
       repo = new VenuesRepo[F]:
-        def create(name: String, address: Option[String]): F[UUID] =
+        def add(name: String, address: Option[String]): F[UUID] =
           for {
             id <- newId
             _ <- insertStatement.execute((

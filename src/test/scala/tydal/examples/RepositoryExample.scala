@@ -40,10 +40,10 @@ class RepositoryExample extends AnyFreeSpec with should.Matchers with Integratio
 
     repos.use { case (artists, venues, concerts) =>
       for {
-        radiohead <- artists.create("Radiohead", List(Genre.Rock, Genre.Electronic, Genre.Psychedelic))
-        caribou <- artists.create("Caribou", List(Genre.Electronic))
-        roundhouse <- venues.create(expectedConcert.venueName, Some("London"))
-        concertId <- concerts.create(
+        radiohead <- artists.add("Radiohead", List(Genre.Rock, Genre.Electronic, Genre.Psychedelic))
+        caribou <- artists.add("Caribou", List(Genre.Electronic))
+        roundhouse <- venues.add(expectedConcert.venueName, Some("London"))
+        concertId <- concerts.add(
           roundhouse,
           expectedConcert.begin,
           expectedConcert.end,

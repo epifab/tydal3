@@ -16,10 +16,10 @@ object Schema:
   enum Genre:
     case Rock, Psychedelic, Electronic, Pop, Metal
 
-  given Eq[Genre] with
-    override def eqv(x: Genre, y: Genre): Boolean = x == y
-
   object Genre:
+    given Eq[Genre] with
+      override def eqv(x: Genre, y: Genre): Boolean = x == y
+
     given Enumerated[Genre] with
       override def fromString(s: String): Option[Genre] = scala.util.Try(Genre.valueOf(s)).toOption
 
