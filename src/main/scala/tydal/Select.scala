@@ -39,7 +39,7 @@ trait SelectContext[Fields, From]:
   ): Field = finder2.find(finder1.find(from))
 
 
-trait SelectLike[Fields]:
+trait QueryDsl[Fields]:
   def fields: Fields
 
   def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
@@ -51,10 +51,10 @@ trait SelectLike[Fields]:
     fields: RelationFields[alias.type, Fields, SubQueryFields]
   ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
 
-  def union[ThatFields, That <: SelectLike[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
+  def union[ThatFields, That <: QueryDsl[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
     Union(this, that, distinct = true)
 
-  def unionAll[ThatFields, That <: SelectLike[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
+  def unionAll[ThatFields, That <: QueryDsl[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
     Union(this, that, distinct = false)
 
 
@@ -67,7 +67,7 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
   val sortBy: SortBy,
   val offset: Offset,
   val limit: Limit
-) extends SelectLike[Fields] with SelectContext[Fields, From]:
+) extends QueryDsl[Fields] with SelectContext[Fields, From]:
 
   def take[NewFields: NonEmptyListOfFields](f: SelectContext[Fields, From] => NewFields): SelectQuery[From, NewFields, GroupBy, Where, Having, SortBy, Offset, Limit] =
     SelectQuery(from, f(this), groupBy, where, having, sortBy, offset, limit)
@@ -103,7 +103,7 @@ final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy
     SelectQuery(from, fields, groupBy, where, having, sortBy, Some(offset), limit)
 
 
-final class SimpleSelect[Fields](val fields: Fields) extends SelectLike[Fields] with Selectable[Fields]
+final class SimpleSelect[Fields](val fields: Fields) extends QueryDsl[Fields] with Selectable[Fields]
 
 
 object Select:

@@ -33,6 +33,7 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
   }
 
   "Update command" - {
+
     "with a simple list of fields" in {
       testCommand(
         Update(Schema.artist)
@@ -76,4 +77,15 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
       )
     }
 
+  }
+
+  "Delete command" in {
+    testCommand(
+      Delete
+        .from(Schema.ticket)
+        .where(_("price") > 50[int4])
+        .compile,
+      "DELETE FROM ticket WHERE price > $1",
+      skunk.Void
+    )
   }

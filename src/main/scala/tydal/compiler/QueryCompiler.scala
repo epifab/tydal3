@@ -7,7 +7,7 @@ trait QueryCompiler[-Q, Input, Output]:
   def build(query: Q): Query[Input, Output]
 
 object QueryCompiler:
-  given select[Output, S <: SelectLike[Output], OutputDecoder, Input <: Tuple, InputEncoder] (
+  given select[Output, S <: QueryDsl[Output], OutputDecoder, Input <: Tuple, InputEncoder] (
     using
     origin: skunk.util.Origin,
     fragment: SelectQueryFragment[S, Input],

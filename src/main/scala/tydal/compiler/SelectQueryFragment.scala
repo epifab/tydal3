@@ -47,7 +47,7 @@ object SelectQueryFragment:
        offset.build(select.offset).prepend("OFFSET ") ++
        limit.build(select.limit).prepend("LIMIT ")
 
-  given union[FieldsA, A <: SelectLike[FieldsA], FieldsB, B <: SelectLike[FieldsB], AInput <: Tuple, BInput <: Tuple] (
+  given union[FieldsA, A <: QueryDsl[FieldsA], FieldsB, B <: QueryDsl[FieldsB], AInput <: Tuple, BInput <: Tuple] (
     using
     fragmentA: SelectQueryFragment[A, AInput],
     fragmentB: SelectQueryFragment[B, BInput]

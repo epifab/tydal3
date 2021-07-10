@@ -1,6 +1,6 @@
 package tydal
 
-final class Union[FieldsA, +A <: SelectLike[FieldsA], FieldsB, +B <: SelectLike[FieldsB]](val a: A, val b: B, val distinct: Boolean)(using UnifiableFields[FieldsA, FieldsB]) extends SelectLike[FieldsA]:
+final class Union[FieldsA, +A <: QueryDsl[FieldsA], FieldsB, +B <: QueryDsl[FieldsB]](val a: A, val b: B, val distinct: Boolean)(using UnifiableFields[FieldsA, FieldsB]) extends QueryDsl[FieldsA]:
   val fields = a.fields
 
 trait UnifiableFields[-A, -B]

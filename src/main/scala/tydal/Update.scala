@@ -6,7 +6,8 @@ class UpdateCommand[TableName, TableColumns, KeyValues, Where <: LogicalExpr](
   val table: TableSchema[TableName, TableColumns],
   val keyValues: KeyValues,
   val where: Where
-):
+) extends CommandDsl:
+
   def set[A, NewKeyValues](f: Selectable[TableColumns] => A)(
     using
     assignments: Assignments[A, NewKeyValues]
@@ -15,9 +16,6 @@ class UpdateCommand[TableName, TableColumns, KeyValues, Where <: LogicalExpr](
 
   def where[NewWhere <: LogicalExpr](f: Selectable[TableColumns] => NewWhere): UpdateCommand[TableName, TableColumns, KeyValues, NewWhere] =
     UpdateCommand(table, keyValues, f(table))
-
-  def compile[Input](using compiler: CommandCompiler[this.type, Input]): skunk.Command[Input] =
-    compiler.build(this)
 
 
 object Update:

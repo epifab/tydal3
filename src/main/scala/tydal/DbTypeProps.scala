@@ -119,7 +119,7 @@ object LooseRelation:
   ): LooseRelation[Alias, FieldsInput, Table[Name, Alias, FieldsInput], FieldsOutput, Table[Name, Alias, FieldsOutput]] with
     def apply(table: Table[Name, Alias, FieldsInput]): Table[Name, Alias, FieldsOutput] = Table(nullable(table.fields))
 
-  given subquery[Alias: DbIdentifier, FieldsInput, S <: SelectLike[_], FieldsOutput] (
+  given subquery[Alias: DbIdentifier, FieldsInput, S <: QueryDsl[_], FieldsOutput] (
     using
     nullable: Nullable[FieldsInput, FieldsOutput]
   ): LooseRelation[Alias, FieldsInput, SubQuery[Alias, FieldsInput, S], FieldsOutput, SubQuery[Alias, FieldsOutput, S]] with
