@@ -2,11 +2,11 @@ package tydal.compiler
 
 import skunk.Command
 
-trait CommandCompiler[-T, I <: Tuple]:
+trait CommandCompiler[-T, I]:
   def build(command: T): Command[I]
 
 object CommandCompiler:
-  given insert[T, I <: Tuple, IX <: Tuple] (
+  given insert[T, I <: Tuple, IX] (
     using
     origin: skunk.util.Origin,
     fragment: InsertCommandFragment[T, I],
@@ -16,7 +16,7 @@ object CommandCompiler:
       val f = fragment.build(command)
       Command(f.sql, origin, encoder(f.input))
 
-  given update[T, I <: Tuple, IX <: Tuple] (
+  given update[T, I <: Tuple, IX] (
     using
     origin: skunk.util.Origin,
     fragment: UpdateCommandFragment[T, I],

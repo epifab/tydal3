@@ -16,7 +16,7 @@ class UpdateCommand[TableName, TableColumns, KeyValues, Where <: LogicalExpr](
   def where[NewWhere <: LogicalExpr](f: Selectable[TableColumns] => NewWhere): UpdateCommand[TableName, TableColumns, KeyValues, NewWhere] =
     UpdateCommand(table, keyValues, f(table))
 
-  def compile[Input <: Tuple](using compiler: CommandCompiler[this.type, Input]): skunk.Command[Input] =
+  def compile[Input](using compiler: CommandCompiler[this.type, Input]): skunk.Command[Input] =
     compiler.build(this)
 
 
