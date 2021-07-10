@@ -7,11 +7,11 @@ class UpdateCommand[TableName, TableColumns, KeyValues, Where <: LogicalExpr](
   val keyValues: KeyValues,
   val where: Where
 ):
-  def fields[Fields, NewKeyValues](f: Selectable[TableColumns] => Fields)(
+  def set[A, NewKeyValues](f: Selectable[TableColumns] => A)(
     using
-    newPlaceholders: ColumnPlaceholders[Fields, NewKeyValues]
+    assignments: Assignments[A, NewKeyValues]
   ): UpdateCommand[TableName, TableColumns, NewKeyValues, Where] =
-    UpdateCommand(table, newPlaceholders.value, where)
+    UpdateCommand(table, assignments(f(table)), where)
 
   def where[NewWhere <: LogicalExpr](f: Selectable[TableColumns] => NewWhere): UpdateCommand[TableName, TableColumns, KeyValues, NewWhere] =
     UpdateCommand(table, keyValues, f(table))
@@ -21,7 +21,7 @@ class UpdateCommand[TableName, TableColumns, KeyValues, Where <: LogicalExpr](
 
 
 object Update:
-  def apply[TableName, TableColumns, Placeholders](table: TableSchema[TableName, TableColumns])(
+  def apply[TableName, TableColumns, KeyValues](table: TableSchema[TableName, TableColumns])(
     using
-    placeholders: ColumnPlaceholders[TableColumns, Placeholders]
-  ): UpdateCommand[TableName, TableColumns, Placeholders, AlwaysTrue] = UpdateCommand(table, placeholders.value, AlwaysTrue)
+    assignments: Assignments[TableColumns, KeyValues]
+  ): UpdateCommand[TableName, TableColumns, KeyValues, AlwaysTrue] = UpdateCommand(table, assignments(table.fields), AlwaysTrue)

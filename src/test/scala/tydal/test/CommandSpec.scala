@@ -21,7 +21,7 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
     testCommand(
       Insert
         .into(Schema.artist)
-        .fields(x => (x("id"), x("name"), x("genres")))
+        .fields(a => (a("id"), a("name"), a("genres")))
         .compile,
       "INSERT INTO artist (id, name, genres) VALUES ($1, $2, $3)",
       (
@@ -32,17 +32,48 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
     )
   }
 
-  "Update command" in {
-    testCommand(
-      Update(Schema.artist)
-        .fields(x => (x("name"), x("genres")))
-        .where(_("id") === "id?")
-        .compile,
-      "UPDATE artist SET name = $1, genres = $2 WHERE id = $3",
-      (
-        "name" ~~> "The Doors",
-        "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock),
-        "id?" ~~> UUID.fromString("3fb2bd37-fc4a-4c9f-96bc-a4c253bc5857")
+  "Update command" - {
+    "with a simple list of fields" in {
+      testCommand(
+        Update(Schema.artist)
+          .set(a => (a("name"), a("genres")))
+          .where(_("id") === "id?")
+          .compile,
+        "UPDATE artist SET name = $1, genres = $2 WHERE id = $3",
+        (
+          "name" ~~> "The Doors",
+          "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock),
+          "id?" ~~> UUID.fromString("3fb2bd37-fc4a-4c9f-96bc-a4c253bc5857")
+        )
       )
-    )
+    }
+
+    "with set column = expr of the same type" in {
+      testCommand(
+        Update(Schema.ticket)
+          .set(t => t("price") :== t("price") + (t("price") * Placeholder["factor?", float8]))
+          .where(_("id") === "id?")
+          .compile,
+        "UPDATE ticket SET price = (price + (price * $1)) WHERE id = $2",
+        (
+          "factor?" ~~> -0.2,  // 20% discount
+          "id?" ~~> UUID.fromString("3fb2bd37-fc4a-4c9f-96bc-a4c253bc5857")
+        )
+      )
+    }
+
+    "with set column = expr of a comparable type" in {
+      testCommand(
+        Update(Schema.ticket)
+          .set(t => t("price") :== Placeholder["newPrice?", float8])
+          .where(_("id") === "id?")
+          .compile,
+        "UPDATE ticket SET price = $1 WHERE id = $2",
+        (
+          "newPrice?" ~~> 15.99,  // 20% discount
+          "id?" ~~> UUID.fromString("3fb2bd37-fc4a-4c9f-96bc-a4c253bc5857")
+        )
+      )
+    }
+
   }
