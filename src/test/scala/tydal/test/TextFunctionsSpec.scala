@@ -64,7 +64,7 @@ class TextFunctionsSpec extends AnyFreeSpec with should.Matchers with Integratio
       testUnique(
         Select(Lower("HELLo"[text])).compile,
         "SELECT LOWER($1)",
-        "HELLO"
+        "hello"
       )
     }
 
@@ -89,6 +89,64 @@ class TextFunctionsSpec extends AnyFreeSpec with should.Matchers with Integratio
         Select(Lower("HELLo"[varcharOf[16]])).compile,
         "SELECT LOWER($1)",
         "hello"
+      )
+    }
+  }
+
+  "Concat" - {
+    "two strings" in {
+      testUnique(
+        Select(Concat("hello"[text], "world"[text])).compile,
+        "SELECT CONCAT($1, $2)",
+        "helloworld"
+      )
+    }
+
+    "string + null" in {
+      testUnique(
+        Select(Concat("hello"[text], Option.empty[String][nullable[text]])).compile,
+        "SELECT CONCAT($1, $2)",
+        "hello"
+      )
+    }
+
+    "null + null" in {
+      testUnique(
+        Select(Concat(Option("hello")[nullable[text]], Option.empty[String][nullable[text]])).compile,
+        "SELECT CONCAT($1, $2)",
+        Option("hello")
+      )
+    }
+
+    "int[] + bool" in {
+      testUnique(
+        Select(Concat(skunk.data.Arr(3, 4)[array[int4]], true[bool])).compile,
+        "SELECT CONCAT($1, $2)",
+        "{3,4}t"
+      )
+    }
+
+    "3 fields" in {
+      testUnique(
+        Select(Concat(Option(19)[nullable[int4]], Option("yyy")[nullable[text]], 14.6[float8])).compile,
+        "SELECT CONCAT($1, $2, $3)",
+        "19yyy14.6"
+      )
+    }
+
+    "4 fields" in {
+      testUnique(
+        Select(Concat(Option(19)[nullable[int4]], Option("yyy")[nullable[text]], 14.6[float8], "xxx"[varchar])).compile,
+        "SELECT CONCAT($1, $2, $3, $4)",
+        "19yyy14.6xxx"
+      )
+    }
+
+    "5 fields" in {
+      testUnique(
+        Select(Concat(Option(19)[nullable[int4]], Option("yuk")[nullable[text]], 14.6[float8], "kuy"[varchar], List(1,2)[json[List[Int]]])).compile,
+        "SELECT CONCAT($1, $2, $3, $4, $5)",
+        "19yuk14.6kuy[1,2]"
       )
     }
   }
