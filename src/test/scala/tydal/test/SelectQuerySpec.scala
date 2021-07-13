@@ -339,7 +339,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         (Select(4[int4]) union Select(5[int4]) union Select(5[int4])).compile,
         "SELECT $1 UNION SELECT $2 UNION SELECT $3",
         Void
-      ).toSet shouldBe Set(4, 5)
+      ).sorted shouldBe List(4, 5)
     }
 
     "union all" in {
@@ -347,7 +347,42 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
         (Select(4[int4]) union Select(5[int4]) unionAll Select(5[int4])).compile,
         "SELECT $1 UNION SELECT $2 UNION ALL SELECT $3",
         Void
-      ).toSet shouldBe Set(4, 5, 5)
+      ).sorted shouldBe List(4, 5, 5)
+    }
+  }
+
+  "Distinct" - {
+    val foo = (Select(4[int4] as "bar") union Select(4[int4]) unionAll Select(5[int4])) as "foo"
+
+    "Select distinct" in {
+      testQuery(
+        Select.from(foo).takeDistinct(_("foo", "bar")).compile,
+        "SELECT DISTINCT foo.bar FROM (SELECT $1 AS bar UNION SELECT $2 UNION ALL SELECT $3) foo",
+        Void
+      ).sorted shouldBe List(4, 5)
     }
 
+    "Select COUNT DISTINCT" in {
+      testUnique(
+        Select.from(foo).take(x => Count.distinct(x("foo", "bar"))).compile,
+        "SELECT COUNT(DISTINCT foo.bar) FROM (SELECT $1 AS bar UNION SELECT $2 UNION ALL SELECT $3) foo",
+        2L
+      )
+    }
+
+    "Select AVG DISTINCT" in {
+      testUnique(
+        Select.from(foo).take(x => Avg.distinct(x("foo", "bar"))).compile,
+        "SELECT AVG(DISTINCT foo.bar) FROM (SELECT $1 AS bar UNION SELECT $2 UNION ALL SELECT $3) foo",
+        Option(BigDecimal(4.5))
+      )
+    }
+
+    "Select SUM DISTINCT" in {
+      testUnique(
+        Select.from(foo).take(x => Sum.distinct(x("foo", "bar"))).compile,
+        "SELECT SUM(DISTINCT foo.bar) FROM (SELECT $1 AS bar UNION SELECT $2 UNION ALL SELECT $3) foo",
+        Option(9)
+      )
+    }
   }

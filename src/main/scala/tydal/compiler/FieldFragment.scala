@@ -39,8 +39,10 @@ object FieldFragment:
     inner: ListFragment[FieldFragment, FS, Output]
   ): FieldFragment[DbFunction[FS, T], Output] with
     def build(func: DbFunction[FS, T]): CompiledFragment[Output] =
-      if (func.infixNotation) inner.build(func.params, s" ${func.dbName} ").wrap("(", ")")
-      else inner.build(func.params, ", ").wrap(s"${func.dbName}(", ")")
+      func match
+        case f: Aggregation[_, _] if f.distinct => inner.build(func.params, ", ").wrap(s"${func.dbName}(DISTINCT ", ")")
+        case f: DbFunction2[_, _, _] if f.infixNotation => inner.build(func.params, s" ${func.dbName} ").wrap("(", ")")
+        case _ => inner.build(func.params, ", ").wrap(s"${func.dbName}(", ")")
 
   given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with
     def build(placeholder: P): CompiledFragment[P *: EmptyTuple] = CompiledFragment(List(placeholder.dbType.codec.sql), placeholder *: EmptyTuple)
