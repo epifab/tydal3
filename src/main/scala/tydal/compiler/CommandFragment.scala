@@ -6,15 +6,17 @@ import Tuple.Concat
 trait CommandFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 
 object CommandFragment:
-  given insert[TableName, TableColumns, KeyValues, A <: Tuple, B <: Tuple] (
+  given insert[TableName, TableColumns, KeyValues, ConflictPolicy <: OnConflict, A <: Tuple, B <: Tuple, C <: Tuple] (
     using
     fields: ListFragment[KeyFragment, KeyValues, A],
-    values: ListFragment[ValueFragment, KeyValues, B]
-  ): CommandFragment[InsertCommand[TableName, TableColumns, KeyValues], A Concat B] with
-    def build(command: InsertCommand[TableName, TableColumns, KeyValues]): CompiledFragment[A Concat B] =
+    values: ListFragment[ValueFragment, KeyValues, B],
+    onConflict: OnConflictFragment[ConflictPolicy, C]
+  ): CommandFragment[InsertCommand[TableName, TableColumns, KeyValues, ConflictPolicy], A Concat B Concat C] with
+    def build(command: InsertCommand[TableName, TableColumns, KeyValues, ConflictPolicy]): CompiledFragment[A Concat B Concat C] =
       CompiledFragment(s"INSERT INTO ${command.table.name.escaped}") ++
         fields.build(command.keyValues, ", ").wrap("(", ")") ++
-        values.build(command.keyValues, ", ").wrap("VALUES (", ")")
+        values.build(command.keyValues, ", ").wrap("VALUES (", ")") ++
+        onConflict.build(command.conflictPolicy)
 
   given update[TableName, TableColumns, KeyValues, Where <: LogicalExpr, A <: Tuple, B <: Tuple] (
     using

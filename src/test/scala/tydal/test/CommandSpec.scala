@@ -17,19 +17,56 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
       .use(_.execute(input))
       .unsafeRunSync()
 
-  "Insert command" in {
-    testCommand(
-      Insert
-        .into(Schema.artist)
-        .fields(a => (a("id"), a("name"), a("genres")))
-        .compile,
-      "INSERT INTO artist (id, name, genres) VALUES ($1, $2, $3)",
-      (
-        "id" ~~> UUID.randomUUID(),
-        "name" ~~> "The Doors",
-        "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock)
+  "Insert command" - {
+    "Simple INSERT" in {
+      testCommand(
+        Insert
+          .into(Schema.artist)
+          .fields(a => (a("id"), a("name"), a("genres")))
+          .compile,
+        "INSERT INTO artist (id, name, genres) VALUES ($1, $2, $3)",
+        (
+          "id" ~~> UUID.randomUUID(),
+          "name" ~~> "The Doors",
+          "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock)
+        )
       )
-    )
+    }
+
+    "On conflict do nothing" in {
+      testCommand(
+        Insert
+          .into(Schema.artist)
+          .fields(a => (a("id"), a("name"), a("genres")))
+          .onConflict(_("id"))
+          .doNothing
+          .compile,
+        "INSERT INTO artist (id, name, genres) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
+        (
+          "id" ~~> UUID.randomUUID(),
+          "name" ~~> "The Doors",
+          "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock)
+        )
+      )
+    }
+
+    "On conflict do update" in {
+      testCommand(
+        Insert
+          .into(Schema.artist)
+          .fields(a => (a("id"), a("name"), a("genres")))
+          .onConflict(_("id"))
+          .doUpdate(a => a("name") :== Placeholder["newName", varchar])
+          .compile,
+        "INSERT INTO artist (id, name, genres) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET name = $4",
+        (
+          "id" ~~> UUID.randomUUID(),
+          "name" ~~> "The Doors",
+          "genres" ~~> skunk.data.Arr(Schema.Genre.Psychedelic, Schema.Genre.Rock),
+          "newName" ~~> "The Doors"
+        )
+      )
+    }
   }
 
   "Update command" - {
