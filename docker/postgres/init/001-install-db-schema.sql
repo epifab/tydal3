@@ -1,3 +1,5 @@
+CREATE EXTENSION postgis;
+
 CREATE TYPE genre as ENUM('Rock', 'Psychedelic', 'Electronic', 'Pop', 'Metal');
 CREATE TYPE currency as ENUM('GBP', 'USD', 'EUR');
 
@@ -10,7 +12,8 @@ create table artist(
 create table venue(
   id uuid primary key,
   name varchar(128) not null,
-  address text null
+  address text null,
+  geo_location geography null
 );
 
 create table concert(

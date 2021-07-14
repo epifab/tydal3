@@ -40,7 +40,8 @@ object Schema:
     (
       "id" :=: uuid,
       "name" :=: varcharOf[128],
-      "address" :=: nullable[text]
+      "address" :=: nullable[text],
+      "geo_location" :=: postgis.geography
     )
   ]
 

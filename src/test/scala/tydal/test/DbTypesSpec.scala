@@ -43,7 +43,10 @@ object all_supported_types extends TableSchema[
     "array[uuid]" :=: array[uuid],
     "enum" :=: `enum`["genre", Genre],
     "json" :=: json[String],
-    "jsonb" :=: jsonb[String]
+    "jsonb" :=: jsonb[String],
+    "geography" :=: postgis.geography,
+    "geometry" :=: postgis.geometry,
+    "point" :=: postgis.point
   )
 ]
 
@@ -106,11 +109,17 @@ class DbTypesSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
     "jsonb" in List("hello", "world").test[jsonb[List[String]]]
   }
 
-  "enum" in Genre.Rock.test[`enum`["genre", Genre]]
+  "Enum" in Genre.Rock.test[`enum`["genre", Genre]]
 
   "Nullable" - {
     "empty" in Option.empty[String].test[nullable[varchar]]
     "nonEmpty" in Option("hello").test[nullable[varchar]]
+  }
+
+  "Postgis" - {
+    "geography" in "0101000020E6100000FA731B1E0C364A40F4C70FF0FF461340".test[postgis.geography]
+    "geometry" in "0101000020E6100000FA731B1E0C364A40F4C70FF0FF461340".test[postgis.geometry]
+    "point" in (52.4222448, 4.8193357).test[postgis.point]
   }
 
   "All supported types" in {
@@ -146,7 +155,10 @@ class DbTypesSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
         "array[uuid]" ~~> Arr(uuid, uuid),
         "enum" ~~> Genre.Rock,
         "json" ~~> "hello",
-        "jsonb" ~~> "hello"
+        "jsonb" ~~> "hello",
+        "geography" ~~> "0101000020E6100000FA731B1E0C364A40F4C70FF0FF461340",
+        "geometry" ~~> "0101000020E6100000FA731B1E0C364A40F4C70FF0FF461340",
+        "point" ~~> (52.4222448, 4.8193357)
       ))
       result <- selectAllSupportedTypes.use(_.unique("uuid?" ~~> uuid))
     } yield result).unsafeRunSync()

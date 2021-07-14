@@ -25,5 +25,8 @@ CREATE TABLE all_supported_types(
     "array[uuid]" uuid[],
     "enum" genre,
     "json" json,
-    "jsonb" jsonb
+    "jsonb" jsonb,
+    "geography" geography,
+    "geometry" geometry,
+    "point" point
 );
