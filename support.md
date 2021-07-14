@@ -3,6 +3,7 @@
 ## Column types
 
 - `varchar`
+- `varcharOf[size]`
 - `text`
 - `int2`
 - `int4`
@@ -10,6 +11,7 @@
 - `float4`
 - `float8`
 - `numeric`
+- `numericOf[precision,scale]`
 - `bool`
 - `uuid`
 - `date`
@@ -33,6 +35,13 @@
 - `-`
 - `*`
 - `/`
+
+## String functions
+
+- `Concat`
+- `Lower`
+- `Upper`
+- `CharLength`
 
 ## Aggregations
 
@@ -82,6 +91,14 @@
 - `limit`
 - `union`
 - `unionAll`
+
+
+## Distinct clause
+
+- `takeDistinct` (select queries)
+- `Count.distinct`
+- `Avg.distinct`
+- `Sum.distinct`
 
 ## Commands
 
