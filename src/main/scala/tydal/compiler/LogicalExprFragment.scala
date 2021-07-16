@@ -1,7 +1,7 @@
-package tydal.compiler
+package tydal
+package compiler
 
-import tydal._
-import Tuple.Concat
+import scala.Tuple.Concat
 
 trait LogicalExprFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 

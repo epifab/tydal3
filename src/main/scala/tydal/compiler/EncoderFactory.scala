@@ -1,11 +1,11 @@
-package tydal.compiler
+package tydal
+package compiler
 
 import cats.data.State
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import skunk.data.Type
 import skunk.syntax.all._
 import skunk.{Encoder, Void}
-import tydal._
 
 
 trait EncoderFactory[-T, U]:

@@ -1,7 +1,7 @@
-package tydal.compiler
+package tydal
+package compiler
 
 import skunk.Query
-import tydal._
 
 trait QueryCompiler[-Q, Input, Output]:
   def build(query: Q): Query[Input, Output]

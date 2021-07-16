@@ -1,10 +1,10 @@
-package tydal.compiler
+package tydal
+package compiler
 
 import cats.data.State
 import skunk.data.Type
 import skunk.syntax.all._
 import skunk.{Decoder, Void}
-import tydal._
 
 import scala.Tuple.Concat
 

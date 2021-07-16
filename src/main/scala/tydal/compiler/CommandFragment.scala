@@ -1,6 +1,6 @@
-package tydal.compiler
+package tydal
+package compiler
 
-import tydal._
 import Tuple.Concat
 
 trait CommandFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]

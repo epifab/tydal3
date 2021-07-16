@@ -1,6 +1,5 @@
-package tydal.compiler
-
-import tydal._
+package tydal
+package compiler
 
 trait FieldFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 trait FieldAsAliasFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]

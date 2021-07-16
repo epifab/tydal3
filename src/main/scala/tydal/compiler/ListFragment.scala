@@ -1,4 +1,5 @@
-package tydal.compiler
+package tydal
+package compiler
 
 import Tuple.Concat
 

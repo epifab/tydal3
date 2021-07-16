@@ -1,10 +1,11 @@
-package tydal.compiler
+package tydal
+package compiler
 
-import tydal._
-import Tuple.Concat
-import skunk.Command
-import cats.data.State
 import cats.Traverse.ops.toAllTraverseOps
+import cats.data.State
+import skunk.Command
+
+import scala.Tuple.Concat
 
 trait FragmentCompiler[-Target, Input <: Tuple]:
   def build(x: Target): CompiledFragment[Input]

@@ -1,6 +1,5 @@
-package tydal.compiler
-
-import tydal._
+package tydal
+package compiler
 
 trait ValueFragment[-T, I <: Tuple] extends FragmentCompiler[T, I]
 
