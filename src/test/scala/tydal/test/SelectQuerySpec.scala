@@ -58,6 +58,30 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
       ): List[String]
     }
 
+    "Postgis" - {
+      "distance between two geographic points" in {
+        testUnique(
+          Select(postgis.Distance(
+            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[postgis.geography],
+            "0101000020E6100000E25BB3F050C74940184740E0DCBAC1BF"[postgis.geography]
+          )).compile,
+          "SELECT ST_Distance($1, $2)",
+          7147.08163459
+        )
+      }
+
+      "distance between a geographic point and null" in {
+        testUnique(
+          Select(postgis.Distance(
+            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[postgis.geography],
+            Option.empty[String][nullable[postgis.geography]]
+          )).compile,
+          "SELECT ST_Distance($1, $2)",
+          None
+        )
+      }
+    }
+
     "Aliased" in {
       testQuery(
         Select.from(artist as "a").take(_("a", "name").as("hello")).compile,
