@@ -36,3 +36,9 @@ object point:
       Type("point")
     )
     override val dbName: String = "point"
+
+extension [F <: Field[geography]](f: F)
+  def toGeometry: Cast[F, geometry] = Cast(f)
+
+extension [F <: Field[geometry]](f: F)
+  def toPoint: Cast[F, point] = Cast(f)

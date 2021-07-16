@@ -1,5 +1,11 @@
-package tydal
+package tydal.utils
 
+import tydal._
+
+/**
+ * Ensure Fields is either a single field or a tuple made of fields
+ * @tparam Fields
+ */
 trait ListOfFields[-Fields]
 
 object ListOfFields:
@@ -7,21 +13,13 @@ object ListOfFields:
   given ListOfFields[EmptyTuple] with { }
   given [H, T <: Tuple](using ListOfFields[H], ListOfFields[T]): ListOfFields[H *: T] with { }
 
-
+/**
+ * Ensure Fields is either a single field or a non empty tuple of fields
+ * @tparam Fields
+ */
 trait NonEmptyListOfFields[-Fields]
 
 object NonEmptyListOfFields:
   given [F <: Field[_]]: NonEmptyListOfFields[F] with { }
   given twoOrMore[H, T <: NonEmptyTuple](using NonEmptyListOfFields[H], NonEmptyListOfFields[T]): NonEmptyListOfFields[H *: T] with { }
   given one[H](using ListOfFields[H]): NonEmptyListOfFields[H *: EmptyTuple] with { }
-
-
-trait OptionalInput[Type, -X]
-
-object OptionalInput:
-  given none[Type]: OptionalInput[Type, None.type] with { }
-  given somePlaceholder[Name, Type]: OptionalInput[Type, Some[Placeholder[Name, Type]]] with { }
-  given someConst[Type]: OptionalInput[Type, Some[Const[Type]]] with { }
-
-type OptionalInt4[-X] = OptionalInput[int4, X]
-type OptionalInt8[-X] = OptionalInput[int8, X]

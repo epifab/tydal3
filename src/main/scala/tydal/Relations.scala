@@ -1,5 +1,7 @@
 package tydal
 
+import tydal.utils.{ColumnsFactory, RelationFieldsFactory}
+
 sealed trait Relations
 
 sealed trait Relation[Alias, Fields] extends Relations with Selectable[Fields]:
@@ -20,12 +22,12 @@ enum JoinType:
 final class Join[+Tail <: Relations, +Head <: Relation[_, _], +On <: LogicalExpr](val tail: Tail, val head: Head, val on: On, val joinType: JoinType) extends Relations:
   override def toString: String = s"$tail $joinType join $head on $on"
 
-trait TableSchema[Name, Columns](using val name: DbIdentifier[Name], val columns: ListOfColumns[Columns]) extends Selectable[Columns]:
+trait TableSchema[Name, Columns](using val name: DbIdentifier[Name], val columns: ColumnsFactory[Columns]) extends Selectable[Columns]:
 
   def as[Alias, Fields](alias: Alias)(
     using
     dbi: DbIdentifier[alias.type],
-    fields: RelationFields[alias.type, Columns, Fields]
+    fields: RelationFieldsFactory[alias.type, Columns, Fields]
   ): Table[Name, alias.type, Fields] = Table(fields.value)
 
   override val fields: Columns = columns.value

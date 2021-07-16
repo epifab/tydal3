@@ -1,6 +1,7 @@
 package tydal.compiler
 
 import tydal._
+import tydal.utils._
 
 import scala.Tuple.Concat
 

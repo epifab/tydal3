@@ -1,6 +1,7 @@
 package tydal
 
 import tydal.compiler.CommandCompiler
+import tydal.utils.NonEmptyListOfFields
 
 sealed trait OnConflict
 

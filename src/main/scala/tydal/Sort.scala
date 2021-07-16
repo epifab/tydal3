@@ -6,6 +6,10 @@ sealed trait Sort[+F <: Field[_]]:
 case class Asc[+F <: Field[_]](field: F) extends Sort[F]
 case class Desc[+F <: Field[_]](field: F) extends Sort[F]
 
+/**
+ * Ensures X is a valid sort by clause
+ * @tparam X
+ */
 trait SortByClasue[-X]
 
 object SortByClasue:

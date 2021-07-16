@@ -2,6 +2,7 @@ package tydal
 
 import skunk.Query
 import tydal.compiler.QueryCompiler
+import tydal.utils._
 
 
 trait Selectable[Fields]:
@@ -37,25 +38,6 @@ trait SelectContext[Fields, From]:
     finder1: Finder[From, Source, Tag1],
     finder2: Finder[Source, Field, Tag2]
   ): Field = finder2.find(finder1.find(from))
-
-
-trait QueryDsl[Fields]:
-  def fields: Fields
-
-  def compile[Input, Output](using compiler: QueryCompiler[this.type, Input, Output]): Query[Input, Output] =
-    compiler.build(this)
-
-  def as[Alias, SubQueryFields](alias: Alias)(
-    using
-    dbi: DbIdentifier[alias.type],
-    fields: RelationFields[alias.type, Fields, SubQueryFields]
-  ): SubQuery[alias.type, SubQueryFields, this.type] = SubQuery(fields.value, this)
-
-  def union[ThatFields, That <: QueryDsl[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
-    Union(this, that, distinct = true)
-
-  def unionAll[ThatFields, That <: QueryDsl[ThatFields]](that: That)(using UnifiableFields[Fields, ThatFields]): Union[Fields, this.type, ThatFields, That] =
-    Union(this, that, distinct = false)
 
 
 final class SelectQuery[From <: Relations, Fields: NonEmptyListOfFields, GroupBy: ListOfFields, Where <: LogicalExpr, Having <: LogicalExpr, SortBy: SortByClasue, Offset: OptionalInt8, Limit: OptionalInt4](
