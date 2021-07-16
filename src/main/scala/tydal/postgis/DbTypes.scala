@@ -23,9 +23,11 @@ object geometry:
     override val dbName: String = "geometry"
 
 object point:
+  def apply(x: Double, y: Double): Const[point] = Const(dbt, (x, y))
+
   val PointRegex = "\\(([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\\)".r
 
-  given DbType[point] with
+  given dbt: DbType[point] with
     type Out = (Double, Double)
     override val codec: Codec[(Double, Double)] = Codec.simple(
       { case (lat, lng) => s"($lat,$lng)" },
@@ -37,8 +39,31 @@ object point:
     )
     override val dbName: String = "point"
 
-extension [F <: Field[geography]](f: F)
-  def toGeometry: Cast[F, geometry] = Cast(f)
 
-extension [F <: Field[geometry]](f: F)
-  def toPoint: Cast[F, point] = Cast(f)
+trait IsGeography[-T]
+
+object IsGeography:
+  given IsGeography[geography] with { }
+  given IsGeography[nullable[geography]] with { }
+  given[T: IsGeography]: IsGeography[Field[T]] with { }
+
+
+trait IsGeometry[-T]
+
+object IsGeometry:
+  given IsGeometry[geometry] with { }
+  given IsGeometry[nullable[geometry]] with { }
+  given[T: IsGeometry]: IsGeometry[Field[T]] with { }
+
+
+trait IsPoint[-T]
+
+trait PointLike:
+  // It's possible to get latitude and longitude out of a geometry straight away
+  given geometry [T: IsGeometry]: IsPoint[T] with { }
+
+object IsPoint extends PointLike:
+  given IsPoint[point] with { }
+  given IsPoint[nullable[point]] with { }
+  given[T: IsPoint]: IsPoint[Field[T]] with { }
+

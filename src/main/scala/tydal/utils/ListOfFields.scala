@@ -1,6 +1,5 @@
-package tydal.utils
-
-import tydal._
+package tydal
+package utils
 
 /**
  * Ensure Fields is either a single field or a tuple made of fields

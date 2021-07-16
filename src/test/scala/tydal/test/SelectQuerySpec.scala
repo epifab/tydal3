@@ -59,11 +59,45 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     }
 
     "Postgis" - {
+      import tydal.postgis._
+
+      "point latitude" in {
+        testUnique(
+          Select(Latitude(point(52.123, 1.23))).compile,
+          "SELECT ST_X($1)",
+          52.123
+        )
+      }
+
+      "point longitude" in {
+        testUnique(
+          Select(Longitude(point(52.123, 1.23))).compile,
+          "SELECT ST_Y($1)",
+          1.23
+        )
+      }
+
+      "geometry latitude" in {
+        testUnique(
+          Select(Latitude(point(52.123, 1.23).castTo[geometry])).compile,
+          "SELECT ST_X($1::geometry)",
+          52.123
+        )
+      }
+
+      "geometry longitude" in {
+        testUnique(
+          Select(Longitude(point(52.123, 1.23).castTo[geometry])).compile,
+          "SELECT ST_Y($1::geometry)",
+          1.23
+        )
+      }
+
       "distance between two geographic points" in {
         testUnique(
-          Select(postgis.Distance(
-            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[postgis.geography],
-            "0101000020E6100000E25BB3F050C74940184740E0DCBAC1BF"[postgis.geography]
+          Select(Distance(
+            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[geography],
+            "0101000020E6100000E25BB3F050C74940184740E0DCBAC1BF"[geography]
           )).compile,
           "SELECT ST_Distance($1, $2)",
           7147.08163459
@@ -72,9 +106,9 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
       "distance between a geographic point and null" in {
         testUnique(
-          Select(postgis.Distance(
-            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[postgis.geography],
-            Option.empty[String][nullable[postgis.geography]]
+          Select(Distance(
+            "0101000020E61000008E9A0A4C02C649403D05ECCDAB1FB3BF"[geography],
+            Option.empty[String][nullable[geography]]
           )).compile,
           "SELECT ST_Distance($1, $2)",
           None
