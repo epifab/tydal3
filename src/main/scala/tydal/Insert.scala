@@ -30,9 +30,9 @@ class InsertCommand[TableName, TableColumns, KeyValues, ConflictPolicy <: OnConf
   val conflictPolicy: ConflictPolicy
 ) extends CommandDsl:
 
-  def fields[Fields: NonEmptyListOfFields, NewKeyValues](f: Selectable[TableColumns] => Fields)(
+  def fields[A, NewKeyValues](f: Selectable[TableColumns] => A)(
     using
-    assignments: Assignments[Fields, NewKeyValues]
+    assignments: Assignments[A, NewKeyValues]
   ): InsertCommand[TableName, TableColumns, NewKeyValues, ConflictPolicy] =
     InsertCommand[TableName, TableColumns, NewKeyValues, ConflictPolicy](table, assignments(f(table)), conflictPolicy)
 

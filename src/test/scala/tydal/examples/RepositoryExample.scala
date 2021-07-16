@@ -42,7 +42,7 @@ class RepositoryExample extends AnyFreeSpec with should.Matchers with Integratio
       for {
         radiohead <- artists.add("Radiohead", List(Genre.Rock, Genre.Electronic, Genre.Psychedelic))
         caribou <- artists.add("Caribou", List(Genre.Electronic))
-        roundhouse <- venues.add(expectedConcert.venueName, Some("London"))
+        roundhouse <- venues.add(expectedConcert.venueName, Some("London"), Some((51.5424717,-0.1472787)))
         concertId <- concerts.add(
           roundhouse,
           expectedConcert.begin,

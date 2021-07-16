@@ -61,22 +61,6 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
     "Postgis" - {
       import tydal.postgis._
 
-      "point latitude" in {
-        testUnique(
-          Select(Latitude(point(52.123, 1.23))).compile,
-          "SELECT ST_X($1)",
-          52.123
-        )
-      }
-
-      "point longitude" in {
-        testUnique(
-          Select(Longitude(point(52.123, 1.23))).compile,
-          "SELECT ST_Y($1)",
-          1.23
-        )
-      }
-
       "geometry latitude" in {
         testUnique(
           Select(Latitude(point(52.123, 1.23).castTo[geometry])).compile,
