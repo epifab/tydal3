@@ -1,11 +1,13 @@
 package tydal
 
+import tydal.utils.AnyNullableAlgebra
+
 trait Field[T]:
   given dbType: DbType[T]
 
   def as[A](tag: A)(using DbIdentifier[tag.type]): Aliased[T, this.type, tag.type] = Aliased(this)
   
-  def castTo[B: DbType]: Cast[this.type, B] = Cast(this)
+  def cast[B, C](to: To[B])(using AnyNullableAlgebra[T, B, C], DbType[C]): Cast[this.type, C] = Cast(this)
 
   def ===[G <: Field[_]](right: G)(using AreComparable[this.type, G]): Equals[this.type, G] = Equals(this, right)
 

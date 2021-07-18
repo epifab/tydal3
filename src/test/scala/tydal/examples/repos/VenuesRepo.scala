@@ -21,8 +21,8 @@ object VenuesRepo:
         v("name"),
         v("address"),
         v("geo_location") :== Placeholder["geo_location", nullable[postgis.point]]
-          .castTo[postgis.geometry]
-          .castTo[postgis.geography]
+          .cast(To[postgis.geometry])
+          .cast(To[postgis.geography])
       ))
       .compile
 

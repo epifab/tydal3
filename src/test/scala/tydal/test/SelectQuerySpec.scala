@@ -63,7 +63,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
       "geometry latitude" in {
         testUnique(
-          Select(Latitude(point(52.123, 1.23).castTo[geometry])).compile,
+          Select(Latitude(point(52.123, 1.23).cast(To[geometry]))).compile,
           "SELECT ST_X($1::geometry)",
           52.123
         )
@@ -71,7 +71,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
       "geometry longitude" in {
         testUnique(
-          Select(Longitude(point(52.123, 1.23).castTo[geometry])).compile,
+          Select(Longitude(point(52.123, 1.23).cast(To[geometry]))).compile,
           "SELECT ST_Y($1::geometry)",
           1.23
         )
@@ -110,7 +110,7 @@ class SelectQuerySpec extends AnyFreeSpec with should.Matchers with IntegrationT
 
     "Casted" in {
       testQuery(
-        Select.from(artist as "a").take(_("a", "id").castTo[varchar]).compile,
+        Select.from(artist as "a").take(_("a", "id").cast(To[varchar])).compile,
         "SELECT a.id::varchar FROM artist a",
         Void
       )
