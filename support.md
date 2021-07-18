@@ -28,6 +28,9 @@
 - `enum`
 - `json`
 - `jsonb`
+- `postgis.geography`
+- `postgis.geometry`
+- `postgis.point`
 
 ## Arithmetic functions
 
@@ -42,6 +45,12 @@
 - `Lower`
 - `Upper`
 - `CharLength`
+
+## Geospatial
+
+- `postgis.Distance`
+- `postgis.Latitude`
+- `postgis.Longitude`
 
 ## Aggregations
 
