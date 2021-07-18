@@ -55,10 +55,11 @@ def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String]
 
 ## Support
 
-Tydal supports a fair amount of SQL syntax, including *joins*, *subqueries*, *union*, *aggregation functions* and more,
-although it's obviously not exhaustive.  
+Tydal supports a fair amount of PostgreSQL, and most common queries can be expressed through the DSL,
+but not everything is or can be supported, of course.  
 For a complete list of supported features please refer to [this documentation](support.md).  
-The project is open source, and you're welcome to collaborate.
+You can find some examples [here](src/test/scala/tydal/examples).  
+The project is open source, and you're very welcome to contribute!
 
 ## Testing
 
@@ -68,6 +69,18 @@ $ sbt test
 ```
 
 
-## Release
+## Getting started
 
-Not there yet! Stay tuned.
+### Installation (sbt)
+
+Step 1. Add the JitPack repository to your build file
+
+```
+resolvers += "jitpack" at "https://jitpack.io"
+```
+
+Step 2. Add the dependency
+
+```
+libraryDependencies += "com.github.epifab" % "tydal3" % "0.1"	
+```
