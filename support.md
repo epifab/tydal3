@@ -54,11 +54,14 @@
 
 ## Aggregations
 
+- `Avg`
+- `Avg.distinct`
+- `Count`
+- `Count.distinct`
 - `Sum`
+- `Sum.distinct`
 - `Min`
 - `Max`
-- `Avg`
-- `Count`
 
 ## Other expressions
 
@@ -90,6 +93,8 @@
 
 ## Select queries
 
+- `take`
+- `takeDistinct`
 - `leftJoin`
 - `innerJoin`
 - `where`
@@ -101,13 +106,6 @@
 - `union`
 - `unionAll`
 
-
-## Distinct clause
-
-- `takeDistinct` (select queries)
-- `Count.distinct`
-- `Avg.distinct`
-- `Sum.distinct`
 
 ## Commands
 
