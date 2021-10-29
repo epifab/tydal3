@@ -1,9 +1,9 @@
 package tydal.test
 
 import org.scalatest.Assertion
-import org.scalatest.freespec._
-import org.scalatest.matchers._
-import tydal._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
+import tydal.*
 
 class TextFunctionsSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
 

@@ -1,11 +1,11 @@
 package tydal.test.aggregations
 
-import org.scalatest.freespec._
-import org.scalatest.matchers._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
 import skunk.{Query, Void}
-import tydal.Schema._
-import tydal._
-import tydal.compiler._
+import tydal.Schema.*
+import tydal.*
+import tydal.compiler.*
 import tydal.test.IntegrationTesting
 
 class CountSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:

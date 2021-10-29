@@ -1,7 +1,7 @@
 package tydal.test
 
 import skunk.{Encoder, Void}
-import tydal._
+import tydal.*
 import tydal.compiler.EncoderFactory
 
 import java.util.UUID

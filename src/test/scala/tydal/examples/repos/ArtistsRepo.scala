@@ -4,8 +4,8 @@ import cats.Monad
 import cats.Monad.ops.toAllMonadOps
 import cats.effect.Resource
 import skunk.Session
-import tydal._
-import Schema._
+import tydal.*
+import Schema.*
 
 import java.util.UUID
 

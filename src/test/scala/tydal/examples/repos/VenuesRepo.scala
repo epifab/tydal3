@@ -4,7 +4,7 @@ import cats.Monad
 import cats.Monad.ops.toAllMonadOps
 import cats.effect.Resource
 import skunk.Session
-import tydal._
+import tydal.*
 import Schema.{Genre, venue}
 
 import java.util.UUID

@@ -3,7 +3,7 @@ package tydal.test.arithmetics
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should
 import tydal.test.IntegrationTesting
-import tydal._
+import tydal.*
 
 class ArithmeticsPrioritySpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
 

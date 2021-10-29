@@ -2,7 +2,7 @@ package tydal
 
 import skunk.Query
 import tydal.compiler.QueryCompiler
-import tydal.utils._
+import tydal.utils.*
 
 
 trait Selectable[Fields]:

@@ -1,11 +1,11 @@
 package tydal.test.aggregations
 
 import org.scalatest.Assertion
-import org.scalatest.freespec._
-import org.scalatest.matchers._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
 import skunk.{Query, Void}
 import tydal.Schema.artist
-import tydal._
+import tydal.*
 import tydal.compiler.{QueryCompiler, SelectQueryFragment}
 import tydal.test.IntegrationTesting
 

@@ -1,7 +1,7 @@
 package tydal.test
 
 import skunk.{Decoder, Void}
-import tydal._
+import tydal.*
 import tydal.compiler.DecoderFactory
 
 object DecoderFactorySpec:

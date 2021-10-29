@@ -1,7 +1,7 @@
 package tydal
 package compiler
 
-import tydal.OnConflict._
+import tydal.OnConflict.*
 
 import scala.Tuple.Concat
 

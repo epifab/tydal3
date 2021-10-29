@@ -2,10 +2,10 @@ package tydal.test.arithmetics
 
 import cats.kernel.Eq
 import org.scalatest.Assertion
-import org.scalatest.freespec._
-import org.scalatest.matchers._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
 import skunk.Void
-import tydal._
+import tydal.*
 import tydal.test.IntegrationTesting
 
 class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:

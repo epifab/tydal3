@@ -3,7 +3,7 @@ package tydal.test
 import cats.effect.unsafe.IORuntime
 import cats.kernel.Eq
 import org.scalatest.Assertion
-import org.scalatest.matchers._
+import org.scalatest.matchers.*
 import skunk.{Query, Void}
 import tydal.SessionAware
 

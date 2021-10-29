@@ -1,6 +1,6 @@
 package tydal.test
 
-import tydal._
+import tydal.*
 
 object AssignementsSpec:
   summon[Assignments[Column["hello", varchar], "hello" ~~> Placeholder["hello", varchar]]]

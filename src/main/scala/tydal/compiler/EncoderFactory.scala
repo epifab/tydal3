@@ -4,7 +4,7 @@ package compiler
 import cats.data.State
 import cats.implicits.catsSyntaxTuple2Semigroupal
 import skunk.data.Type
-import skunk.syntax.all._
+import skunk.syntax.all.*
 import skunk.{Encoder, Void}
 
 

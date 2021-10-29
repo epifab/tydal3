@@ -3,7 +3,7 @@ package compiler
 
 import cats.data.State
 import skunk.data.Type
-import skunk.syntax.all._
+import skunk.syntax.all.*
 import skunk.{Decoder, Void}
 
 import scala.Tuple.Concat

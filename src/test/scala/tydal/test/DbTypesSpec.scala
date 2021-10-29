@@ -2,13 +2,13 @@ package tydal.test
 
 import cats.kernel.Eq
 import org.scalatest.Assertion
-import org.scalatest.freespec._
-import org.scalatest.matchers._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
 import skunk.data.Arr
 import skunk.{Query, Void}
-import tydal.Schema._
-import tydal._
-import tydal.compiler._
+import tydal.Schema.*
+import tydal.*
+import tydal.compiler.*
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID

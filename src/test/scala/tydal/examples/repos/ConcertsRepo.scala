@@ -2,12 +2,12 @@ package tydal.examples.repos
 
 import cats.data.{NonEmptyList, OptionT}
 import cats.effect.{Concurrent, Resource}
-import cats.implicits._
+import cats.implicits.*
 import cats.{Functor, Monad}
 import skunk.data.Arr
 import skunk.{PreparedQuery, Session}
-import tydal._
-import Schema._
+import tydal.*
+import Schema.*
 
 import java.time.Instant
 import java.util.UUID

@@ -1,17 +1,17 @@
 package tydal.examples
 
 import cats.Monad
-import cats.effect._
+import cats.effect.*
 import cats.effect.unsafe.IORuntime
-import cats.implicits._
-import org.scalatest.freespec._
-import org.scalatest.matchers._
-import skunk._
-import skunk.codec.all._
+import cats.implicits.*
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
+import skunk.*
+import skunk.codec.all.*
 import skunk.data.Arr
-import skunk.implicits._
+import skunk.implicits.*
 import tydal.Schema.{Currency, Genre}
-import tydal.examples.repos._
+import tydal.examples.repos.*
 import tydal.test.IntegrationTesting
 
 import java.time.{Instant, LocalDate}

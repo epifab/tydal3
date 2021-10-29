@@ -23,7 +23,7 @@ Here's a basic example:
 import cats.effect.IO
 import skunk.data.Arr
 import skunk.{Query, Session}
-import tydal._
+import tydal.*
 
 object artist extends TableSchema[
   "artist",

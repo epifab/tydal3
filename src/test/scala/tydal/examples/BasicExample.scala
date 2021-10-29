@@ -3,8 +3,8 @@ package tydal.examples
 import cats.effect.{ExitCode, IO, IOApp}
 import skunk.data.Arr
 import skunk.{Query, Session, Strategy}
-import tydal.Schema._
-import tydal._
+import tydal.Schema.*
+import tydal.*
 
 object BasicExample extends IOApp with SessionAware:
 

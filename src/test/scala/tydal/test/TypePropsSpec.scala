@@ -1,6 +1,6 @@
 package tydal.test
 
-import tydal._
+import tydal.*
 
 import scala.util.NotGiven
 

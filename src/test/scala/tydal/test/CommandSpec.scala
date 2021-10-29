@@ -1,9 +1,9 @@
 package tydal.test
 
-import org.scalatest.freespec._
-import org.scalatest.matchers._
-import tydal._
-import tydal.compiler._
+import org.scalatest.freespec.*
+import org.scalatest.matchers.*
+import tydal.*
+import tydal.compiler.*
 import skunk.Command
 
 import java.util.UUID

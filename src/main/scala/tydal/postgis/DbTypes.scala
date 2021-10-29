@@ -2,7 +2,7 @@ package tydal.postgis
 
 import skunk.Codec
 import skunk.data.Type
-import tydal._
+import tydal.*
 
 trait DbTypes
 
