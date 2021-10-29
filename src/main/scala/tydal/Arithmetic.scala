@@ -1,12 +1,12 @@
 package tydal
 
-trait Arithemtic
+trait Arithemtic[+F1 <: Field[_], +F2 <: Field[_], V] extends DbFunction2[F1, F2, V]
 
 final class Add[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U], V](val param1: F1, val param2: F2)(
   using
   additionType: ArithmeticType[T, U, V],
   override val dbType: DbType[V]
-) extends Arithemtic with DbFunction2[F1, F2, V]:
+) extends Arithemtic[F1, F2, V]:
   override val dbName: String = "+"
   override val infixNotation: Boolean = true
 
@@ -14,7 +14,7 @@ final class Sub[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U]
   using
   additionType: ArithmeticType[T, U, V],
   override val dbType: DbType[V]
-) extends Arithemtic with DbFunction2[F1, F2, V]:
+) extends Arithemtic[F1, F2, V]:
   override val dbName: String = "-"
   override val infixNotation: Boolean = true
 
@@ -22,7 +22,7 @@ final class Mul[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U]
   using
   additionType: ArithmeticType[T, U, V],
   override val dbType: DbType[V]
-) extends Arithemtic with DbFunction2[F1, F2, V]:
+) extends Arithemtic[F1, F2, V]:
   override val dbName: String = "*"
   override val infixNotation: Boolean = true
 
@@ -30,7 +30,7 @@ final class Div[T: IsNumerical, +F1 <: Field[T], U: IsNumerical, +F2 <: Field[U]
   using
   additionType: ArithmeticType[T, U, V],
   override val dbType: DbType[V]
-) extends Arithemtic with DbFunction2[F1, F2, V]:
+) extends Arithemtic[F1, F2, V]:
   override val dbName: String = "/"
   override val infixNotation: Boolean = true
 

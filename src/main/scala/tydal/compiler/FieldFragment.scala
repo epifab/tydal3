@@ -33,6 +33,12 @@ object FieldFragment:
   ): FieldFragment[SoftCast[F, T], Output] with
     def build(field: SoftCast[F, T]): CompiledFragment[Output] = inner.build(field.field)
 
+  given wrapper[T, F <: Field[T], Output <: Tuple](
+    using
+    inner: FieldFragment[F, Output]
+  ): FieldFragment[ExprWrapper[T, F], Output] with
+    def build(wrapper: ExprWrapper[T, F]): CompiledFragment[Output] = inner.build(wrapper.expr).wrap("(", ")")
+
   given dbFunction[FS <: Tuple, T, Output <: Tuple](
     using
     inner: ListFragment[FieldFragment, FS, Output]
@@ -40,7 +46,7 @@ object FieldFragment:
     def build(func: DbFunction[FS, T]): CompiledFragment[Output] =
       func match
         case f: Aggregation[_, _] if f.distinct => inner.build(func.params, ", ").wrap(s"${func.dbName}(DISTINCT ", ")")
-        case f: DbFunction2[_, _, _] if f.infixNotation => inner.build(func.params, s" ${func.dbName} ").wrap("(", ")")
+        case f: DbFunction2[_, _, _] if f.infixNotation => inner.build(func.params, s" ${func.dbName} ")
         case _ => inner.build(func.params, ", ").wrap(s"${func.dbName}(", ")")
 
   given placeholder[P <: Placeholder[_, _]]: FieldFragment[P, P *: EmptyTuple] with

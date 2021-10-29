@@ -18,7 +18,7 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   ): Assertion =
     testUnique(
       Select(a * b).compile,
-      "SELECT ($1 * $2)",
+      "SELECT $1 * $2",
       result
     )
 
@@ -82,15 +82,15 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "(int4 * int4) * int4" in {
     testQuery(
       Select(4[int4] * 8[int4] * 12[int4]).compile,
-      "SELECT (($1 * $2) * $3)",
+      "SELECT $1 * $2 * $3",
       Void
     ).head shouldBe 384
   }
 
   "int4 * (int4 * int4)" in {
     testQuery(
-      Select(4[int4] * (8[int4] * 12[int4])).compile,
-      "SELECT ($1 * ($2 * $3))",
+      Select(4[int4] * <<(8[int4] * 12[int4])).compile,
+      "SELECT $1 * ($2 * $3)",
       Void
     ).head shouldBe 384
   }
@@ -98,7 +98,7 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "int4 * some[int4]" in {
     testQuery(
       Select(4[int4] * Option(8)[nullable[int4]]).compile,
-      "SELECT ($1 * $2)",
+      "SELECT $1 * $2",
       Void
     ).head shouldBe Some(32)
   }
@@ -106,7 +106,7 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[int4] * int4" in {
     testQuery(
       Select(Option(8)[nullable[int4]] * 4[int4]).compile,
-      "SELECT ($1 * $2)",
+      "SELECT $1 * $2",
       Void
     ).head shouldBe Some(32)
   }
@@ -114,7 +114,7 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[int4] * some[int4]" in {
     testQuery(
       Select(Option(4)[nullable[int4]] * Option(8)[nullable[int4]]).compile,
-      "SELECT ($1 * $2)",
+      "SELECT $1 * $2",
       Void
     ).head shouldBe Some(32)
   }
@@ -122,7 +122,7 @@ class MulSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "int4 * null" in {
     testQuery(
       Select(4[int4] * Option.empty[Int][nullable[int4]]).compile,
-      "SELECT ($1 * $2)",
+      "SELECT $1 * $2",
       Void
     ).head shouldBe None
   }

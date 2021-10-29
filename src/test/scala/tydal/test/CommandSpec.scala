@@ -89,10 +89,10 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
     "with set column = expr of the same type" in {
       testCommand(
         Update(Schema.ticket)
-          .set(t => t("price") :== t("price") + (t("price") * Placeholder["factor?", float8]))
+          .set(t => t("price") :== t("price") + <<(t("price") * Placeholder["factor?", float8]))
           .where(_("id") === "id?")
           .compile,
-        "UPDATE ticket SET price = (price + (price * $1)) WHERE id = $2",
+        "UPDATE ticket SET price = price + (price * $1) WHERE id = $2",
         (
           "factor?" ~~> -0.2,  // 20% discount
           "id?" ~~> UUID.fromString("3fb2bd37-fc4a-4c9f-96bc-a4c253bc5857")

@@ -18,7 +18,7 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   ): Assertion =
     testUnique(
       Select(a + b).compile,
-      "SELECT ($1 + $2)",
+      "SELECT $1 + $2",
       result
     )
 
@@ -80,18 +80,18 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "numeric(p1,s1) + numeric(p2,s2)" in testAdd(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]], BigDecimal(4))
   "numeric(p,s) + numeric(p,s)" in testAdd(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]], BigDecimal(4))
 
-  "(int4 + int4) + int4" in {
+  "int4 + int4 + int4" in {
     testQuery(
       Select(4[int4] + 8[int4] + 12[int4]).compile,
-      "SELECT (($1 + $2) + $3)",
+      "SELECT $1 + $2 + $3",
       Void
     ).head shouldBe 24
   }
 
   "int4 + (int4 + int4)" in {
     testQuery(
-      Select(4[int4] + (8[int4] + 12[int4])).compile,
-      "SELECT ($1 + ($2 + $3))",
+      Select(4[int4] + <<(8[int4] + 12[int4])).compile,
+      "SELECT $1 + ($2 + $3)",
       Void
     ).head shouldBe 24
   }
@@ -99,7 +99,7 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "int4 + some[int4]" in {
     testQuery(
       Select(4[int4] + Option(8)[nullable[int4]]).compile,
-      "SELECT ($1 + $2)",
+      "SELECT $1 + $2",
       Void
     ).head shouldBe Some(12)
   }
@@ -107,7 +107,7 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[int4] + int4" in {
     testQuery(
       Select(Option(8)[nullable[int4]] + 4[int4]).compile,
-      "SELECT ($1 + $2)",
+      "SELECT $1 + $2",
       Void
     ).head shouldBe Some(12)
   }
@@ -115,7 +115,7 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[int4] + some[int4]" in {
     testQuery(
       Select(Option(4)[nullable[int4]] + Option(8)[nullable[int4]]).compile,
-      "SELECT ($1 + $2)",
+      "SELECT $1 + $2",
       Void
     ).head shouldBe Some(12)
   }
@@ -123,7 +123,7 @@ class AddSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "int4 + null" in {
     testQuery(
       Select(4[int4] + Option.empty[Int][nullable[int4]]).compile,
-      "SELECT ($1 + $2)",
+      "SELECT $1 + $2",
       Void
     ).head shouldBe None
   }

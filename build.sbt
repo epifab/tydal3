@@ -1,4 +1,5 @@
 val scala3Version = "3.0.1-RC2"
+resolvers += "jitpack" at "https://jitpack.io"
 
 lazy val root = project
   .in(file("."))

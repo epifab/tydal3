@@ -18,7 +18,7 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   ): Assertion =
     testUnique(
       Select(a / b).compile,
-      "SELECT ($1 / $2)",
+      "SELECT $1 / $2",
       result
     )
 
@@ -79,18 +79,18 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "numeric(p1,s1) / numeric(p2,s2)" in testDiv(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]], BigDecimal(1))
   "numeric(p,s) / numeric(p,s)" in testDiv(BigDecimal(2)[numericOf[6, 4]], BigDecimal(2)[numericOf[4, 4]], BigDecimal(1))
 
-  "(float8 / float8) / float8" in {
+  "float8 / float8 / float8" in {
     testQuery(
       Select(4.0[float8] / 8.0[float8] / 2.0[float8]).compile,
-      "SELECT (($1 / $2) / $3)",
+      "SELECT $1 / $2 / $3",
       Void
     ).head shouldBe 0.25
   }
 
   "float8 / (float8 / float8)" in {
     testQuery(
-      Select(4.0[float8] / (8.0[float8] / 2.0[float8])).compile,
-      "SELECT ($1 / ($2 / $3))",
+      Select(4.0[float8] / <<(8.0[float8] / 2.0[float8])).compile,
+      "SELECT $1 / ($2 / $3)",
       Void
     ).head shouldBe 1.0
   }
@@ -98,7 +98,7 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "float8 / some[float8]" in {
     testQuery(
       Select(4.0[float8] / Option(8.0)[nullable[float8]]).compile,
-      "SELECT ($1 / $2)",
+      "SELECT $1 / $2",
       Void
     ).head shouldBe Some(0.5)
   }
@@ -106,7 +106,7 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[float8] / float8" in {
     testQuery(
       Select(Option(8.0)[nullable[float8]] / 4.0[float8]).compile,
-      "SELECT ($1 / $2)",
+      "SELECT $1 / $2",
       Void
     ).head shouldBe Some(2.0)
   }
@@ -114,7 +114,7 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "some[float8] / some[float8]" in {
     testQuery(
       Select(Option(4.0)[nullable[float8]] / Option(8.0)[nullable[float8]]).compile,
-      "SELECT ($1 / $2)",
+      "SELECT $1 / $2",
       Void
     ).head shouldBe Some(0.5)
   }
@@ -122,7 +122,7 @@ class DivSpec extends AnyFreeSpec with should.Matchers with IntegrationTesting:
   "float8 / null" in {
     testQuery(
       Select(4.0[float8] / Option.empty[Double][nullable[float8]]).compile,
-      "SELECT ($1 / $2)",
+      "SELECT $1 / $2",
       Void
     ).head shouldBe None
   }
