@@ -31,6 +31,13 @@ object LogicalExprFragment:
     def build(e: Or[E1, E2]): CompiledFragment[T1 Concat T2] =
       left.build(e.left).concatenateOptional(right.build(e.right), " OR ")
 
+  given wrapped[E <: LogicalExpr, T <: Tuple](
+    using
+    inner: LogicalExprFragment[E, T]
+  ): LogicalExprFragment[LogicalExprWrapper[E], T] with
+    def build(e: LogicalExprWrapper[E]): CompiledFragment[T] =
+      inner.build(e.expr).wrap("(", ")")
+
   given comparison[F1 <: Field[_], F2 <: Field[_], E <: Comparison[F1, F2], P <: Tuple, Q <: Tuple](
     using
     left: FieldFragment[F1, P],

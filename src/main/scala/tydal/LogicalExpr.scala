@@ -1,6 +1,6 @@
 package tydal
 
-sealed trait LogicalExpr:
+trait LogicalExpr:
   def and[F2 <: LogicalExpr](otherExpression: F2): And[this.type, F2] = And(this, otherExpression)
   def or[F2 <: LogicalExpr](otherExpression: F2): Or[this.type, F2] = Or(this, otherExpression)
 

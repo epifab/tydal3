@@ -81,6 +81,11 @@ trait Field[T]:
   def anyOf[A <: String with Singleton: DbIdentifier, U](right: A)(using DbType[array[T]], CanContain[array[T], T]): AnyOf[this.type, Placeholder[A, array[T]]] =
     AnyOf(this, Placeholder[A, array[T]])
 
+  def contains[G <: Field[_]](right: G)(using CanContain[this.type, G]): AnyOf[G, this.type] = AnyOf(right, this)
+
+  def contains[I, A <: String with Singleton: DbIdentifier, U](right: A)(using T =:= array[I], DbType[I], CanContain[T, I]): AnyOf[Placeholder[A, I], this.type] =
+    AnyOf(Placeholder[A, I], this)
+
   def in[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): In[this.type, S] = In(this, right)
 
   def notIn[S <: SelectQuery[_, _, _, _, _, _, _, _]](right: S)(using CanContain[S, this.type]): NotIn[this.type, S] = NotIn(this, right)
