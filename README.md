@@ -21,7 +21,6 @@ or decoding the results of a query into an incompatible data structure.
 Here's a basic example:
 ```scala
 import cats.effect.IO
-import skunk.data.Arr
 import skunk.{Query, Session}
 import tydal.*
 
@@ -38,7 +37,7 @@ val query =
   Select
     .from(artist as "a")
     .take(_("a").*)
-    .where(x => (x("a", "genres") overlaps "genres?") or (x("a", "name") like "name?"))
+    .where(x => (x("a", "genres") contains "genre?") and (x("a", "name") like "name?"))
     .sortBy(_("a", "name"))
     .limit("limit?")
     .compile
@@ -47,7 +46,7 @@ val query =
 // or to run a query please refer to https://tpolecat.github.io/skunk/
 def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String])]] =
   session.prepare(query).use(_.stream((
-    "genres?" ~~> Arr("Rock", "Psychedelic"),
+    "genre?" ~~> "Psychedelic",
     "name?" ~~> "%Floyd",
     "limit?" ~~> 50
   ), 10).compile.toList)
