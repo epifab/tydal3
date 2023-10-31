@@ -80,5 +80,5 @@ resolvers += "jitpack" at "https://jitpack.io"
 Step 2. Add the dependency
 
 ```
-libraryDependencies += "com.github.epifab" % "tydal3" % "0.1"	
+libraryDependencies += "com.github.epifab" % "tydal3" % "0.3"	
 ```
