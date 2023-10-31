@@ -1,7 +1,6 @@
 # Tydal 3
 
-[![Build Status](https://travis-ci.com/epifab/tydal3.svg?branch=master)](https://travis-ci.com/epifab/tydal3)
-[![Join the chat at https://gitter.im/tydal3/community](https://badges.gitter.im/tydal3/community.svg)](https://gitter.im/tydal3/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build and test](https://github.com/epifab/tydal3/actions/workflows/main.yml/badge.svg)](https://github.com/epifab/tydal3/actions/workflows/main.yml)
 
 Tydal 3 is a typesafe PostgreSQL DSL for *Scala 3* built on top of [Skunk](https://github.com/tpolecat/skunk).  
 If you're looking for a Scala 2 compatible version of this library, please refer to [Tydal](https://github.com/epifab/tydal).
