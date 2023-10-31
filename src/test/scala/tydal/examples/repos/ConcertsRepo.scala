@@ -117,13 +117,13 @@ object ConcertsRepo:
   def apply[F[_]: Monad: Concurrent](newId: F[UUID], session: Resource[F, Session[F]]): Resource[F, ConcertsRepo[F]] =
     for {
       s <- session
-      insertConcert <- s.prepare(insertConcertCommand)
-      insertConcertArtist <- s.prepare(insertConcertArtistCommand)
-      insertTicket <- s.prepare(insertTicketCommand)
-      selectConcertById: PreparedQuery[F, "ids?" ~~> Arr[UUID], (UUID, Instant, Instant, String)] <- s.prepare(selectConcertsByIdQuery)
-      selectConcertsByArtistName: PreparedQuery[F, "artistName?" ~~> String, (UUID, Instant, Instant, String)] <- s.prepare(selectConcertsByArtistNameQuery)
-      selectArtists: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, String)] <- s.prepare(selectArtistsQuery)
-      selectTickets: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, Currency, Option[BigDecimal])] <- s.prepare(selectCheapestTicketsQUery)
+      insertConcert <- s.prepareR(insertConcertCommand)
+      insertConcertArtist <- s.prepareR(insertConcertArtistCommand)
+      insertTicket <- s.prepareR(insertTicketCommand)
+      selectConcertById: PreparedQuery[F, "ids?" ~~> Arr[UUID], (UUID, Instant, Instant, String)] <- s.prepareR(selectConcertsByIdQuery)
+      selectConcertsByArtistName: PreparedQuery[F, "artistName?" ~~> String, (UUID, Instant, Instant, String)] <- s.prepareR(selectConcertsByArtistNameQuery)
+      selectArtists: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, String)] <- s.prepareR(selectArtistsQuery)
+      selectTickets: PreparedQuery[F, "concertIds?" ~~> Arr[UUID], (UUID, Currency, Option[BigDecimal])] <- s.prepareR(selectCheapestTicketsQUery)
 
       repo = new ConcertsRepo[F] {
         override def add(venueId: UUID, begin: Instant, end: Instant, artists: Seq[ConcertArtistRecord], tickets: Seq[TicketRecord]): F[UUID] =

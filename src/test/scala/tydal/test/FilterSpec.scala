@@ -30,13 +30,13 @@ class FilterSpec extends AnyFreeSpec with should.Matchers with IntegrationTestin
     session.use { s =>
       for {
         _ <- s.execute(sql"TRUNCATE TABLE artist CASCADE".command)
-        _ <- s.prepare(insert).use { statement =>
+        _ <- s.prepareR(insert).use { statement =>
           for {
             _ <- statement.execute(("id" ~~> UUID.randomUUID(), "name" ~~> "Led Zeppelin", "genres" ~~> Arr(Genre.Rock)))
             _ <- statement.execute(("id" ~~> UUID.randomUUID(), "name" ~~> "Metallica", "genres" ~~> Arr(Genre.Metal)))
           } yield ()
         }
-        artist <- s.prepare(select).use(_.unique(("n" ~~> "%Metal%", "g1" ~~> Genre.Metal, "g2" ~~> Genre.Rock)))
+        artist <- s.prepareR(select).use(_.unique(("n" ~~> "%Metal%", "g1" ~~> Genre.Metal, "g2" ~~> Genre.Rock)))
       } yield (artist shouldBe "Metallica")
       // this is testing the accuracy of a AND (b OR c)
       // if there were no parentheses, it'd return both artists

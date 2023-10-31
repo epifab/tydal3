@@ -29,7 +29,7 @@ object VenuesRepo:
   def apply[F[_]: Monad](newId: F[UUID], session: Resource[F, Session[F]]): Resource[F, VenuesRepo[F]] =
     for {
       s <- session
-      insertStatement <- s.prepare(insertCommand)
+      insertStatement <- s.prepareR(insertCommand)
       repo = new VenuesRepo[F]:
         def add(name: String, address: Option[String], geoLocation: Option[(Double, Double)]): F[UUID] =
           for {

@@ -21,7 +21,7 @@ object BasicExample extends IOApp with SessionAware:
 
   def run(args: List[String]): IO[ExitCode] =
     (for {
-      preparedQuery <- fs2.Stream.resource(session.flatMap(_.prepare(query)))
+      preparedQuery <- fs2.Stream.resource(session.flatMap(_.prepareR(query)))
       artists <- preparedQuery.stream((
         "genres?" ~~> Arr(Genre.Rock, Genre.Psychedelic),
         "name?" ~~> "%Floyd",

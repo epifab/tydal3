@@ -1,3 +1,3 @@
-FROM postgres:9.6
+FROM postgres:16.0
 
-RUN apt-get update && apt-get install -y postgis postgresql-9.6-postgis-scripts
+RUN apt-get update && apt-get install -y postgis postgresql-16-postgis-3

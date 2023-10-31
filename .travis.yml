@@ -1,8 +1,8 @@
 language: scala
 jdk:
-  - openjdk11
+  - openjdk17
 scala:
-  - 3.0.0
+  - 3.3.0
 services:
   - docker
 before_install:

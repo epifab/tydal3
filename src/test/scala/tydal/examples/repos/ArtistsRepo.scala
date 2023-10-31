@@ -28,7 +28,7 @@ object ArtistsRepo:
   def apply[F[_]: Monad](newId: F[UUID], session: Resource[F, Session[F]]): Resource[F, ArtistsRepo[F]] =
     for {
       s <- session
-      insertStatement <- s.prepare(insertCommand)
+      insertStatement <- s.prepareR(insertCommand)
       repo = new ArtistsRepo[F]:
         def add(name: String, genres: List[Genre]): F[UUID] =
           for {

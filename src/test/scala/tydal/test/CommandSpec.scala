@@ -13,7 +13,7 @@ class CommandSpec extends AnyFreeSpec with should.Matchers with IntegrationTesti
   private def testCommand[A](command: Command[A], expectedSql: String, input: A): Unit =
     command.sql shouldBe expectedSql
     session
-      .flatMap(_.prepare(command))
+      .flatMap(_.prepareR(command))
       .use(_.execute(input))
       .unsafeRunSync()
 

@@ -29,7 +29,7 @@ object SubqueryExample extends IOApp with SessionAware:
   // Select the date of the last Pink Floyd concert priced under 20$
   def run(args: List[String]): IO[ExitCode] =
     (for {
-      preparedQuery <- fs2.Stream.resource(session.flatMap(_.prepare(query)))
+      preparedQuery <- fs2.Stream.resource(session.flatMap(_.prepareR(query)))
       artists <- preparedQuery.stream((
         "currency?" ~~> Currency.USD,
         "maxPrice?" ~~> BigDecimal(20),

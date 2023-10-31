@@ -45,7 +45,7 @@ val query =
 // For more information on how to initiate a Session
 // or to run a query please refer to https://tpolecat.github.io/skunk/
 def runQuery(session: Session[IO]): IO[List[(java.util.UUID, String, Arr[String])]] =
-  session.prepare(query).use(_.stream((
+  session.prepareR(query).use(_.stream((
     "genre?" ~~> "Psychedelic",
     "name?" ~~> "%Floyd",
     "limit?" ~~> 50
